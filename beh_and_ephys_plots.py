@@ -12,15 +12,11 @@ import pylab as pl
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
-
-
-    
-
+from os import path
 
 #Import Ephys and PyControl Data
 #ephys_session = fu.load_data('m481_2018-06-20_19-09-08','/Users/veronikasamborska/Desktop/Ephys 3 Tasks Processed Spikes/m481/','/',True)
 #beh_session = di.Session('/Users/veronikasamborska/Desktop/data_3_tasks_ephys/m481-2018-06-20-190858.txt')
-
 
 
 def change_block_firing_rates(ephys_session, beh_session):
@@ -83,7 +79,11 @@ def change_block_firing_rates(ephys_session, beh_session):
 
     
     
-def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
+def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot):
+    plot = 'Choice' #Specify which plot  #'Choice if want a plot to align at initiation, 'Poke' if want a plot aligned at A/B poke
+    
+    outpath = '/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Ephys 3 Tasks Processed Spikes/m481'
+    sns.set()
     forced_trials = beh_session.trial_data['forced_trial']
     non_forced_array = np.where(forced_trials == 0)[0]  
     configuration = beh_session.trial_data['configuration_i']
@@ -127,7 +127,6 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
 
     #Poke A and Poke B Timestamps 
     pyControl_a_poke_entry = [event.time for event in beh_session.events if event.name in [poke_A,poke_A_task_2,poke_A_task_3]]
-
     pyControl_a_poke_exit = [event.time for event in beh_session.events if event.name in [poke_A_exit]]
     pyControl_b_poke_entry = [event.time for event in beh_session.events if event.name in [poke_B,poke_B_task_2,poke_B_task_3 ]]
 
@@ -138,7 +137,11 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
 
     # Pokes A, B and I 
     a_pokes = np.unique(beh_session.trial_data['poke_A'])
+    print('These are A pokes')
+    print(a_pokes)
     b_pokes = np.unique(beh_session.trial_data['poke_B'])
+    print('These are B pokes')
+    print(b_pokes)
     i_pokes = np.unique(configuration)
     all_pokes = np.concatenate([a_pokes, b_pokes, i_pokes])
     all_pokes = np.unique(all_pokes)
@@ -149,54 +152,69 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     for i, poke in enumerate(all_pokes):
         pokes[poke] = [event.time for event in beh_session.events if event.name in ['poke_'+str(all_pokes[i])]]
     
+
+    events_and_times = [[event.name, event.time] for event in beh_session.events if event.name in ['choice_state',poke_B, poke_A, poke_A_task_2,poke_A_task_3, poke_B_task_2,poke_B_task_3]]
     
-    events_and_times = [[event.name, event.time] for event in beh_session.events if event.name in ['choice_state',poke_B, poke_B_task_2, poke_B_task_3, poke_A,poke_A_task_2, poke_A_task_3]]
+    task_1 = np.where(task_non_forced == 1)[0]
+    task_2 = np.where(task_non_forced == 2)[0]
+    task_3 = np.where(task_non_forced == 3)[0]
+    
+    trial_сhoice_state_task_1 = pyControl_choice[:len(task_1)]
+    trial_сhoice_state_task_2 = pyControl_choice[len(task_1):(len(task_1) +len(task_2))]
+    trial_сhoice_state_task_3 = pyControl_choice[len(task_2):(len(task_2) + len(task_3))]
+    
     
     poke_B_list = []
     poke_A_list = []
     choice_state = False 
+    choice_state_count = 0
     
     for event in events_and_times:
         if 'choice_state' in event:
-            choice_state = True              
-        elif poke_B in  event: 
-            if choice_state == True:
-                poke_B_list.append(event[1])
-                choice_state = False
-        elif poke_B_task_2 in event:
-            if choice_state == True:
-                poke_B_list.append(event[1])
-                choice_state = False
-        elif poke_B_task_3 in event:
-            if choice_state == True:
-                poke_B_list.append(event[1])
-                choice_state = False
-        elif poke_A in event:
-            if choice_state == True:
-                poke_A_list.append(event[1])
-                choice_state = False
-        elif poke_A_task_2 in event:
-                poke_A_list.append(event[1])
-                choice_state = False
-        elif poke_A_task_3 in event:
-                poke_A_list.append(event[1])
-                choice_state = False
+            choice_state_count +=1 
+            choice_state = True   
+        if choice_state_count <= len(task_1):
+            if poke_B in event: 
+                if choice_state == True:
+                    poke_B_list.append(event[1])
+                    choice_state = False
+            elif poke_A in event:
+                if choice_state == True:
+                    poke_A_list.append(event[1])
+                    choice_state = False
+        elif choice_state_count <= (len(task_1) +len(task_2)):
+            if poke_B_task_2 in event:
+                if choice_state == True:
+                    poke_B_list.append(event[1])
+                    choice_state = False
+            elif poke_A_task_2 in event:
+                if choice_state == True:
+                    poke_A_list.append(event[1])
+                    choice_state = False     
+        elif choice_state_count <= (len(task_2) + len(task_3)):
+            if poke_B_task_3 in event:
+                if choice_state == True:
+                    poke_B_list.append(event[1])
+                    choice_state = False
+            elif poke_A_task_3 in event:
+                if choice_state == True:
+                    poke_A_list.append(event[1])
+                    choice_state = False
 
-    
     #Task 1 
-    task_1 = np.where(task_non_forced == 1)[0]
+
     state_1 = state_non_forced[:len(task_1)]
     state_a_good = np.where(state_1 == 1)[0]
     state_b_good = np.where(state_1 == 0)[0]
     
     # Task 2
-    task_2 = np.where(task_non_forced == 2)[0]
+   
     state_2 = state_non_forced[len(task_1): (len(task_1) +len(task_2))]
     state_t2_a_good = np.where(state_2 == 1)[0]
     state_t2_b_good = np.where(state_2 == 0)[0]
 
     #Task 3 Time Events
-    task_3 = np.where(task_non_forced == 3)[0]
+    
     state_3 = state[task_3]
     state_t3_a_good = np.where(state_3 == 1)[0]
     state_t3_b_good = np.where(state_3 == 0)[0]
@@ -226,6 +244,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     #print(ITI_task_2)
 
     ITI_task_2_a_good  = ITI_task_2[state_t2_a_good]
+
     ITI_task_2_b_good =ITI_task_2[state_t2_b_good]
     ITI_task_3 = ITI_non_forced[(len(task_2)+2):(len(task_2)+2+len(task_3))]
     ITI_task_3_a_good  = ITI_task_3[state_t3_a_good]
@@ -234,19 +253,14 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     #print(ITI_task_1_a_good)
     # Task one
     entry_a_good_list = []
-    out_a_good_list = []
     a_good_choice_time_task_1 = []
     entry_b_bad_list = []
-    out_b_bad_list = []
     b_bad_choice_time_task_1 = []
-
     entry_a_bad_list = []
-    out_a_bad_list = []
     b_good_choice_time_task_1 = []
     entry_b_good_list = []
-    out_b_good_list = []
     a_bad_choice_time_task_1 = []
- 
+
     #np.save('/Users/veronikasamborska/Desktop/poke_A_list.npy',poke_A_list)
     for start_trial,end_trial in zip(trial_сhoice_state_task_1_b_good, ITI_task_1_b_good):
         for entry_a in poke_A_list:
@@ -279,17 +293,12 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
 
     #Task two  
     entry_a_good_task_2_list = []
-    out_a_good_list_task_2 = []
     a_good_choice_time_task_2 = []
     entry_b_bad_list_task_2 = []
-    out_b_bad_list_task_2 = []
     b_bad_choice_time_task_2 = []
-
     entry_a_bad_task_2_list = []
-    out_a_bad_list_task_2 = []
     b_good_choice_time_task_2 = []
     entry_b_good_list_task_2 = []
-    out_b_good_list_task_2 = []
     a_bad_choice_time_task_2= []
 
    
@@ -369,7 +378,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     
     entry_b_good_list_task_3 = np.array(entry_b_good_list_task_3)
     entry_a_bad_task_3_list = np.array(entry_a_bad_task_3_list)
-    entry_a_good_task_3_list = np.array(entry_a_good_task_3_list)
+    entry_a_good_task_3_list =  np.array(entry_a_good_task_3_list)
     entry_b_bad_list_task_3 = np.array(entry_b_bad_list_task_3)     
              
     
@@ -380,8 +389,11 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     a_good_choice_time_task_1 = np.array(a_good_choice_time_task_1)
     a_good_choice_time_task_1 = np.unique(a_good_choice_time_task_1)
     a_bad_choice_time_task_3 = np.array(a_bad_choice_time_task_3)
+    a_bad_choice_time_task_3 = np.unique(a_bad_choice_time_task_3)
     a_bad_choice_time_task_2 = np.array(a_bad_choice_time_task_2)
+    a_bad_choice_time_task_2 = np.unique(a_bad_choice_time_task_2)
     a_bad_choice_time_task_1 = np.array(a_bad_choice_time_task_1)
+    a_bad_choice_time_task_1 = np.unique(a_bad_choice_time_task_1)
     
     b_bad_choice_time_task_3 = np.array(b_bad_choice_time_task_3)
     b_bad_choice_time_task_3 = np.unique(b_bad_choice_time_task_3)
@@ -396,20 +408,77 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
     b_good_choice_time_task_1 = np.array(b_good_choice_time_task_1)
     b_good_choice_time_task_1 = np.unique(b_good_choice_time_task_1)
     
+    if plot == 'Choice':
+        aligned_a_good_task_1 = a_good_choice_time_task_1
+        aligned_a_bad_task_1 = a_bad_choice_time_task_1
+        aligned_b_good_task_1 = b_good_choice_time_task_1
+        aligned_b_bad_task_1 = b_bad_choice_time_task_1
+        
+        aligned_a_good_task_2 = a_good_choice_time_task_2
+        aligned_a_bad_task_2 = a_bad_choice_time_task_2
+        aligned_b_good_task_2 = b_good_choice_time_task_2
+        aligned_b_bad_task_2 =b_bad_choice_time_task_2
+        
+        aligned_a_good_task_3 = a_good_choice_time_task_3
+        aligned_a_bad_task_3 = a_bad_choice_time_task_3
+        aligned_b_good_task_3 = b_good_choice_time_task_3
+        aligned_b_bad_task_3 = b_bad_choice_time_task_3
+        
+    elif plot == 'Poke':
+        entry_a_good_list = entry_a_good_list
+        aligned_a_bad_task_1 = entry_a_bad_list
+        aligned_b_good_task_1 = entry_b_good_list
+        aligned_b_bad_task_1 = entry_b_bad_list
+        
+        aligned_a_good_task_2 = entry_a_good_task_2_list
+        aligned_a_bad_task_2 = entry_a_bad_task_2_list
+        aligned_b_good_task_2 = entry_b_good_list_task_2
+        aligned_b_bad_task_2 = entry_b_bad_list_task_2
+        
+        aligned_a_good_task_3 = entry_a_good_task_3_list
+        aligned_a_bad_task_3 = entry_a_bad_task_3_list
+        aligned_b_good_task_3 = entry_b_good_list_task_3
+        aligned_b_bad_task_3 = entry_b_bad_list_task_3
+        
+
     
     
     clusters = ephys_session['spike_cluster'].unique()
-    clusters = clusters[10:15]
-    print(clusters)
 
-    fig, axes = plt.subplots(figsize=(50,5), ncols=5, nrows=5, sharex=True)
     
+    # Different figures for subplotting neurons in groups of 8 
+    
+    fig_clusters_8, ax_8 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    fig_raster_8, axes_8 = plt.subplots(figsize=(50,5), ncols = 9, nrows = 3, sharex=True)
+    
+    fig_clusters_16, ax_16 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    fig_raster_16, axes_16= plt.subplots(figsize=(50,5), ncols = 9, nrows = 3, sharex=True)
+    
+    fig_clusters_24, ax_24 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    fig_raster_24, axes_24 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    
+    fig_clusters_36, ax_36 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    fig_raster_36, axes_36 = plt.subplots(figsize = (50,5), ncols = 9, nrows = 3, sharex=True)
+    
+    
+    group_1 = 9
+    group_2 = 18
+    group_3 = 27
+    group_4 = 36
+   
     for i,cluster in enumerate(clusters): 
+        fig_clusters_8 = pl.figure(1)
+        fig_raster_8 = pl.figure(2)
+        fig_clusters_16 = pl.figure(3)
+        fig_raster_16 = pl.figure(4)
+        fig_clusters_24 = pl.figure(5)
+        fig_raster_24 = pl.figure(6)
+        fig_clusters_36 = pl.figure(7)
+        fig_raster_36 =pl.figure(8)
+
         spikes = ephys_session.loc[ephys_session['spike_cluster'] == cluster]
         spikes_times = np.array(spikes['time'])
-        if cluster == 100:
-            print(spikes_times)
-            print(len(spikes_times))
+        
         all_spikes_raster_plot_task_1 = []
         all_spikes_raster_plot_task_2 = []
         
@@ -452,183 +521,147 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
         spikes_to_plot_a_good_task_3_raster = []
         spikes_to_plot_b_bad_task_3_raster = []
     
-    
+
+        
     ############### Task 1 
-        for a_bad_task_1 in entry_a_bad_list:
+        for a_bad_task_1 in aligned_a_bad_task_1:
             period_min_a_bad_task_1 = a_bad_task_1 - 3000
             period_max_a_bad_task_1 = a_bad_task_1 + 3000
             spikes_ind_a_bad_task_1 = spikes_times[(spikes_times >= period_min_a_bad_task_1) & (spikes_times<= period_max_a_bad_task_1)]
-            index_a_bad_task_1 = np.where(entry_a_bad_list ==a_bad_task_1)[0]
-            other_a_bad_events_task_1 = np.delete(entry_a_bad_list,index_a_bad_task_1)
-            #for event in other_a_bad_events_task_1:
-                #if not event >= period_min_a_bad_task_1 and event <=period_max_a_bad_task_1:
+
             spikes_to_save_a_bad_task_1 = (spikes_ind_a_bad_task_1 - a_bad_task_1)
             
             spikes_to_plot_a_bad_task_1= np.append(spikes_to_plot_a_bad_task_1,spikes_to_save_a_bad_task_1)
             spikes_to_plot_a_bad_task_1_raster.append(spikes_to_save_a_bad_task_1)
             
     
-        for a_good_task_1 in entry_a_good_list:
+        for a_good_task_1 in aligned_a_good_task_1:
             period_min_a_bad = a_good_task_1 - 3000
             period_max_a_bad = a_good_task_1 + 3000
             spikes_ind_a_good = spikes_times[(spikes_times >= period_min_a_bad) & (spikes_times<=period_max_a_bad)]
-            index_a_good_task_1 = np.where(entry_a_good_list == a_good_task_1)[0]
-            other_a_good_events_task_1 = np.delete(entry_a_good_list,index_a_good_task_1)
-            #for event in other_a_good_events_task_1:
-                #if not event >= period_min_a_bad and event <=period_max_a_bad:
+  
             spikes_to_save_a_good_task_1 = (spikes_ind_a_good - a_good_task_1)
             spikes_to_plot_a_good_task_1= np.append(spikes_to_plot_a_good_task_1,spikes_to_save_a_good_task_1) 
             spikes_to_plot_a_good_task_1_raster.append(spikes_to_save_a_good_task_1)
             
-        for b_good_task_1 in entry_b_good_list:
+        for b_good_task_1 in aligned_b_good_task_1:
        
             period_min_b_good = b_good_task_1 - 3000
             period_max_b_good = b_good_task_1 + 3000
             spikes_ind_b_good = spikes_times[(spikes_times >= period_min_b_good) & (spikes_times<=period_max_b_good)]
-            index_b_good = np.where(entry_b_good_list == b_good_task_1)[0]
-            other_b_good_events_task_1 = np.delete(entry_b_good_list,index_b_good)
-            #for event in other_b_good_events_task_1:
-               # if not event >= period_min_b_good and event <=period_max_b_good:
+
             spikes_to_save_b_good_task_1 = (spikes_ind_b_good - b_good_task_1)
             spikes_to_plot_b_good_task_1 = np.append(spikes_to_plot_b_good_task_1,spikes_to_save_b_good_task_1)  
             spikes_to_plot_b_good_task_1_raster.append(spikes_to_save_b_good_task_1)
             
-        for b_bad_task_1 in entry_b_bad_list:
-          
+        for b_bad_task_1 in aligned_b_bad_task_1:
             period_min_b_bad = b_bad_task_1 - 3000
             period_max_b_bad = b_bad_task_1 + 3000
             spikes_ind_b_bad = spikes_times[(spikes_times >= period_min_b_bad) & (spikes_times<=period_max_b_bad)]
-            index_b_bad = np.where(entry_b_bad_list == b_bad_task_1)[0]
-            other_b_bad_events = np.delete(entry_b_bad_list,index_b_bad)
-            #for event in other_b_bad_events:
-                #if not event >= period_min_b_bad and event <=period_max_b_bad:
+
             spikes_to_save_b_bad_task_1 = (spikes_ind_b_bad - b_bad_task_1)
             spikes_to_plot_b_bad_task_1= np.append(spikes_to_plot_b_bad_task_1,spikes_to_save_b_bad_task_1)  
             spikes_to_plot_b_bad_task_1_raster.append(spikes_to_save_b_bad_task_1)
+            
     ################### Task 2
             
-        for a_bad_task_2 in entry_a_bad_task_2_list:
-     
+        for a_bad_task_2 in aligned_a_bad_task_2:
             period_min = a_bad_task_2 - 3000
             period_max = a_bad_task_2 + 3000
             spikes_ind_a_bad_task_2 = spikes_times[(spikes_times >= period_min) & (spikes_times<= period_max)]
-            index_a_bad = np.where(entry_a_bad_task_2_list ==a_bad_task_2)[0]
-            other_a_bad_events = np.delete(entry_a_bad_task_2_list,index_a_bad)
-            #for event in other_a_bad_events:
-                #if not event >= period_min and event <=period_max:
+ 
             spikes_to_save_a_bad_task_2 = (spikes_ind_a_bad_task_2 - a_bad_task_2)
             spikes_to_plot_a_bad_task_2= np.append(spikes_to_plot_a_bad_task_2,spikes_to_save_a_bad_task_2)
             spikes_to_plot_a_bad_task_2_raster.append(spikes_to_save_a_bad_task_2)
             
-        for a_good_task_2 in entry_a_good_task_2_list:
+        for a_good_task_2 in aligned_a_good_task_2:
             period_min_a_bad = a_good_task_2 - 3000
             period_max_a_bad = a_good_task_2 + 3000
             spikes_ind_a_good = spikes_times[(spikes_times >= period_min_a_bad) & (spikes_times<=period_max_a_bad)]
-            index_a_good = np.where(entry_a_good_task_2_list == a_good_task_2)[0]
-            other_a_good_events = np.delete(entry_a_good_task_2_list,index_a_good)
-            #for event in other_a_good_events:
-                #if not event >= period_min_a_bad and event <=period_max_a_bad:
+
             spikes_to_save_a_good_task_2= (spikes_ind_a_good - a_good_task_2)
             spikes_to_plot_a_good_task_2 = np.append(spikes_to_plot_a_good_task_2,spikes_to_save_a_good_task_2) 
             spikes_to_plot_a_good_task_2_raster.append(spikes_to_save_a_good_task_2)
             
             
-        for b_bad_task_2 in entry_b_bad_list_task_2:
+        for b_bad_task_2 in aligned_b_bad_task_2:
             period_min_b_bad = b_bad_task_2 - 3000
             period_max_b_bad = b_bad_task_2 + 3000
             spikes_ind_b_bad = spikes_times[(spikes_times >= (b_bad_task_2-6000)) & (spikes_times<=(b_bad_task_2+ 6000))]
-            index_b_bad = np.where(entry_b_bad_list_task_2 == b_bad_task_2)[0]
-            other_b_bad_events = np.delete(entry_b_bad_list_task_2,index_b_bad)
-            #for event in other_b_bad_events:
-               # if not event >= period_min_b_bad and event <=period_max_b_bad: 
+ 
             spikes_to_save_b_bad_task_2 = (spikes_ind_b_bad - b_bad_task_2)
             spikes_to_plot_b_bad_task_2= np.append(spikes_to_plot_b_bad_task_2,spikes_to_save_b_bad_task_2) 
             spikes_to_plot_b_bad_task_2_raster.append(spikes_to_save_b_bad_task_2)
     
     
-        for b_good in entry_b_good_list_task_2:
+        for b_good in aligned_b_good_task_2:
             period_min_b_good = b_good - 3000
             period_max_b_good = b_good + 3000
             spikes_ind_b_good = spikes_times[(spikes_times >= period_min_b_good) & (spikes_times<=period_max_b_good)]
-            index_b_good = np.where(entry_b_good_list_task_2 == b_good)[0]
-            other_b_good_events = np.delete(entry_b_good_list_task_2,index_b_good)
-            #for event in other_b_good_events:
-                #if not event >= period_min_b_good and event <=period_max_b_good:
+
             spikes_to_save_b_good_task_2 = (spikes_ind_b_good - b_good)
             spikes_to_plot_b_good_task_2= np.append(spikes_to_plot_b_good_task_2,spikes_to_save_b_good_task_2) 
             spikes_to_plot_b_good_task_2_raster.append(spikes_to_save_b_good_task_2)
         
-            ################### Task 3
+################### Task 3
             
-        for a_bad_task_3 in entry_a_bad_task_3_list:
+        for a_bad_task_3 in aligned_a_bad_task_3:
      
             period_min = a_bad_task_3 - 3000
             period_max = a_bad_task_3 + 3000
             spikes_ind_a_bad_task_2 = spikes_times[(spikes_times >= period_min) & (spikes_times<= period_max)]
-            index_a_bad = np.where(entry_a_bad_task_2_list ==a_bad_task_3)[0]
-            other_a_bad_events = np.delete(entry_a_bad_task_2_list,index_a_bad)
-            #for event in other_a_bad_events:
-                #if not event >= period_min and event <=period_max:
+
             spikes_to_save_a_bad_task_3 = (spikes_ind_a_bad_task_2 - a_bad_task_3)
             spikes_to_plot_a_bad_task_3 = np.append(spikes_to_plot_a_bad_task_3,spikes_to_save_a_bad_task_3)
             spikes_to_plot_a_bad_task_3_raster.append(spikes_to_save_a_bad_task_3)
             
-        for a_good_task_3 in entry_a_good_task_3_list:
+        for a_good_task_3 in aligned_a_good_task_3:
             period_min_a_bad = a_good_task_3 - 3000
             period_max_a_bad = a_good_task_3 + 3000
             spikes_ind_a_good = spikes_times[(spikes_times >= period_min_a_bad) & (spikes_times<=period_max_a_bad)]
-            index_a_good = np.where(entry_a_good_task_2_list == a_good_task_3)[0]
-            other_a_good_events = np.delete(entry_a_good_task_2_list,index_a_good)
-            #for event in other_a_good_events:
-                #if not event >= period_min_a_bad and event <=period_max_a_bad:
             spikes_to_save_a_good_task_3 = (spikes_ind_a_good - a_good_task_3)
             spikes_to_plot_a_good_task_3 = np.append(spikes_to_plot_a_good_task_3,spikes_to_save_a_good_task_3) 
             spikes_to_plot_a_good_task_3_raster.append(spikes_to_save_a_good_task_3)
             
             
-        for b_bad_task_3 in entry_b_bad_list_task_3:
+        for b_bad_task_3 in aligned_b_bad_task_3:
             period_min_b_bad = b_bad_task_3 - 3000
             period_max_b_bad = b_bad_task_3 + 3000
             spikes_ind_b_bad = spikes_times[(spikes_times >= (b_bad_task_3-6000)) & (spikes_times<=(b_bad_task_2+ 6000))]
-            index_b_bad = np.where(entry_b_bad_list_task_2 == b_bad_task_3)[0]
-            other_b_bad_events = np.delete(entry_b_bad_list_task_2,index_b_bad)
-            #for event in other_b_bad_events:
-               # if not event >= period_min_b_bad and event <=period_max_b_bad: 
             spikes_to_save_b_bad_task_3 = (spikes_ind_b_bad - b_bad_task_3)
             spikes_to_plot_b_bad_task_3= np.append(spikes_to_plot_b_bad_task_3,spikes_to_save_b_bad_task_3) 
             spikes_to_plot_b_bad_task_3_raster.append(spikes_to_save_b_bad_task_3)
     
     
-        for b_good in entry_b_good_list_task_3:
+        for b_good in aligned_b_good_task_3:
             period_min_b_good = b_good - 3000
             period_max_b_good = b_good + 3000
             spikes_ind_b_good = spikes_times[(spikes_times >= period_min_b_good) & (spikes_times<=period_max_b_good)]
-            index_b_good = np.where(entry_b_good_list_task_2 == b_good)[0]
-            other_b_good_events = np.delete(entry_b_good_list_task_2,index_b_good)
-            #for event in other_b_good_events:
-                #if not event >= period_min_b_good and event <=period_max_b_good:
+
             spikes_to_save_b_good_task_3 = (spikes_ind_b_good - b_good)
             spikes_to_plot_b_good_task_3= np.append(spikes_to_plot_b_good_task_3,spikes_to_save_b_good_task_3) 
             spikes_to_plot_b_good_task_3_raster.append(spikes_to_save_b_good_task_3)
-        
-        
-          
-        #spikes_to_plot_a_bad_task_1 = spikes_to_plot_a_bad_task_1/len(entry_a_bad_list)
-        #spikes_to_plot_a_good_task_1 = spikes_to_plot_a_good_task_1/len(entry_a_good_list)
-        #spikes_to_plot_b_good_task_1 = spikes_to_plot_b_good_task_1/len(entry_b_good_list)
-        #spikes_to_plot_b_bad_task_1 = spikes_to_plot_b_bad_task_1/len(entry_b_bad_list)
-        
-        #spikes_to_plot_a_bad_task_2 = spikes_to_plot_a_bad_task_2/len(entry_a_bad_task_2_list)
-        #spikes_to_plot_a_good_task_2 = spikes_to_plot_a_good_task_2/len(entry_a_good_task_2_list)
-        #spikes_to_plot_b_bad_task_2 = spikes_to_plot_b_bad_task_2/len(entry_b_bad_list_task_2)
-        #spikes_to_plot_b_good_task_2 = spikes_to_plot_b_good_task_2/len(entry_b_good_list_task_2)
+
         
         #Raster Plot  Task_1
         all_spikes_raster_plot_task_1 = spikes_to_plot_a_bad_task_1_raster + spikes_to_plot_a_good_task_1_raster  +spikes_to_plot_b_bad_task_1_raster +spikes_to_plot_b_good_task_1_raster
-        for ith, trial in enumerate(all_spikes_raster_plot_task_1):
-            axes[3][i].vlines(trial, ith + .5, ith + 1.5)
+        for ith, trial in enumerate(all_spikes_raster_plot_task_1):           
+            if i < group_1:
+                pl.figure(2)
+                axes_8[0][i].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_1 and i < group_2:
+                pl.figure(4)
+                axes_16[0][i-group_1].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_2 and i < group_3: 
+                pl.figure(6)
+                axes_24[0][i-group_2].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_3 and i < group_4: 
+                pl.figure(8)
+                axes_36[0][i-group_3].vlines(trial, ith + .5, ith + 1.5)
+           
             pl.ylim(.5, len(all_spikes_raster_plot_task_1) + .5)
             pl.xlim(-1500, +1500)
+            
         x = [-1500, 1500]
         length_block_1 = len(spikes_to_plot_a_bad_task_1_raster)
         length_block_2 = length_block_1 + len(spikes_to_plot_a_good_task_1_raster)
@@ -639,43 +672,120 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
         t2 = [length_block_2, length_block_2]
         t3 = [length_block_3,length_block_3]
         t4 = [length_block_4,length_block_4 ]
-        axes[3][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-        axes[3][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-        axes[3][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-        axes[3][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
-    
-        axes[3][0].set(ylabel ='Trial #')
-        axes[3][i].set_title('Task 1')
+        
+        if i < group_1:
+            pl.figure(2)
+            axes_8[0][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_8[0][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_8[0][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_8[0][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_8[0][0].set(ylabel ='Trial #')
+            axes_8[0][i].set_title('{}'.format(cluster))
+          
+        elif i >= group_1 and i < group_2:
+            pl.figure(4)
+            axes_16[0][i-group_1].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_16[0][i-group_1].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_16[0][i-group_1].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_16[0][i-group_1].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_16[0][0].set(ylabel ='Trial #')
+            axes_16[0][i-group_1].set_title('{}'.format(cluster))
             
-#        #Raster Plot  Task_2  
-#        all_spikes_raster_plot_task_2 = spikes_to_plot_a_bad_task_2_raster + spikes_to_plot_a_good_task_2_raster  +spikes_to_plot_b_bad_task_2_raster +spikes_to_plot_b_good_task_2_raster
-#        for ith, trial in enumerate(all_spikes_raster_plot_task_2):
-#            axes[4][i].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
-#            pl.ylim(.5, len(all_spikes_raster_plot_task_2) + .5)
-#            pl.xlim(-1500, +1500)
-#            axes[4][i].set(xlabel='Time (s)')
-#            axes[4][0].set(ylabel='Trial #')
-#            axes[4][i].set_title('Task 1')
-#          
-#        length_block_1_task2 = len(spikes_to_plot_a_bad_task_2_raster)
-#        length_block_2_task_2 = length_block_1_task2 + len(spikes_to_plot_a_good_task_2_raster)
-#        length_block_3_task_2 = length_block_2_task_2 + len(spikes_to_plot_b_bad_task_2_raster)
-#        length_block_4_task_2 = length_block_3_task_2 + len(spikes_to_plot_b_good_task_2_raster)
-#        t0= [0, 0]
-#        t1_task_2 = [length_block_1_task2, length_block_1_task2]
-#        t2_task_2 = [length_block_2_task_2, length_block_2_task_2]
-#        t3_task_2 = [length_block_3_task_2,length_block_3_task_2]
-#        t4_task_2 = [length_block_4_task_2,length_block_4_task_2]
-#        axes[4][i].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
-#        axes[4][i].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
-#        axes[4][i].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
-#        axes[4][i].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
-#        axes[4][0].set(ylabel ='Trial #')   
-#        axes[4][i].set_title('Task 2')
+        elif i >= group_2 and i < group_3:
+            pl.figure(6) 
+            axes_24[0][i-group_2].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_24[0][i-group_2].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_24[0][i-group_2].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_24[0][i-group_2].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_24[0][0].set(ylabel ='Trial #')
+            axes_24[0][i-group_2].set_title('{}'.format(cluster))
+        elif i >= group_3 and i < group_4:
+            pl.figure(8) 
+            axes_36[0][i-group_3].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_36[0][i-group_3].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_36[0][i-group_3].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_36[0][i-group_3].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_36[0][0].set(ylabel ='Trial #')
+            axes_36[0][i-group_3].set_title('{}'.format(cluster))
+            
+            
+        
+            
+        #Raster Plot  Task_2  
+        all_spikes_raster_plot_task_2 = spikes_to_plot_a_bad_task_2_raster + spikes_to_plot_a_good_task_2_raster  +spikes_to_plot_b_bad_task_2_raster +spikes_to_plot_b_good_task_2_raster
+        for ith, trial in enumerate(all_spikes_raster_plot_task_2):
+            if i < group_1:
+                pl.figure(2)
+                axes_8[1][i].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
+            elif i >= group_1 and i < group_2:
+                pl.figure(4)
+                axes_16[1][i-group_1].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
+            elif i >= group_2 and i < group_3: 
+                pl.figure(6)
+                axes_24[1][i-group_2].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
+            elif i >= group_3 and i < group_4: 
+                pl.figure(8)
+                axes_36[1][i-group_3].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
+
+            pl.ylim(.5, len(all_spikes_raster_plot_task_2) + .5)
+            pl.xlim(-1500, +1500)
+
+        length_block_1_task2 = len(spikes_to_plot_a_bad_task_2_raster)
+        length_block_2_task_2 = length_block_1_task2 + len(spikes_to_plot_a_good_task_2_raster)
+        length_block_3_task_2 = length_block_2_task_2 + len(spikes_to_plot_b_bad_task_2_raster)
+        length_block_4_task_2 = length_block_3_task_2 + len(spikes_to_plot_b_good_task_2_raster)
+        t0 = [0, 0]
+        t1_task_2 = [length_block_1_task2, length_block_1_task2]
+        t2_task_2 = [length_block_2_task_2, length_block_2_task_2]
+        t3_task_2 = [length_block_3_task_2,length_block_3_task_2]
+        t4_task_2 = [length_block_4_task_2,length_block_4_task_2]
+        
+        if i < group_1:
+            pl.figure(2)
+            axes_8[1][i].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+            axes_8[1][i].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            axes_8[1][i].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+            axes_8[1][i].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            axes_8[1][0].set(ylabel ='Trial #')   
+        elif i >= group_1 and i < group_2:
+            pl.figure(4)
+            axes_16[1][i-group_1].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+            axes_16[1][i-group_1].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            axes_16[1][i-group_1].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+            axes_16[1][i-group_1].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            axes_16[1][0].set(ylabel ='Trial #')   
+            
+        elif i >= group_2 and i < group_3: 
+            pl.figure(6) 
+            axes_24[1][i-group_2].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+            axes_24[1][i-group_2].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            axes_24[1][i-group_2].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+            axes_24[1][i-group_2].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            axes_24[1][0].set(ylabel ='Trial #')
+            
+        elif i >= group_3 and i < group_4: 
+            pl.figure(8) 
+            axes_36[1][i-group_3].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+            axes_36[1][i-group_3].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            axes_36[1][i-group_3].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+            axes_36[1][i-group_3].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            axes_36[1][0].set(ylabel ='Trial #')
         
         all_spikes_raster_plot_task_3 = spikes_to_plot_a_bad_task_3_raster + spikes_to_plot_a_good_task_3_raster  +spikes_to_plot_b_bad_task_3_raster +spikes_to_plot_b_good_task_3_raster
         for ith, trial in enumerate(all_spikes_raster_plot_task_3):
-            axes[4][i].vlines(trial, ith + .5, ith + 1.5)
+            if i < group_1:
+                pl.figure(2)
+                axes_8[2][i].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_1 and i < group_2:
+                pl.figure(4)
+                axes_16[2][i-group_1].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_2 and i < group_3: 
+                pl.figure(6)
+                axes_24[2][i-group_2].vlines(trial, ith + .5, ith + 1.5)
+            elif i >= group_3 and i < group_4: 
+                pl.figure(8)
+                axes_36[2][i-group_3].vlines(trial, ith + .5, ith + 1.5)
+                
             pl.ylim(.5, len(all_spikes_raster_plot_task_3) + .5)
             pl.xlim(-1500, +1500)
         x = [-1500, 1500]
@@ -688,128 +798,345 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session):
         t2 = [length_block_2, length_block_2]
         t3 = [length_block_3,length_block_3]
         t4 = [length_block_4,length_block_4 ]
-        axes[4][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-        axes[4][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-        axes[4][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-        axes[4][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
         
-        axes[4][i].set(xlabel ='Time (s)')
-        axes[4][0].set(ylabel ='Trial #')
-        axes[4][i].set_title('Task 3')
+        if i < group_1:
+            pl.figure(2)
+            axes_8[2][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_8[2][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_8[2][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_8[2][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_8[2][i].set(xlabel ='Time (ms)')
+            axes_8[2][0].set(ylabel ='Trial #')
+        elif i >= group_1 and i < group_2:
+            pl.figure(4)
+            axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_16[2][i-group_1].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_16[2][i-group_1].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_16[2][i-group_1].set(xlabel ='Time (ms)')
+            axes_16[2][0].set(ylabel ='Trial #')
             
+        elif i >= group_2 and i < group_3: 
+            pl.figure(6) 
+            axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_24[2][i-group_2].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_24[2][i-group_2].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_24[2][i-group_2].set(xlabel ='Time (ms)')
+            axes_24[2][0].set(ylabel ='Trial #')
+                   
+        elif i >= group_3 and i < group_4: 
+            pl.figure(8) 
+            axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+            axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            axes_36[2][i-group_3].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+            axes_36[2][i-group_3].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            axes_36[2][i-group_3].set(xlabel ='Time (s)')
+            axes_36[2][0].set(ylabel ='Trial #')
+          
+        
         bin_width_ms = 1
         smooth_sd_ms = 100
         sns.set(style="white", palette="muted", color_codes=True)
         trial_duration = 12000
         bin_edges_trial = np.arange(-6000,trial_duration, bin_width_ms)
-        
-        
+
         #Plotting A Good Task 1
         
         spikes_to_plot_a_good_task_1 = spikes_to_plot_a_good_task_1[~np.isnan(spikes_to_plot_a_good_task_1)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_good_task_1, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_good_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[0][i].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[0][i].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[0][i- group_1].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[0][i-group_2].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[0][i-group_3].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+        
     
         #Plotting A Bad Task 1 
+
         spikes_to_plot_a_bad_task_1 = spikes_to_plot_a_bad_task_1[~np.isnan(spikes_to_plot_a_bad_task_1)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_bad_task_1, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_bad_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[0][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'gray', label='Poke A Bad Task 1')
-        
+        if i < group_1:
+            pl.figure(1)
+            ax_8[0][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'gray', label='Poke A Bad Task 1')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[0][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'gray', label='Poke A Bad Task 1')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[0][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'gray', label='Poke A Bad Task 1')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[0][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'gray', label='Poke A Bad Task 1')
+
+
         #Plotting B Good Task 1
+
         spikes_to_plot_b_good_task_1 = spikes_to_plot_b_good_task_1[~np.isnan(spikes_to_plot_b_good_task_1)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_good_task_1, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_good_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[0][i].plot(bin_edges_trial[:-1], normalised_task, color = 'navy', label='Poke B Good Task 1')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[0][i].plot(bin_edges_trial[:-1], normalised_task, color = 'navy', label='Poke B Good Task 1')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[0][i-group_1].plot(bin_edges_trial[:-1], normalised_task, color = 'navy', label='Poke B Good Task 1')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[0][i-group_2].plot(bin_edges_trial[:-1], normalised_task, color = 'navy', label='Poke B Good Task 1')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[0][i-group_3].plot(bin_edges_trial[:-1], normalised_task, color = 'navy', label='Poke B Good Task 1')
+
         
         #Plotting B Good Task 1
         spikes_to_plot_b_bad_task_1 = spikes_to_plot_b_bad_task_1[~np.isnan(spikes_to_plot_b_bad_task_1)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_bad_task_1, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_bad_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[0][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke B Bad Task 1')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[0][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke B Bad Task 1')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[0][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke B Bad Task 1')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[0][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke B Bad Task 1')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[0][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke B Bad Task 1')
+
     
         #Plotting A Good Task 2 
         spikes_to_plot_a_good_task_2 = spikes_to_plot_a_good_task_2[~np.isnan(spikes_to_plot_a_good_task_2)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_good_task_2, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_good_task_2_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+        elif i >= group_2 and i < group_3: 
+            pl.figure(5)
+            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+        elif i >= group_3 and i < group_4: 
+            pl.figure(7)
+            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+
         
         #Plotting A Bad Task 2 
         spikes_to_plot_a_bad_task_2 = spikes_to_plot_a_bad_task_2[~np.isnan(spikes_to_plot_a_bad_task_2)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_bad_task_2, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_bad_task_2_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+        elif  i >= group_2 and i < group_3: 
+            pl.figure(5)
+            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+        elif  i >= group_3 and i < group_4: 
+            pl.figure(7)
+            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+
     
         #Plotting B Good Task 2 
         spikes_to_plot_b_good_task_2 = spikes_to_plot_b_good_task_2[~np.isnan(spikes_to_plot_b_good_task_2)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_good_task_2, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_good_list_task_2)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+        elif i >= group_2 and i < group_3: 
+            pl.figure(5)
+            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+        elif i >= group_3 and i < group_4: 
+            pl.figure(7)
+            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+
+
         
         #Plotting B Bad Task 2 
         spikes_to_plot_b_bad_task_2 = spikes_to_plot_b_bad_task_2[~np.isnan(spikes_to_plot_b_bad_task_2)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_bad_task_2, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_bad_list_task_2)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
     
         #Plotting A Good Task 3
         spikes_to_plot_a_good_task_3 = spikes_to_plot_a_good_task_3[~np.isnan(spikes_to_plot_a_good_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_good_task_3, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_good_task_3_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)        
+            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)        
+            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+
         
         #Plotting A Bad Task 3
         spikes_to_plot_a_bad_task_3 = spikes_to_plot_a_bad_task_3[~np.isnan(spikes_to_plot_a_bad_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_bad_task_3, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_a_bad_task_3_list)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+        if i < group_1:
+            pl.figure(1)
+            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+
     
         #Plotting B Good Task 3 
         spikes_to_plot_b_good_task_3 = spikes_to_plot_b_good_task_3[~np.isnan(spikes_to_plot_b_good_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_good_task_3, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_good_list_task_3)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
-        
+        if i < group_1:
+            pl.figure(1)
+            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+        elif i >= group_2 and i < group_3:
+            pl.figure(5)
+            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+        elif i >= group_3 and i < group_4:
+            pl.figure(7)
+            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+
         #Plotting B Bad Task 3 
         spikes_to_plot_b_bad_task_3 = spikes_to_plot_b_bad_task_3[~np.isnan(spikes_to_plot_b_bad_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_bad_task_3, bins= bin_edges_trial)# histogram per second
         hist_task = hist_task/len(entry_b_bad_list_task_3)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
-        axes[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
-    
-        pl.xlim(-1500, +1500)
-        axes[1][0].legend(fontsize = 'xx-small')
-        axes[0][0].legend(fontsize = 'xx-small')
-        axes[0][i].set_title('{}'.format(cluster))
-        #axes[0][i].set_xticklabels(['-1', 'Poke In', '1'])
-        axes[0][0].set(ylabel='Firing Rate')
-        axes[1][0].set(ylabel='Firing Rate')
-        plt.tight_layout()
+        if i < group_1:
+            pl.figure(1)
+            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+        elif i >= group_1 and i < group_2:
+            pl.figure(3)
+            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+        elif i >= group_2 and i < group_3: 
+            pl.figure(5)
+            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+        elif i >= group_3 and i < group_4: 
+            pl.figure(7)
+            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+
         
-    #return poke_A_list
+                
+        pl.xlim(-1500, +1500)
+        
+        if i < group_1:
+
+            ax_8[1][0].legend(fontsize = 'xx-small')
+            ax_8[0][0].legend(fontsize = 'xx-small')
+            ax_8[2][0].legend(fontsize = 'xx-small')
+            ax_8[0][i].set_title('{}'.format(cluster))
+            ax_8[0][0].set(ylabel='Firing Rate')
+            ax_8[1][0].set(ylabel='Firing Rate')
+            ax_8[2][0].set(ylabel='Firing Rate')
+            ax_8[2][i].set(xlabel= 'Time (ms)')
+        elif i >= group_1 and i < group_2:
+
+            ax_16[1][0].legend(fontsize = 'xx-small')
+            ax_16[0][0].legend(fontsize = 'xx-small')
+            ax_16[2][0].legend(fontsize = 'xx-small')
+            ax_16[0][i-group_1].set_title('{}'.format(cluster))            
+            ax_16[0][0].set(ylabel='Firing Rate')
+            ax_16[1][0].set(ylabel='Firing Rate')
+            ax_16[2][0].set(ylabel='Firing Rate')
+            ax_16[2][i-group_1].set(xlabel= 'Time (ms)')
+        elif i >= group_2 and i < group_3:     
+ 
+            ax_24[1][0].legend(fontsize = 'xx-small')
+            ax_24[0][0].legend(fontsize = 'xx-small')
+            ax_24[2][0].legend(fontsize = 'xx-small')
+            ax_24[0][i-group_2].set_title('{}'.format(cluster))
+            ax_24[0][0].set(ylabel='Firing Rate')
+            ax_24[1][0].set(ylabel='Firing Rate')
+            ax_24[2][0].set(ylabel='Firing Rate')
+            ax_24[2][i-group_2].set(xlabel= 'Time (ms)')
+            
+            
+#    if plot == 'Choice':        
+#        fig_clusters_8.savefig(path.join(outpath, '%s Choice Histograms_G1.png' %beh_session.datetime))
+#        fig_raster_8.savefig(path.join(outpath,'%s Choice Raster_G1.png' %beh_session.datetime ))
+#        fig_clusters_16.savefig(path.join(outpath,'%s Choice Histograms_G2.png' %beh_session.datetime))
+#        fig_raster_16.savefig(path.join(outpath,'%s Choice Raster_G2.png' %beh_session.datetime))
+#        fig_clusters_24.savefig(path.join(outpath,'%s Choice Histograms_G3.png' %beh_session.datetime))
+#        fig_raster_24.savefig(path.join(outpath, '%s Choice Raster_G3.png'%beh_session.datetime))
+#        fig_clusters_36.savefig(path.join(outpath,'%s Choice Histograms_G4.png' %beh_session.datetime))
+#        fig_raster_36.savefig(path.join(outpath, '%s Choice Raster_G4.png' %beh_session.datetime ))
+#    elif plot == 'Poke':
+#        fig_clusters_8.savefig(path.join(outpath, '%s Poke Histograms_G1.png' %beh_session.datetime))
+#        fig_raster_8.savefig(path.join(outpath,'%s Poke Raster_G1.png' %beh_session.datetime ))
+#        fig_clusters_16.savefig(path.join(outpath,'%s Poke Histograms_G2.png' %beh_session.datetime))
+#        fig_raster_16.savefig(path.join(outpath,'%s Poke Raster_G2.png' %beh_session.datetime))
+#        fig_clusters_24.savefig(path.join(outpath,'%s Poke Histograms_G3.png' %beh_session.datetime))
+#        fig_raster_24.savefig(path.join(outpath, '%s Poke Raster_G3.png'%beh_session.datetime))
+#        fig_clusters_36.savefig(path.join(outpath,'%s Poke Histograms_G4.png' %beh_session.datetime))
+#        fig_raster_36.savefig(path.join(outpath, '%s Poke Raster_G4.png' %beh_session.datetime ))
+
+    
 
 # Session Plot
-def session_spikes_vs_trials_plot(ephys_session, beh_session):
+def session_spikes_vs_trials_plot(ephys_session,beh_session, cluster):
     bin_width_ms = 1000
     smooth_sd_ms = 20000
     pyControl_choice = [event.time for event in beh_session.events if event.name in ['choice_state']]
     pyControl_choice = np.array(pyControl_choice)
-
+    spikes_cluster_8 = ephys_session.loc[ephys_session['spike_cluster'] == cluster]
     session_duration_ms = int(np.nanmax(ephys_session.time))- int(np.nanmin(ephys_session.time))
     bin_edges = np.arange(0,session_duration_ms, bin_width_ms)
-    spikes_cluster_8 = ephys_session.loc[ephys_session['spike_cluster'] == 100]
+    spikes_cluster_8 = ephys_session.loc[ephys_session['spike_cluster'] == 45]
     spikes_times_8 = np.array(spikes_cluster_8['time'])
     spikes_times_8 = spikes_times_8[~np.isnan(spikes_times_8)]
     hist,edges = np.histogram(spikes_times_8, bins= bin_edges)# histogram per second
@@ -823,29 +1150,6 @@ def session_spikes_vs_trials_plot(ephys_session, beh_session):
     pl.xlabel('Time (ms)')
     pl.ylabel('Smoothed Firing Rate')
     pl.legend()
-
-
-
-    #mid = (entry+out)/2
-    #spikes_to_save = (spikes_ind - out)/1000
-    #spikes_to_plot= np.append(spikes_to_plot,spikes_to_save)
-    #firing_rate_state = (len(spikes_ind)/(out-entry))
-    #hz_firing_rate_state = firing_rate_state*1000
-    #print(firing_rate_state)
-    #firing_rate_np = np.append(firing_rate_np,hz_firing_rate_state)
-    #mean_firing_rate = np.mean(firing_rate_np)
-    #print(mean_firing_rate)
-    #std = np.std(firing_rate_np)
-    #labels = ('A', 'S')
-    #to_plot = [mean_firing_rate, hz_firing_rate]
-    #axes[i].bar(labels, to_plot,color=('olive', 'salmon'))
-    #spikes_to_save = (spikes_ind - entry)/1000
-    #spikes_to_plot= np.append(spikes_to_plot,spikes_to_save)
-       
-    #sns.distplot(spikes_to_plot, hist=True, bins = 360,color="g", kde = False, ax=axes[i])
-    #n,bins,patches = axes[i].hist(spikes_to_plot, bins=36)
-
-    
 
 
 
