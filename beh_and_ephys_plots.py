@@ -80,7 +80,7 @@ def change_block_firing_rates(ephys_session, beh_session):
     
     
 def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot):
-    plot = 'Choice' #Specify which plot  #'Choice if want a plot to align at initiation, 'Poke' if want a plot aligned at A/B poke
+    #plot = 'Choice' #Specify which plot  #'Choice if want a plot to align at initiation, 'Poke' if want a plot aligned at A/B poke
     
     outpath = '/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Ephys 3 Tasks Processed Spikes/m481'
     sns.set()
@@ -425,7 +425,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         aligned_b_bad_task_3 = b_bad_choice_time_task_3
         
     elif plot == 'Poke':
-        entry_a_good_list = entry_a_good_list
+        aligned_a_good_task_1 = entry_a_good_list
         aligned_a_bad_task_1 = entry_a_bad_list
         aligned_b_good_task_1 = entry_b_good_list
         aligned_b_bad_task_1 = entry_b_bad_list
@@ -851,8 +851,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
             pl.figure(1)
             ax_8[0][i].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
         elif i >= group_1 and i < group_2:
-            pl.figure(3)
-            ax_16[0][i- group_1].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
+            ax_16[0][i- group_1].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1') 
         elif i >= group_2 and i < group_3:
             pl.figure(5)
             ax_24[0][i-group_2].plot(bin_edges_trial[:-1], normalised_task, color = 'black', label='Poke A Good Task 1')
@@ -927,18 +926,38 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 2')  
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke A Good Task 2')  
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke A Good Task 2')
         elif i >= group_2 and i < group_3: 
             pl.figure(5)
-            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke A Good Task 2')
         elif i >= group_3 and i < group_4: 
             pl.figure(7)
-            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke A Good Task 2')
 
-        
+                
         #Plotting A Bad Task 2 
         spikes_to_plot_a_bad_task_2 = spikes_to_plot_a_bad_task_2[~np.isnan(spikes_to_plot_a_bad_task_2)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_bad_task_2, bins= bin_edges_trial)# histogram per second
@@ -946,16 +965,42 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'pink', label='Poke A Bad Task 2')
+                
+
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'pink', label='Poke A Bad Task 2')
+
         elif  i >= group_2 and i < group_3: 
             pl.figure(5)
-            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'pink', label='Poke A Bad Task 2')
+
         elif  i >= group_3 and i < group_4: 
             pl.figure(7)
-            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            if poke_A_task_2 == poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 2')
+            elif poke_A_task_2 == poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 2')
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'pink', label='Poke A Bad Task 2')
+
+
 
     
         #Plotting B Good Task 2 
@@ -965,18 +1010,36 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke B Good Task 2')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke B Good Task 2')
         elif i >= group_2 and i < group_3: 
             pl.figure(5)
-            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke B Good Task 2')
         elif i >= group_3 and i < group_4: 
             pl.figure(7)
-            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
-
-
+            if poke_B_task_2 == poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "red", label='Poke B Good Task 2')
         
         #Plotting B Bad Task 2 
         spikes_to_plot_b_bad_task_2 = spikes_to_plot_b_bad_task_2[~np.isnan(spikes_to_plot_b_bad_task_2)]
@@ -985,17 +1048,36 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_8[1][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "pink", label='Poke B Bad Task 2')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_16[1][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "pink", label='Poke B Bad Task 2')
         elif i >= group_2 and i < group_3:
             pl.figure(5)
-            ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            if poke_B_task_2 == poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_24[1][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "pink", label='Poke B Bad Task 2')
         elif i >= group_3 and i < group_4:
             pl.figure(7)
-            ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
-    
+            if poke_B_task_2 == poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 2')
+            elif poke_B_task_2 == poke_A:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "gret", label='Poke B Bad Task 2')
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                ax_36[1][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "pink", label='Poke B Bad Task 2')
         #Plotting A Good Task 3
         spikes_to_plot_a_good_task_3 = spikes_to_plot_a_good_task_3[~np.isnan(spikes_to_plot_a_good_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_good_task_3, bins= bin_edges_trial)# histogram per second
@@ -1003,18 +1085,37 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke A Good Task 3')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke A Good Task 3')
         elif i >= group_2 and i < group_3:
             pl.figure(5)        
-            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke A Good Task 3')
         elif i >= group_3 and i < group_4:
-            pl.figure(7)        
-            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
-
-        
+            pl.figure(7)
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke A Good Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke A Good Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke A Good Task 3')
+                
         #Plotting A Bad Task 3
         spikes_to_plot_a_bad_task_3 = spikes_to_plot_a_bad_task_3[~np.isnan(spikes_to_plot_a_bad_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_a_bad_task_3, bins= bin_edges_trial)# histogram per second
@@ -1022,17 +1123,36 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'lightyellow', label='Poke A Bad Task 3')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 3') 
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'lightyellow', label='Poke A Bad Task 3') 
         elif i >= group_2 and i < group_3:
             pl.figure(5)
-            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'lightyellow', label='Poke A Bad Task 3')
         elif i >= group_3 and i < group_4:
             pl.figure(7)
-            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
-
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'grey', label='Poke A Bad Task 3')
+            elif poke_A_task_3 == poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'skyblue', label='Poke A Bad Task 3')
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--', color = 'lightyellow', label='Poke A Bad Task 3')
     
         #Plotting B Good Task 3 
         spikes_to_plot_b_good_task_3 = spikes_to_plot_b_good_task_3[~np.isnan(spikes_to_plot_b_good_task_3)]
@@ -1041,17 +1161,37 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke B Good Task 3')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke B Good Task 3')
         elif i >= group_2 and i < group_3:
             pl.figure(5)
-            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke B Good Task 3')
         elif i >= group_3 and i < group_4:
             pl.figure(7)
-            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
-
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "navy", label='Poke B Good Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "black", label='Poke B Good Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,color = "yellow", label='Poke B Good Task 3')
+                
         #Plotting B Bad Task 3 
         spikes_to_plot_b_bad_task_3 = spikes_to_plot_b_bad_task_3[~np.isnan(spikes_to_plot_b_bad_task_3)]
         hist_task,edges_task = np.histogram(spikes_to_plot_b_bad_task_3, bins= bin_edges_trial)# histogram per second
@@ -1059,17 +1199,36 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms/bin_width_ms)
         if i < group_1:
             pl.figure(1)
-            ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_8[2][i].plot(bin_edges_trial[:-1], normalised_task,'--',color = "lightyellow", label='Poke B Bad Task 3')
         elif i >= group_1 and i < group_2:
             pl.figure(3)
-            ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_16[2][i-group_1].plot(bin_edges_trial[:-1], normalised_task,'--',color = "lightyellow", label='Poke B Bad Task 3')
         elif i >= group_2 and i < group_3: 
             pl.figure(5)
-            ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_24[2][i-group_2].plot(bin_edges_trial[:-1], normalised_task,'--',color = "lightyellow", label='Poke B Bad Task 3') 
         elif i >= group_3 and i < group_4: 
             pl.figure(7)
-            ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
-
+            if poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "skyblue", label='Poke B Bad Task 3')
+            elif poke_B_task_3 == poke_A:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "grey", label='Poke B Bad Task 3')
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                ax_36[2][i-group_3].plot(bin_edges_trial[:-1], normalised_task,'--',color = "lightyellow", label='Poke B Bad Task 3')
         
                 
         pl.xlim(-1500, +1500)
