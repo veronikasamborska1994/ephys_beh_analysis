@@ -155,9 +155,9 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     events_and_times = [[event.name, event.time] for event in beh_session.events if event.name in ['choice_state',poke_B, poke_A, poke_A_task_2,poke_A_task_3, poke_B_task_2,poke_B_task_3]]
     
     task_1 = np.where(task_non_forced == 1)[0]
-    task_2 = np.where(task_non_forced == 2)[0]
+    task_2 = np.where(task_non_forced == 2)[0] 
     task_3 = np.where(task_non_forced == 3)[0]
-    
+
 
     poke_B_list = []
     poke_A_list = []
@@ -177,7 +177,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
                 if choice_state == True:
                     poke_A_list.append(event[1])
                     choice_state = False
-        elif choice_state_count <= (len(task_1) +len(task_2)):
+        elif choice_state_count > len(task_1) and choice_state_count <= (len(task_1) +len(task_2)):
             if poke_B_task_2 in event:
                 if choice_state == True:
                     poke_B_list.append(event[1])
@@ -186,7 +186,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
                 if choice_state == True:
                     poke_A_list.append(event[1])
                     choice_state = False     
-        elif choice_state_count <= (len(task_2) + len(task_3)):
+        elif choice_state_count > (len(task_1) +len(task_2)) and choice_state_count <= (len(task_1) + len(task_2) + len(task_3)):
             if poke_B_task_3 in event:
                 if choice_state == True:
                     poke_B_list.append(event[1])
@@ -195,7 +195,6 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
                 if choice_state == True:
                     poke_A_list.append(event[1])
                     choice_state = False
-
     #Task 1 
 
     state_1 = state_non_forced[:len(task_1)]
@@ -211,13 +210,11 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     #Task 3 Time Events
     
     state_3 = state_non_forced[len(task_1) + len(task_2):]
-  
     state_t3_a_good = np.where(state_3 == 1)[0]
     state_t3_b_good = np.where(state_3 == 0)[0]
 
     #For Choice State Calculations
     state_t3_a_good = np.where(state_3 == 1)[0]
-
     state_t3_b_good = np.where(state_3 == 0)[0]
 
     trial_сhoice_state_task_1 = pyControl_choice[:len(task_1)]
@@ -252,14 +249,11 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     ITI_task_2_b_good =ITI_task_2[state_t2_b_good]
 
     ITI_task_3 = ITI_non_forced[len(task_1) + len(task_2):]
-
     ITI_task_3_a_good  = ITI_task_3[state_t3_a_good]
-    print(trial_сhoice_state_task_3_a_good)
-    print(ITI_task_3_a_good)
-
     ITI_task_3_b_good  = ITI_task_3[state_t3_b_good]
-    #print(trial_сhoice_state_task_1_a_good)
 
+    print(ITI_task_3_b_good)
+    print(trial_сhoice_state_task_3_b_good)
   
     # Task one
     entry_a_good_list = []
@@ -358,7 +352,6 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     for start_trial_task_3,end_trial_task_3 in zip(trial_сhoice_state_task_3_b_good, ITI_task_3_b_good):
         for entry in poke_A_list:
             if (entry >= start_trial_task_3 and entry <= end_trial_task_3):
-                print(1)
                 entry_a_bad_task_3_list.append(entry)
                 a_bad_choice_time_task_3.append(start_trial_task_3)
         for out in pyControl_a_poke_exit:
@@ -392,7 +385,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     entry_a_bad_task_3_list = np.array(entry_a_bad_task_3_list)
     entry_a_good_task_3_list =  np.array(entry_a_good_task_3_list)
     entry_b_bad_list_task_3 = np.array(entry_b_bad_list_task_3)     
-    print(entry_b_good_list_task_3)
+
     
     a_good_choice_time_task_3 = np.array(a_good_choice_time_task_3)
     a_good_choice_time_task_3 = np.unique(a_good_choice_time_task_3)
