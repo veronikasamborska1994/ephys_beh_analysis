@@ -861,7 +861,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
           
         
         bin_width_ms = 1
-        smooth_sd_ms = 100
+        smooth_sd_ms = 50
         sns.set(style="white", palette="muted", color_codes=True)
         trial_duration = 12000
         bin_edges_trial = np.arange(-6000,trial_duration, bin_width_ms)
