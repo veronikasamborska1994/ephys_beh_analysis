@@ -211,8 +211,8 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     poke_B_exit = 'poke_'+str(beh_session.trial_data['poke_B'][0]) + '_out'
     poke_B_task_2  = 'poke_'+str(beh_session.trial_data['poke_B'][task_2_change[0]])
     poke_B_task_3 = 'poke_'+str(beh_session.trial_data['poke_B'][task_3_change[0]])
+    
     #Trial Initiation Timestamps
-
     pyControl_choice = [event.time for event in beh_session.events if event.name in ['choice_state']]
     pyControl_choice = np.array(pyControl_choice)
 
@@ -242,10 +242,10 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     # Pokes A, B and I 
     a_pokes = np.unique(beh_session.trial_data['poke_A'])
     print('These are A pokes')
-    print(a_pokes)
+    print(poke_A, poke_A_task_2, poke_A_task_3)
     b_pokes = np.unique(beh_session.trial_data['poke_B'])
     print('These are B pokes')
-    print(b_pokes)
+    print(poke_B, poke_B_task_2, poke_B_task_3)
     i_pokes = np.unique(configuration)
     print('These are I pokes')
     configuration = beh_session.trial_data['configuration_i']
@@ -255,7 +255,6 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
     print(i_poke_task_1, i_poke_task_2, i_poke_task_3)
     all_pokes = np.concatenate([a_pokes, b_pokes, i_pokes])
     all_pokes = np.unique(all_pokes)
-
 
     #Events for Pokes Irrespective of Meaning
     pokes = {}
@@ -824,7 +823,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
                 axes_36[1][i-group_3].vlines(trial, ith + .5, ith + 1.5, label = 'Task 2')
 
             pl.ylim(.5, len(all_spikes_raster_plot_task_2) + .5)
-            pl.xlim(-1500, +1500)
+            pl.xlim(-window_to_plot, +window_to_plot)
 
         length_block_1_task2 = len(spikes_to_plot_a_bad_task_2_raster)
         length_block_2_task_2 = length_block_1_task2 + len(spikes_to_plot_a_good_task_2_raster)
@@ -946,8 +945,8 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
                 axes_36[2][i-group_3].vlines(trial, ith + .5, ith + 1.5)
                 
             pl.ylim(.5, len(all_spikes_raster_plot_task_3) + .5)
-            pl.xlim(-1500, +1500)
-        x = [-1500, 1500]
+            pl.xlim(-5000, +5000)
+        
         length_block_1 = len(spikes_to_plot_a_bad_task_3_raster)
         length_block_2 = length_block_1 + len(spikes_to_plot_a_good_task_3_raster)
         length_block_3 = length_block_2 + len(spikes_to_plot_b_bad_task_3_raster)
