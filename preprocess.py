@@ -15,12 +15,13 @@ import Esync as es
 
 
 
-spikes_df_csv_out_folder =  '/Users/veronikasamborska/Desktop'
+spikes_df_csv_out_folder =  '/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Ephys 3 Tasks Reversal Learning/m483'
 
-data_folder = 'm483_2018-06-07_16-15-43'
+data_folder = 'm483_2018-06-15_16-47-24'
 
-ephys_data_folder = '/Users/veronikasamborska/Desktop/m483_2018-06-07_16-15-43/'
-behaviour_filename = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys/m483-2018-06-07-161545.txt'
+ephys_data_folder = '/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Ephys 3 Tasks Reversal Learning/m483/m483_2018-06-15_16-47-24/'
+behaviour_filename = '/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys/m483-2018-06-15-164724.txt'
+
 
 beh_session = di.Session(behaviour_filename)
 ephys_events = op.loadEvents(os.path.join(ephys_data_folder,'all_channels.events'))
