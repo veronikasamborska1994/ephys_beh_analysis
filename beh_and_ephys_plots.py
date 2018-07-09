@@ -56,6 +56,10 @@ def change_block_firing_rates(ephys_session, beh_session):
     
     choices_a_task_1 = np.where(choice_task_1 == 1)[0]
     choices_b_task_1 = np.where(choice_task_1 == 0)[0]
+    choices_a_task_2 = np.where(choice_task_2 == 1)[0]
+    choices_b_task_2 = np.where(choice_task_2 == 0)[0]
+    choices_a_task_3 = np.where(choice_task_3 == 1)[0]
+    choices_b_task_3 = np.where(choice_task_3 == 0)[0]
 
    
     
@@ -64,14 +68,14 @@ def change_block_firing_rates(ephys_session, beh_session):
     
     trial_сhoice_state_task_1 = pyControl_choice[:len(task_1)]
     trial_сhoice_state_task_2 = pyControl_choice[len(task_1):(len(task_1) +len(task_2))]
+    print(len(trial_сhoice_state_task_2))
     trial_сhoice_state_task_3 = pyControl_choice[len(task_1) + len(task_2):]
     
     
     clusters = ephys_session['spike_cluster'].unique()
    
-    clusters = clusters[1:3]
 
-    fig, axes = plt.subplots(figsize=(50,5), ncols=1, nrows=2, sharex=True)
+    figure_bloc, ax_block = plt.subplots(figsize = (50,5), ncols = 2, nrows = 3, sharey = 'col')
     
     for i,cluster in enumerate(clusters): 
         spikes = ephys_session.loc[ephys_session['spike_cluster'] == cluster]
@@ -90,7 +94,9 @@ def change_block_firing_rates(ephys_session, beh_session):
         mean_firing_rate =np.mean(firing_rate_trial_list)
         std_firing_rate = np.std(firing_rate_trial_list)
         zscore= (firing_rate_trial_list- mean_firing_rate)/std_firing_rate
-        barlist = axes[i].bar(np.arange(len(zscore)),zscore)
+        barlist = ax_block[0][i].bar(np.arange(len(zscore)),zscore)
+        ax_block[0][i].set_title('{}'.format(cluster))
+        
         for ind,bar in enumerate(barlist):
             if ind in state_a_good and ind in choices_a_task_1 :
                 barlist[ind].set_color('r')
@@ -106,17 +112,74 @@ def change_block_firing_rates(ephys_session, beh_session):
                 barlist[ind].set_color('lightgreen')
                 barlist[ind].set_label('Poke 2 Good, Inorrect Choice')
                    
-
+        firing_rate_trial_list_task_2 = np.array([])
+        for choice in trial_сhoice_state_task_2:
+            trial_start = choice - 1000
+            trial_end = choice + 1000
+            spikes_ind = spikes_times[(spikes_times >= trial_start) & (spikes_times<= trial_end)]
+            spikes_count = np.count_nonzero(~np.isnan(spikes_ind))
+            firing_rate_trial = spikes_count/2000
+            firing_rate_trial_list_task_2 = np.append(firing_rate_trial_list_task_2, firing_rate_trial)
+            
+        mean_firing_rate_task_2 =np.mean(firing_rate_trial_list_task_2)
+        std_firing_rate_task_2 = np.std(firing_rate_trial_list_task_2)
+        zscore= (firing_rate_trial_list_task_2- mean_firing_rate_task_2)/std_firing_rate_task_2
+        barlist_task_2 = ax_block[1][i].bar(np.arange(len(zscore)),zscore)
+        ax_block[1][i].set_title('{}'.format(cluster))
+        
+        for ind,bar in enumerate(barlist_task_2):
+            if ind in state_a_good and ind in choices_a_task_2 :
+                barlist_task_2[ind].set_color('r')
+                barlist_task_2[ind].set_label('Poke 1 Good, Correct Choice')
+            elif ind in state_a_good and ind in choices_b_task_2:
+                barlist_task_2[ind].set_color('pink')
+                barlist_task_2[ind].set_label('Poke 1 Good, Incorrect Choice')
+                
+            elif ind in state_b_good and ind in choices_b_task_2:
+                barlist_task_2[ind].set_color('green')
+                barlist_task_2[ind].set_label('Poke 2 Good, Correct Choice')
+            elif ind in state_b_good and ind in choices_a_task_2:
+                barlist_task_2[ind].set_color('lightgreen')
+                barlist_task_2[ind].set_label('Poke 2 Good, Inorrect Choice')
+                
+        firing_rate_trial_list_task_3 = np.array([])
+        for choice in trial_сhoice_state_task_3:
+            trial_start = choice - 1000
+            trial_end = choice + 1000
+            spikes_ind = spikes_times[(spikes_times >= trial_start) & (spikes_times<= trial_end)]
+            spikes_count = np.count_nonzero(~np.isnan(spikes_ind))
+            firing_rate_trial = spikes_count/2000
+            firing_rate_trial_list_task_3 = np.append(firing_rate_trial_list_task_3, firing_rate_trial)
+            
+        mean_firing_rate_task_3 =np.mean(firing_rate_trial_list_task_3)
+        std_firing_rate_task_3 = np.std(firing_rate_trial_list_task_3)
+        zscore= (firing_rate_trial_list_task_3- mean_firing_rate_task_3)/std_firing_rate_task_3
+        barlist_task_3 = ax_block[2][i].bar(np.arange(len(zscore)),zscore)
+        ax_block[2][i].set_title('{}'.format(cluster))
+        
+        for ind,bar in enumerate(barlist_task_3):
+            if ind in state_t2_a_good and ind in choices_a_task_1 :
+                barlist_task_3[ind].set_color('r')
+                barlist_task_3[ind].set_label('Poke 1 Good, Correct Choice')
+            elif ind in state_t2_a_good and ind in choices_b_task_1:
+                barlist_task_3[ind].set_color('pink')
+                barlist_task_3[ind].set_label('Poke 1 Good, Incorrect Choice')
+                
+            elif ind in state_t2_b_good and ind in choices_b_task_1:
+                barlist_task_3[ind].set_color('green')
+                barlist_task_3[ind].set_label('Poke 2 Good, Correct Choice')
+            elif ind in state_t2_b_good and ind in choices_a_task_1:
+                barlist_task_3[ind].set_color('lightgreen')
+                barlist_task_3[ind].set_label('Poke 2 Good, Inorrect Choice')
 
         
-        axes[i].set_title('{}'.format(cluster))
-        axes[i].set(xlabel ='Trial #')
-        axes[i].set(ylabel ='Z-score Firing Rate #')
+        ax_block[2][i].set(xlabel ='Trial #')
+        ax_block[1][i].set(ylabel ='Z-score Firing Rate #')
         red_patch = mpatches.Patch(color='red', label='Poke 1 Good, Correct Choice')
         pink_patch = mpatches.Patch(color='pink', label='Poke 1 Good, Incorrect Choice')
         green_patch = mpatches.Patch(color='green', label='Poke 2 Good, Correct Choice')
         lightgreen_patch = mpatches.Patch(color='lightpink', label='Poke 2 Good, Inorrect Choice')
-        axes[i].legend(handles=[red_patch, pink_patch, green_patch, lightgreen_patch])
+        ax_block[0][0].legend(handles=[red_patch, pink_patch, green_patch, lightgreen_patch])
 
     
     
@@ -698,6 +761,8 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         t3 = [length_block_3,length_block_3]
         t4 = [length_block_4,length_block_4 ]
         
+        
+        
         if i < group_1:
             pl.figure(2)
             axes_8[0][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
@@ -765,35 +830,98 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         t3_task_2 = [length_block_3_task_2,length_block_3_task_2]
         t4_task_2 = [length_block_4_task_2,length_block_4_task_2]
         
+        
+      
+                
         if i < group_1:
             pl.figure(2)
-            axes_8[1][i].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
-            axes_8[1][i].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
-            axes_8[1][i].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
-            axes_8[1][i].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            if poke_A_task_2 == poke_A:
+                axes_8[1][i].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+                axes_8[1][i].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            elif poke_A_task_2 == poke_B:
+                axes_8[1][i].fill_between(x,t0, t1_task_2 ,color = 'skyblue', alpha = 0.5)
+                axes_8[1][i].fill_between(x,t1_task_2,t2_task_2,color = 'navy', alpha = 0.5)
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                 axes_8[1][i].fill_between(x,t0, t1_task_2 ,color = 'pink', alpha = 0.5)
+                 axes_8[1][i].fill_between(x,t1_task_2,t2_task_2,color = 'red', alpha = 0.5)  
+            if poke_B_task_2 == poke_A:
+                axes_8[1][i].fill_between(x,t2_task_2,t3_task_2,color = 'grey', alpha = 0.5)
+                axes_8[1][i].fill_between(x, t3_task_2,t4_task_2,color = 'black', alpha = 0.5)
+            elif poke_B_task_2 == poke_B:
+                axes_8[1][i].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+                axes_8[1][i].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                axes_8[1][i].fill_between(x,t2_task_2,t3_task_2,color = 'pink', alpha = 0.5)
+                axes_8[1][i].fill_between(x, t3_task_2,t4_task_2,color = 'red', alpha = 0.5)
             axes_8[1][0].set(ylabel ='Trial #')   
         elif i >= group_1 and i < group_2:
             pl.figure(4)
-            axes_16[1][i-group_1].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
-            axes_16[1][i-group_1].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
-            axes_16[1][i-group_1].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
-            axes_16[1][i-group_1].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            if poke_A_task_2 == poke_A:
+                axes_16[1][i-group_1].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+                axes_16[1][i-group_1].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            elif poke_A_task_2 == poke_B:
+                axes_16[1][i-group_1].fill_between(x,t0, t1_task_2 ,color = 'skyblue', alpha = 0.5)
+                axes_16[1][i-group_1].fill_between(x,t1_task_2,t2_task_2,color = 'navy', alpha = 0.5)
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                 axes_16[1][i-group_1].fill_between(x,t0, t1_task_2 ,color = 'pink', alpha = 0.5)
+                 axes_16[1][i-group_1].fill_between(x,t1_task_2,t2_task_2,color = 'red', alpha = 0.5)  
+            if poke_B_task_2 == poke_A:
+                axes_16[1][i-group_1].fill_between(x,t2_task_2,t3_task_2,color = 'grey', alpha = 0.5)
+                axes_16[1][i-group_1].fill_between(x, t3_task_2,t4_task_2,color = 'black', alpha = 0.5)
+            elif poke_B_task_2 == poke_B:
+                axes_16[1][i-group_1].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+                axes_16[1][i-group_1].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                axes_16[1][i-group_1].fill_between(x,t2_task_2,t3_task_2,color = 'pink', alpha = 0.5)
+                axes_16[1][i-group_1].fill_between(x, t3_task_2,t4_task_2,color = 'red', alpha = 0.5)
+                
             axes_16[1][0].set(ylabel ='Trial #')   
             
         elif i >= group_2 and i < group_3: 
             pl.figure(6) 
-            axes_24[1][i-group_2].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
-            axes_24[1][i-group_2].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
-            axes_24[1][i-group_2].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
-            axes_24[1][i-group_2].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            if poke_A_task_2 == poke_A:
+                axes_24[1][i-group_2].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            elif poke_A_task_2 == poke_B:
+                axes_24[1][i-group_2].fill_between(x,t0, t1_task_2 ,color = 'skyblue', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x,t1_task_2,t2_task_2,color = 'navy', alpha = 0.5)
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                axes_24[1][i-group_2].fill_between(x,t0, t1_task_2 ,color = 'pink', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x,t1_task_2,t2_task_2,color = 'red', alpha = 0.5)  
+            if poke_B_task_2 == poke_A:
+                axes_24[1][i-group_2].fill_between(x,t2_task_2,t3_task_2,color = 'grey', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x, t3_task_2,t4_task_2,color = 'black', alpha = 0.5)
+            elif poke_B_task_2 == poke_B:
+                axes_24[1][i-group_2].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                axes_24[1][i-group_2].fill_between(x,t2_task_2,t3_task_2,color = 'pink', alpha = 0.5)
+                axes_24[1][i-group_2].fill_between(x, t3_task_2,t4_task_2,color = 'red', alpha = 0.5)
+           
             axes_24[1][0].set(ylabel ='Trial #')
             
         elif i >= group_3 and i < group_4: 
             pl.figure(8) 
-            axes_36[1][i-group_3].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
-            axes_36[1][i-group_3].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
-            axes_36[1][i-group_3].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
-            axes_36[1][i-group_3].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            if poke_A_task_2 == poke_A:
+                axes_36[1][i-group_3].fill_between(x,t0, t1_task_2 ,color = 'gray', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x,t1_task_2,t2_task_2,color = 'black', alpha = 0.5)
+            elif poke_A_task_2 == poke_B:
+                axes_36[1][i-group_3].fill_between(x,t0, t1_task_2 ,color = 'skyblue', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x,t1_task_2,t2_task_2,color = 'navy', alpha = 0.5)
+            elif poke_A_task_2 != poke_B and poke_A_task_2 != poke_A:
+                axes_36[1][i-group_3].fill_between(x,t0, t1_task_2 ,color = 'pink', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x,t1_task_2,t2_task_2,color = 'red', alpha = 0.5)  
+            if poke_B_task_2 == poke_A:
+                axes_36[1][i-group_3].fill_between(x,t2_task_2,t3_task_2,color = 'grey', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x, t3_task_2,t4_task_2,color = 'black', alpha = 0.5)
+            elif poke_B_task_2 == poke_B:
+                axes_36[1][i-group_3].fill_between(x,t2_task_2,t3_task_2,color = 'skyblue', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x, t3_task_2,t4_task_2,color = 'navy', alpha = 0.5)
+            elif poke_B_task_2 != poke_A and poke_B_task_2 != poke_B:
+                axes_36[1][i-group_3].fill_between(x,t2_task_2,t3_task_2,color = 'pink', alpha = 0.5)
+                axes_36[1][i-group_3].fill_between(x, t3_task_2,t4_task_2,color = 'red', alpha = 0.5)
+                
+
             axes_36[1][0].set(ylabel ='Trial #')
         
         all_spikes_raster_plot_task_3 = spikes_to_plot_a_bad_task_3_raster + spikes_to_plot_a_good_task_3_raster  +spikes_to_plot_b_bad_task_3_raster +spikes_to_plot_b_good_task_3_raster
@@ -823,39 +951,116 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot)
         t2 = [length_block_2, length_block_2]
         t3 = [length_block_3,length_block_3]
         t4 = [length_block_4,length_block_4 ]
-        
+                
         if i < group_1:
             pl.figure(2)
-            axes_8[2][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-            axes_8[2][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-            axes_8[2][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-            axes_8[2][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                axes_8[2][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_A:
+                axes_8[2][i].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_B:
+                axes_8[2][i].fill_between(x, t1, t0 ,color = 'skyblue', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t2,t1,color = 'navy', alpha = 0.5)
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                 axes_8[2][i].fill_between(x, t1, t0 ,color = 'lightyellow', alpha = 0.5)
+                 axes_8[2][i].fill_between(x,t2,t1,color = 'yellow', alpha = 0.5)
+                 
+            if poke_B_task_3 == poke_A:
+                axes_8[2][i].fill_between(x,t3,t2,color = 'grey', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t4,t3,color = 'black', alpha = 0.5)
+            elif poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                axes_8[2][i].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                axes_8[2][i].fill_between(x,t3,t2,color = 'lightyellow', alpha = 0.5)
+                axes_8[2][i].fill_between(x,t4,t3,color = 'yellow', alpha = 0.5)
+            
             axes_8[2][i].set(xlabel ='Time (ms)')
             axes_8[2][0].set(ylabel ='Trial #')
         elif i >= group_1 and i < group_2:
             pl.figure(4)
-            axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-            axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-            axes_16[2][i-group_1].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-            axes_16[2][i-group_1].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_A:
+                axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_B:
+                axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'skyblue', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'navy', alpha = 0.5)
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                axes_16[2][i-group_1].fill_between(x, t1, t0 ,color = 'lightyellow', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t2,t1,color = 'yellow', alpha = 0.5)
+                 
+            if poke_B_task_3 == poke_A:
+                axes_16[2][i-group_1].fill_between(x,t3,t2,color = 'grey', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t4,t3,color = 'black', alpha = 0.5)
+            elif poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                axes_16[2][i-group_1].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                axes_16[2][i-group_1].fill_between(x,t3,t2,color = 'lightyellow', alpha = 0.5)
+                axes_16[2][i-group_1].fill_between(x,t4,t3,color = 'yellow', alpha = 0.5)
+
             axes_16[2][i-group_1].set(xlabel ='Time (ms)')
             axes_16[2][0].set(ylabel ='Trial #')
             
         elif i >= group_2 and i < group_3: 
             pl.figure(6) 
-            axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-            axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-            axes_24[2][i-group_2].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-            axes_24[2][i-group_2].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_A:
+                axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_B:
+                axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'skyblue', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'navy', alpha = 0.5)
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                axes_24[2][i-group_2].fill_between(x, t1, t0 ,color = 'lightyellow', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t2,t1,color = 'yellow', alpha = 0.5)
+                 
+            if poke_B_task_3 == poke_A:
+                axes_24[2][i-group_2].fill_between(x,t3,t2,color = 'grey', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t4,t3,color = 'black', alpha = 0.5)
+            elif poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                axes_24[2][i-group_2].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                axes_24[2][i-group_2].fill_between(x,t3,t2,color = 'lightyellow', alpha = 0.5)
+                axes_24[2][i-group_2].fill_between(x,t4,t3,color = 'yellow', alpha = 0.5)
+
             axes_24[2][i-group_2].set(xlabel ='Time (ms)')
             axes_24[2][0].set(ylabel ='Trial #')
                    
         elif i >= group_3 and i < group_4: 
             pl.figure(8) 
-            axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
-            axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
-            axes_36[2][i-group_3].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
-            axes_36[2][i-group_3].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            if poke_A_task_3 == poke_A_task_2 and poke_A_task_2 == poke_A:
+                axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_A:
+                axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'gray', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'black', alpha = 0.5)
+            elif poke_A_task_3 == poke_B:
+                axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'skyblue', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'navy', alpha = 0.5)
+            elif poke_A_task_3 != poke_A_task_2 and poke_A_task_3 != poke_A:
+                axes_36[2][i-group_3].fill_between(x, t1, t0 ,color = 'lightyellow', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t2,t1,color = 'yellow', alpha = 0.5)
+                 
+            if poke_B_task_3 == poke_A:
+                axes_36[2][i-group_3].fill_between(x,t3,t2,color = 'grey', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t4,t3,color = 'black', alpha = 0.5)
+            elif poke_B_task_3 == poke_B_task_2 and poke_B_task_2 == poke_B:
+                axes_36[2][i-group_3].fill_between(x,t3,t2,color = 'skyblue', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t4,t3,color = 'navy', alpha = 0.5)
+            elif poke_B_task_3 != poke_B_task_2 and poke_B_task_3 != poke_B:
+                axes_36[2][i-group_3].fill_between(x,t3,t2,color = 'lightyellow', alpha = 0.5)
+                axes_36[2][i-group_3].fill_between(x,t4,t3,color = 'yellow', alpha = 0.5)
+                
+    
             axes_36[2][i-group_3].set(xlabel ='Time (s)')
             axes_36[2][0].set(ylabel ='Trial #')
           
