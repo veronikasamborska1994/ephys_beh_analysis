@@ -272,9 +272,9 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot,
     poke_B_list = []
     poke_A_list = []
     choice_state = False 
-    choice_state_count = 0
     
     for event in events_and_times:
+        choice_state_count = 0
         if 'choice_state' in event:
             choice_state_count +=1 
             choice_state = True   
@@ -293,7 +293,7 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot,
                     poke_B_list.append(event[1])
                     choice_state = False
             elif poke_A_task_2 in event:
-                if choice_state == True:
+                if choice_state == True:    
                     poke_A_list.append(event[1])
                     choice_state = False     
         elif choice_state_count > (len(task_1) +len(task_2)) and choice_state_count <= (len(task_1) + len(task_2) + len(task_3)):
@@ -305,6 +305,11 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot,
                 if choice_state == True:
                     poke_A_list.append(event[1])
                     choice_state = False
+
+    all_events = poke_A_list + poke_B_list
+    print(len(all_events))
+    print(len(pyControl_choice))
+    
     #Task 1 
 
     state_1 = state_non_forced[:len(task_1)]
@@ -366,6 +371,8 @@ def histogram_raster_plot_poke_aligned(ephys_session, beh_session,outpath, plot,
 
     
     #For ITI Calculations
+    
+    print(len(pyControl_end_trial))
     ITI_non_forced = pyControl_end_trial[non_forced_array]   
     ITI_task_1 = ITI_non_forced[:len(task_1)]#[2:]
     ITI_task_1_a_good = ITI_task_1[state_a_good]
