@@ -434,7 +434,7 @@ def pack_2(folderpath, filename = '', channels = 'all', chprefix = 'CH',
     if dref:
         if dref == 'ave':
             print('Digital referencing to average of all channels.')
-            reference = np.mean(data_array,1)
+            reference = np.median(data_array,1)
         else:
             print('Digital referencing to channel ' + str(dref))
             if channels == 'all':
