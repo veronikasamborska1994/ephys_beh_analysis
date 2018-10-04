@@ -33,10 +33,10 @@ def find_nearest(array, value):
     return idx
 
 
-ephys_session = fu.load_data('m486_2018-07-23_19-25-22','/Users/veronikasamborska/Desktop/grid_code/openfield','/',True)
+ephys_session = fu.load_data('m484_openfield_2018-08-03_15-54-12','/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/data/Ephys 3 Tasks Processed Spikes/m484/openfield','/',True)
 clusters = ephys_session['spike_cluster'].unique()
-xy = np.loadtxt(open('/Users/veronikasamborska/Desktop/grid_code/m486_open_fielxyz/openfield_m486_xy2018-07-23T19_25_14.csv'))
-time_camera = np.loadtxt(open('/Users/veronikasamborska/Desktop/grid_code/m486_open_fielxyz/openfield_m486_timestamps2018-07-23T19_25_14.csv'))
+xy = np.loadtxt(open('/media/behrenslab/My Book/video_PC_backup/m478/03_08/openfield/openfield_m478_xy2018-08-03T16_40_41.csv'))
+time_camera = np.loadtxt(open('/media/behrenslab/90c50efc-05cf-4045-95e4-9dabd129fb47/Ephys_Reversal_Learning/Video_data/m484/03_08/openfield/openfield_m484_timestamps2018-08-03T15_54_11.csv'))
 time_camera = np.asarray(time_camera,dtype=uint32)
 converted_time = converttime(time_camera)
 uncycled_time = uncycle(converted_time)
@@ -49,13 +49,14 @@ for line in xy:
     y.append(line[1])
 x= np.asarray(x)
 y =np.asarray(y)
-x = x[np.nonzero(x)]  
-y = y[np.nonzero(y)]
+#x = x[np.nonzero(x)]  
+#y = y[np.nonzero(y)]
     
 
 for i,cluster in enumerate(clusters): 
     spikes_to_plot = []
     spikes_per_frame_list =[]
+    assign_spike_to_xy = 0
     spikes = ephys_session.loc[ephys_session['spike_cluster'] == cluster]
     spikes_times = np.array(spikes['time'])
     spikes_times = spikes_times[~np.isnan(spikes_times)]
@@ -64,13 +65,10 @@ for i,cluster in enumerate(clusters):
         spikes_per_frame_list.append(assign_spike_to_xy)
     x_new = x[spikes_per_frame_list]
     y_new = y[spikes_per_frame_list]
+    plt.figure()
     sns.set(style="white", palette="muted", color_codes = True)
-    plt.figure(figsize=(5, 5))
     plt.grid(False)
-    plt.scatter(x_new, y_new, s = 2, color = 'red')
     plt.plot(x,y,linewidth=0.5, color = 'lightgray', alpha = 0.7, zorder = 0)
     plt.scatter(x_new, y_new, s = 20, color = 'red', zorder = 1)
-    plt.xlim(450,700)
-    plt.ylim(450,700)
     plt.title('{}'.format(cluster))
    # plt.hist2d(x_new,y_new, bins = 100)
