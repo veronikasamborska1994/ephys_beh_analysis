@@ -44,34 +44,19 @@ def uncycle(time):
 #timestamps_ttls = np.unique(timestamps_ttls) 
 #timestamps_ttls = timestamps_ttls*1000
 
-subject = 'm484'
-m484 = ['m484_m480_2018-09-13_16-09-06',
-'m480_m484_2018-09-12_16-21-03',
-'m484_m480_2018-09-11_16-37-40',
-'m484_m480_2018-09-07_15-31-24',
-'m480_m484_2018-09-06_15-24-22',
-'m484_m480_2018-09-05_16-26-38',
-'m484_m480_2018-09-03_14-46-44',
-'m484_m480_2018-08-30_13-45-26',
-'m484_m478_2018-08-24_13-23-26',
-'m484_m478_2018-08-23_12-41-38',
-'m478_m484_2018-08-22_13-08-17',
-'m484_m478_2018-08-20_12-33-32',
-'m484_m478_2018-08-18_14-02-57',
-'m484_m479_2018-08-16_12-11-39',
-'m484_m479_2018-08-15_12-27-45',
-'m484_m479_2018-08-12_15-08-53',
-'m484_m486_2018-08-07_13-29-03']
+subject = 'm486'
 
-ephys_data_folder = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Ephys 3 Tasks Reversal Learning/Multiple_Animals'
+m486 = ['m483_m486_2018-08-21_13-58-27']
+ephys_data_folder ='/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Ephys 3 Tasks Reversal Learning/Multiple_Animals'
+
 files_ephys = os.listdir(ephys_data_folder)
 
-behaviour_filename = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys/m484'
+behaviour_filename = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys/m486'
 files_behaviour = os.listdir(behaviour_filename)
-spikes_df_csv_out_folder =  '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons/m484'
+spikes_df_csv_out_folder =  '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons/m486'
 
 for file_ephys in files_ephys:
-    if file_ephys in m484:
+    if file_ephys in m486:
         match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', file_ephys)
         date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()
         date_ephys = match_ephys.group()
@@ -104,6 +89,8 @@ for file_ephys in files_ephys:
                             # Setup alignment.
                             if data_folder.find(subject) == 5:
                                 box_2_ttls = np.where(ephys_events['channel'] == 3)
+                                if len(box_2_ttls[0]) == 0:
+                                    box_2_ttls = np.where(ephys_events['channel'] == 1)
                                 box_2_ttls_fall = box_2_ttls[0][::2]
                             elif  data_folder.find(subject) == 0:
                                 box_2_ttls = np.where(ephys_events['channel'] == 0)
@@ -139,7 +126,9 @@ for file_ephys in files_ephys:
                             
                             # Filter only rows corresponding to spikes from single units
                             good_spikes_df = df_with_bad_spikes.loc[df_with_bad_spikes['spike_cluster'].isin(good_cluster_numbers), :]
-                            good_spikes_df = np.asarray(good_spikes_df)
+                            good_spikes_np = good_spikes_df['spike_cluster']
+                            spike_times_np = good_spikes_df['spike_time']
+                            good_spikes_df = np.vstack((good_spikes_np,spike_times_np))
                             
                             # Save good spikes df to np
                             np.save((spikes_df_csv_out_folder + '/'+ data_folder), good_spikes_df)

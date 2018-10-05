@@ -62,7 +62,6 @@ def change_block_firing_rates(ephys_session, beh_session):
     choices_b_task_3 = np.where(choice_task_3 == 0)[0]
 
    
-    
     pyControl_choice = [event.time for event in beh_session.events if event.name in ['choice_state']]
     pyControl_choice = np.array(pyControl_choice)
     

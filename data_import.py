@@ -49,14 +49,16 @@ class Session():
         # Extract and store session information.
 
         self.file_name = os.path.split(file_path)[1]
-
+       
+        
         info_lines = [line[2:] for line in all_lines if line[0]=='I']
 
         self.experiment_name = next(line for line in info_lines if 'Experiment name' in line).split(' : ')[1]
         self.task_name       = next(line for line in info_lines if 'Task name'       in line).split(' : ')[1]
         subject_ID_string    = next(line for line in info_lines if 'Subject ID'      in line).split(' : ')[1]
         datetime_string      = next(line for line in info_lines if 'Start date'      in line).split(' : ')[1]
-
+        
+        ephys_path  = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'+'/'+ subject_ID_string
         if int_subject_IDs: # Convert subject ID string to integer.
             self.subject_ID = int(''.join([i for i in subject_ID_string if i.isdigit()]))
         else:
@@ -117,7 +119,9 @@ class Session():
         self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
                            'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
                            'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B, 'forced_trial': forced_trial, 'task':task}
-       # else:
+       
+       
+        # else:
            #self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
                           # 'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
                            #'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B}
