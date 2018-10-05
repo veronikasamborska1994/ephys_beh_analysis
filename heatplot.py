@@ -61,7 +61,7 @@ cluster_list = []
 start_trial_list = []
 end_trial_list = []
 spikes_times_session_list =[]
-for recording_to_extract,session in zip(recordings_to_extract_hp,sessions_hp):
+for recording_to_extract,session in zip(recordings_to_extract_hp,sessions_hp):cluster_list
     path_to_data = '/'.join([kilosort_folder, recording_to_extract])
     os.chdir(path_to_data)
     ephys_session = fu.load_data(recording_to_extract,kilosort_folder,'/',True )
