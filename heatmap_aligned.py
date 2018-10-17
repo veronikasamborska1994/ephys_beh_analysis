@@ -6,29 +6,33 @@ Created on Fri Oct  5 17:03:19 2018
 @author: behrenslab
 """
 import copy 
-import os
 import numpy as np
 import pandas as pd
 import data_import as di
 import OpenEphys as op 
 import Esync as es
-import datefinder
-import re
-import fnmatch
-import datetime
-from datetime import datetime
 import align_activity as aa
 from scipy.ndimage import gaussian_filter1d
 from collections import OrderedDict
+
 from sklearn.linear_model import LinearRegression
+
+
 import pylab as pl
 
 import ephys_beh_import as ep
 
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+###
+###
+#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
+#experiment_aligned = all_sessions_aligment(HP)
+#
 
 def _CPD(X,y):
     '''Evaluate coefficient of partial determination for each predictor in X'''
-    ols = LinearRegression()
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
     ols.fit(X,y)
     sse = np.sum((ols.predict(X) - y)**2, axis=0)
     cpd = np.zeros([y.shape[1],X.shape[1]])
@@ -50,7 +54,7 @@ def plot_firing_rate_time_course(experiment):
         spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
         spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
         spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
-        spikes_A_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
+        spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
         fig, axes = plt.subplots(figsize = (15,5), ncols = n_neurons , sharex=True, sharey = 'col')
         mean_spikes_B_task_1 = np.mean(spikes_B_task_1,axis = 0)
         mean_spikes_A_task_1 = np.mean(spikes_A_task_1,axis = 0)
@@ -70,13 +74,19 @@ def plot_firing_rate_time_course(experiment):
         
 def predictors_f(session):
     n_trials = session.aligned_rates.shape[0]
-    print(n_trials)
     choices = session.trial_data['choices']
     forced_trials = session.trial_data['forced_trial']
     non_forced_array = np.where(forced_trials == 0)[0]
     task = session.trial_data['task']
     task_non_forced = task[non_forced_array]
+    
+    outcomes_all = session.trial_data['outcomes'] 
+    reward = outcomes_all[non_forced_array]
+    
+    
     choice_non_forced = choices[non_forced_array]
+#    if n_trials != len(choice_non_forced):
+#        n_trials = n_trials -1
     task_1 = np.where(task_non_forced == 1)[0]
     task_2 = np.where(task_non_forced == 2)[0] 
     poke_A = session.trial_data['poke_A']
@@ -91,7 +101,9 @@ def predictors_f(session):
     predictor_a[0][choices_a[0]] = 1
     predictor_b = np.zeros([1,n_trials])
     predictor_b[0][choices_b[0]] = 1
-    
+    if len(reward)!= len(predictor_a[0]):
+        reward = np.append(reward,0)
+        
     poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3,poke_B1_B2_A3 = ep.poke_A_B_make_consistent(session)
     # Task 2
     # If Poke A in task 2 is the same as in task 1 keep it 
@@ -115,7 +127,7 @@ def predictors_f(session):
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
         predictor_A_Task_3  = copy.copy(predictor_a_3[0])
-        predictorfiner_B_Task_1 =  copy.copy(predictor_b_1[0])
+        predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
     elif poke_A1_B2_B3 == True:
@@ -168,52 +180,129 @@ def predictors_f(session):
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
     
-    return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3
+    return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward
         
 def regression(experiment):
-    for session in experiment:
-        print(session.file_name)
-        C = []    # To strore predictor loadings for each session.
-        cpd = []  # To strore cpd for each session.
-        aligned_spikes= session.aligned_rates 
+    C = []    # To strore predictor loadings for each session.
+    cpd = []  # To strore cpd for each session.
+    for s,session in enumerate(experiment):
+        t_out = session.t_out
+        initiate_choice_t = session.target_times 
+        forced_trials = session.trial_data['forced_trial']
+        choices = session.trial_data['choices']
+        non_forced_array = np.where(forced_trials == 0)[0]
+        aligned_spikes= session.aligned_rates[:]
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
         
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3 = predictors_f(session)
+        spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
+        spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
+        spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
+        spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
+        spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
+        spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
+        mean_spikes_B_task_1 = np.mean(spikes_B_task_1,axis = 0)
+        mean_spikes_A_task_1 = np.mean(spikes_A_task_1,axis = 0)
+        mean_spikes_B_task_2 = np.mean(spikes_B_task_2,axis = 0)
+        mean_spikes_A_task_2 = np.mean(spikes_A_task_2,axis = 0)
+        mean_spikes_B_task_3 = np.mean(spikes_B_task_3,axis = 0)
+        mean_spikes_A_task_3 = np.mean(spikes_A_task_3,axis = 0)
+        
         predictors = OrderedDict([
                                       ('a_task_1' , predictor_A_Task_1),
                                       ('a_task_2' , predictor_A_Task_2),
                                       ('a_task_3' , predictor_A_Task_3),
                                       ('b_task_1' , predictor_B_Task_1),
                                       ('b_task_2' , predictor_B_Task_2),
-                                      ('b_task_3' , predictor_B_Task_3)])
+                                      ('b_task_3' , predictor_B_Task_3),
+                                      ('reward', reward)])
             
         X = np.vstack(predictors.values()).T[:n_trials,:].astype(float)
         n_predictors = X.shape[1]
         y = aligned_spikes.reshape([n_trials,-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-        ols = LinearRegression()
+        ols = LinearRegression(copy_X = True,fit_intercept= False)
         ols.fit(X,y)
         C.append(ols.coef_.reshape(n_neurons, n_timepoints, n_predictors)) # Predictor loadings
-        C = np.concatenate(C,0)
         cpd.append(_CPD(X,y).reshape(n_neurons, n_timepoints, n_predictors))
-        cpd = np.mean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
-        plt.figure()
-        for i, predictor in enumerate(predictors):
-            plt.subplot(3,np.ceil(len(predictors)/3),i+1)
-            plt.imshow(C[:,:,i])
-            plt.colorbar()
-        plt.figure()
-        for i, predictor in enumerate(predictors):
-            t = session.t_out
-            plt.plot(t, 100*cpd[:,i], label=predictor)
-            plt.title('{}'.format( session.file_name))
-        
-        plt.ylabel('Coef. partial determination (%)')
-        plt.legend(bbox_to_anchor=(1, 1))
-        plt.xlim(t[0], t[-1])
-        plt.ylim(ymin=0)
+    
+    C = np.concatenate(C,0)
+    cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
+    C_mean = np.mean(C,axis = 0)
+    
+    for i, predictor in enumerate(predictors):
+        if predictor == 'a_task_1':
+            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
+        elif predictor == 'a_task_2':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'pink')
+        elif predictor == 'a_task_3':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'purple')
+        elif predictor == 'b_task_1':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'black')
+        elif predictor == 'b_task_2':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'grey')
+        elif predictor == 'b_task_3':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'blue')
+        elif predictor == 'reward':
+            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'yellow')
+    for t in initiate_choice_t[1:-1]:
+        plt.axvline(t, color='k', linestyle=':')
+    reward_time = initiate_choice_t[-2]+250
+    plt.axvline(reward_time, color='red', linestyle=':')
+    plt.legend()
+    
+    plt.figure()
+    for i, predictor in enumerate(predictors):
+        if predictor == 'a_task_1':
+            plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'red')   
+        elif predictor == 'a_task_2':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'pink')
+        elif predictor == 'a_task_3':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'purple')
+        elif predictor == 'b_task_1':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'black')
+        elif predictor == 'b_task_2':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'grey')
+        elif predictor == 'b_task_3':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'blue')
+        elif predictor == 'reward':
+             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'yellow')
+            
+        #figure, ax = plt.subplots(figsize = (15,5), ncols = n_neurons , nrows =2 )
+#        for neuron in range(n_neurons):
+#            for i,predictor in enumerate(predictors): 
+#                if predictor == 'a_task_1':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'red')
+#                elif predictor == 'a_task_2':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'pink')
+#                elif predictor == 'a_task_3':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'purple')
+#                elif predictor == 'b_task_1':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'black')
+#                elif predictor == 'b_task_2':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'grey')
+#                elif predictor == 'b_task_3':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'blue')
+#                elif predictor == 'reward':
+#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'yellow')
+#                    
+#            ax[0][neuron].plot(mean_spikes_A_task_1[neuron], label = 'A Task 1', color = 'red')
+#            ax[0][neuron].plot(mean_spikes_A_task_2[neuron], label = 'A Task 2', color = 'pink')
+#            ax[0][neuron].plot(mean_spikes_A_task_3[neuron], label = 'A Task 3', color = 'purple')
+#            ax[0][neuron].plot(mean_spikes_B_task_1[neuron], label = 'B Task 1', color = 'black')
+#            ax[0][neuron].plot(mean_spikes_B_task_2[neuron], label = 'B Task 2', color = 'grey')
+#            ax[0][neuron].plot(mean_spikes_B_task_3[neuron], label = 'B Task 3', color = 'blue')
+#            
+#            ax[1][0].legend(fontsize = 'xx-small')
+#        plt.title('{}'.format(session.file_name))
+    
+    return C, X, y,cpd
+    
 
-        
 def target_times_f(experiment):
+    # Trial times is array of reference point times for each trial. Shape: [n_trials, n_ref_points]
+    # Here we are using [init-1000, init, choice, choice+1000]    
+    # target_times is the reference times to warp all trials to. Shape: [n_ref_points]
+    # Here we are finding the median timings for a whole experiment 
     trial_times_all_trials  = []
     for session in experiment:
         init_times = session.times['choice_state']
@@ -229,15 +318,12 @@ def target_times_f(experiment):
         trial_times_all_trials.append(trial_times)
 
     trial_times_all_trials  =np.asarray(trial_times_all_trials)
-    target_times = np.hstack(([0], np.cumsum(np.median(np.diff(trial_times_all_trials[0],1),0))))
-    # Trial times is array of reference point times for each trial. Shape: [n_trials, n_ref_points]
-    # Here we are using [init-1000, init, choice, choice+1000]    
-    # target_times is the reference times to warp all trials to. Shape: [n_ref_points]
-    # Here we are using the median timings from this session.
+    target_times = np.hstack(([0], np.cumsum(np.median(np.diff(trial_times_all_trials[0],1),0))))    
+        
     return target_times
 
 def all_sessions_aligment(experiment):
-    target_times = target_times_f(experiment)
+    target_times  = target_times_f(experiment)
     experiment_aligned = []
     for session in experiment:
         spikes = session.ephys
@@ -255,34 +341,26 @@ def all_sessions_aligment(experiment):
         aligned_rates, t_out, min_max_stretch = aa.align_activity(trial_times, target_times, spikes)
         session.aligned_rates = aligned_rates
         session.t_out = t_out
+        session.target_times = target_times
         experiment_aligned.append(session)
-    return experiment_aligned
+        
+    return experiment_aligned 
 
-#ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
-#beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
-#
-#
-HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-experiment_aligned = all_sessions_aligment(HP)
 
 def heatplot_aligned(experiment_aligned): 
     all_clusters_task_1 = []
     all_clusters_task_2 = []
-    all_clusters_task_3 = []
     for session in experiment_aligned:
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
         cluster_list_task_1 = []
         cluster_list_task_2 = []
-        cluster_list_task_3 = []
         aligned_rates = session.aligned_rates
         trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3, ITI_task_1, ITI_task_2,ITI_task_3 = ep.initiation_and_trial_end_timestamps(session)
         task_1 = len(trial_сhoice_state_task_1)
         task_2 = len(trial_сhoice_state_task_2)
-        task_3 = len(trial_сhoice_state_task_3)
         aligned_rates_task_1 = aligned_rates[:task_1]
         aligned_rates_task_2 = aligned_rates[task_1:task_1+task_2]
-        aligned_rates_task_3 = aligned_rates[task_1+task_2:]
         unique_neurons  = np.unique(spikes[0])
         for i in range(len(unique_neurons)):
             mean_firing_rate_task_1  = np.mean(aligned_rates_task_1[:,i,:],0)
@@ -295,7 +373,6 @@ def heatplot_aligned(experiment_aligned):
     all_clusters_task_2 = np.array(all_clusters_task_2)
     same_shape_task_1 = []
     same_shape_task_2 = []
-    same_shape_task_3 = []
     for i in all_clusters_task_1:
         for ii in i:
             same_shape_task_1.append(ii)
@@ -314,7 +391,7 @@ def heatplot_aligned(experiment_aligned):
     norm_activity_sorted = (activity_sorted - np.min(activity_sorted,1)[:, None]) / (np.max(activity_sorted,1)[:, None] - np.min(activity_sorted,1)[:, None])
     where_are_Nans = isnan(norm_activity_sorted)
     #norm_activity_sorted[where_are_Nans] = 0
-    plt.imshow(not_normed[ten_percent:], aspect='auto')  
+    plt.imshow(norm_activity_sorted[ten_percent:], aspect='auto')  
     plt.colorbar()
     
 
