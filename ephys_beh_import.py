@@ -18,7 +18,7 @@ import fnmatch
 import datetime
 from datetime import datetime
 import align_activity as aa
-
+import copy 
 ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
 beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
 
@@ -54,10 +54,38 @@ def import_code(ephys_path,beh_path):
                             behaviour_session = di.Session(behaviour_path)
                             neurons_path = subject_subfolder+'/'+session 
                             neurons = np.load(neurons_path)
-                            #neurons = neurons[:,~np.isnan(neurons[1,:])] 
-                            #neurons_dictionary = {}
-                            #neurons_dictionary.update({'All neurons' : neurons})
-                            behaviour_session.ephys = neurons
+                            neurons = neurons[:,~np.isnan(neurons[1,:])] 
+                            # Exclude neurons that had less than 200 spikes in a session 
+                            neuron_IDs = np.unique(neurons[0])
+                            for n in neuron_IDs:
+                                n_ind = np.where(neurons[0] == n)
+                                spike_list = neurons[1][n_ind]
+                                if len(spike_list) < 200:
+                                    neuron_id_exclude  = np.delete(neurons[0], n_ind)
+                                    spike_exclude = np.delete[neurons[1], n_ind]       
+                            if 'neuron_id_exclude' in dir():
+                                neurons_exclusion = np.vstack((neuron_id_exclude,spike_exclude)) 
+                            else:
+                                neurons_exclusion = copy.copy(neurons)
+                                
+                            # Exclude neurons with firing rate higher than 7 Hz
+                            min_time = min(neurons[1])
+                            max_time = max(neurons[1])
+                            range_time = (max_time- min_time)/1000
+                            n_IDs = np.unique(neurons_exclusion[0])
+                            for n in n_IDs:
+                                n_i = np.where(neurons_exclusion[0] == n)
+                                n_spike_list = neurons_exclusion[1][n_i]
+                                firing_rate = len(n_spike_list)/range_time
+                                if firing_rate > 7:
+                                    neuron_id_firing_ex  = np.delete(neurons_exclusion[0], n_i)
+                                    spike_firing_ex = np.delete(neurons_exclusion[1], n_i)
+                            if 'neuron_id_firing_ex' in dir():
+                                neurons_firing_ex = np.vstack((neuron_id_firing_ex,spike_firing_ex)) 
+                            else:
+                                neurons_firing_ex = copy.copy(neurons_exclusion)
+                                    
+                            behaviour_session.ephys = neurons_firing_ex
                             if subject_ephys == 'm480':
                                 m480.append(behaviour_session)
                             elif subject_ephys == 'm483':
@@ -195,6 +223,7 @@ def initiation_and_trial_end_timestamps(session):
     return trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3, ITI_task_1, ITI_task_2,ITI_task_3
 
 
+# State indicies to index in the entire task
 #Creates indices of when the state was A good or B good in each of the three tasks
 def state_indices(session):
     trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3,ITI_task_1, ITI_task_2,ITI_task_3 = initiation_and_trial_end_timestamps(session)

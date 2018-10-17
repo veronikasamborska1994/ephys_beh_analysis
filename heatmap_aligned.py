@@ -14,10 +14,9 @@ import Esync as es
 import align_activity as aa
 from scipy.ndimage import gaussian_filter1d
 from collections import OrderedDict
-
 from sklearn.linear_model import LinearRegression
-
-
+import itertools
+from scipy.spatial.distance import cdist
 import pylab as pl
 
 import ephys_beh_import as ep
@@ -30,6 +29,39 @@ import ephys_beh_import as ep
 #experiment_aligned = all_sessions_aligment(HP)
 #
 
+
+
+
+def correlations(session):
+    aligned_spikes= session.aligned_rates 
+    n_trials, n_neurons, n_timepoints = aligned_spikes.shape
+    state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good = ep.state_indices(session)
+    task = session.trial_data['task']
+    forced_trials = session.trial_data['forced_trial']
+    non_forced_array = np.where(forced_trials == 0)[0]
+    task_non_forced = task[non_forced_array]
+    task_2 = np.where(task_non_forced == 2)[0] 
+    ind_start_task_2 = min(task_2)
+    ind_start_task_3 = max(task_2)+1
+    state_t2_a_good = state_t2_a_good + ind_start_task_2
+    state_t3_a_good = state_t3_a_good + ind_start_task_3
+    state_t2_b_good = state_t2_b_good + ind_start_task_2
+    state_t3_b_good = state_t3_b_good + ind_start_task_3
+    state_a = np.concatenate((state_a_good,state_t2_a_good, state_t3_a_good), axis = 0)
+    state_b = np.concatenate((state_b_good,state_t2_b_good, state_t3_b_good), axis = 0)
+    aligned_spikes_state_a = aligned_spikes[state_a]
+    aligned_spikes_state_b = aligned_spikes[state_b]  
+    combinations =list(itertools.combinations(x, 2))
+    
+    
+    
+def similarity(experiment_aligned):
+     predictors,C, X, y,cpd = regression(experiment_aligned)
+     A1_A2 = cdist(C[:,:,0], C[:,:,1], metric='correlation')
+     A2_A3 = cdist(C[:,:,1], C[:,:,2], metric='correlation')
+     A3_A1 = cdist(C[:,:,2], C[:,:,0], metric='correlation')
+     Mean_A = np.mean()
+     
 def _CPD(X,y):
     '''Evaluate coefficient of partial determination for each predictor in X'''
     ols = LinearRegression(copy_X = True,fit_intercept= False)
@@ -227,28 +259,28 @@ def regression(experiment):
     
     C = np.concatenate(C,0)
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
-    C_mean = np.mean(C,axis = 0)
-    
-    for i, predictor in enumerate(predictors):
-        if predictor == 'a_task_1':
-            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
-        elif predictor == 'a_task_2':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'pink')
-        elif predictor == 'a_task_3':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'purple')
-        elif predictor == 'b_task_1':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'black')
-        elif predictor == 'b_task_2':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'grey')
-        elif predictor == 'b_task_3':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'blue')
-        elif predictor == 'reward':
-            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'yellow')
-    for t in initiate_choice_t[1:-1]:
-        plt.axvline(t, color='k', linestyle=':')
-    reward_time = initiate_choice_t[-2]+250
-    plt.axvline(reward_time, color='red', linestyle=':')
-    plt.legend()
+    #C_mean = np.mean(C,axis = 0)
+   # 
+#    for i, predictor in enumerate(predictors):
+#        if predictor == 'a_task_1':
+#            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
+#        elif predictor == 'a_task_2':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'pink')
+#        elif predictor == 'a_task_3':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'purple')
+#        elif predictor == 'b_task_1':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'black')
+#        elif predictor == 'b_task_2':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'grey')
+#        elif predictor == 'b_task_3':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'blue')
+#        elif predictor == 'reward':
+#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'yellow')
+#    for t in initiate_choice_t[1:-1]:
+#        plt.axvline(t, color='k', linestyle=':')
+#    reward_time = initiate_choice_t[-2]+250
+#    plt.axvline(reward_time, color='red', linestyle=':')
+#    plt.legend()
     
     plt.figure()
     for i, predictor in enumerate(predictors):
@@ -295,7 +327,7 @@ def regression(experiment):
 #            ax[1][0].legend(fontsize = 'xx-small')
 #        plt.title('{}'.format(session.file_name))
     
-    return C, X, y,cpd
+    return predictors, C, X, y,cpd
     
 
 def target_times_f(experiment):
@@ -384,14 +416,13 @@ def heatplot_aligned(experiment_aligned):
     peak_inds = np.argmax(same_shape_task_1,1)
     ordering = np.argsort(peak_inds)
     activity_sorted = same_shape_task_2[ordering,:]
-    ten_percent = int( activity_sorted.shape[0]*0.15)
     not_normed = same_shape_task_1[ordering,:]
     not_normed += 1
     not_normed = np.log(not_normed)
     norm_activity_sorted = (activity_sorted - np.min(activity_sorted,1)[:, None]) / (np.max(activity_sorted,1)[:, None] - np.min(activity_sorted,1)[:, None])
     where_are_Nans = isnan(norm_activity_sorted)
-    #norm_activity_sorted[where_are_Nans] = 0
-    plt.imshow(norm_activity_sorted[ten_percent:], aspect='auto')  
+    norm_activity_sorted[where_are_Nans] = 0
+    plt.imshow(norm_activity_sorted, aspect='auto')  
     plt.colorbar()
     
 
