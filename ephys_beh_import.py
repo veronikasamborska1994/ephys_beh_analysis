@@ -12,9 +12,7 @@ import pandas as pd
 import data_import as di
 import OpenEphys as op 
 import Esync as es
-import datefinder
 import re
-import fnmatch
 import datetime
 from datetime import datetime
 import align_activity as aa

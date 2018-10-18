@@ -17,6 +17,8 @@ from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 import itertools
 from scipy.spatial.distance import cdist
+from scipy.spatial.distance import correlation
+from scipy.spatial.distance import seuclidean
 import pylab as pl
 
 import ephys_beh_import as ep
@@ -56,12 +58,18 @@ def correlations(session):
     
     
 def similarity(experiment_aligned):
-     predictors,C, X, y,cpd = regression(experiment_aligned)
-     A1_A2 = cdist(C[:,:,0], C[:,:,1], metric='correlation')
-     A2_A3 = cdist(C[:,:,1], C[:,:,2], metric='correlation')
-     A3_A1 = cdist(C[:,:,2], C[:,:,0], metric='correlation')
-     Mean_A = np.mean()
-     
+     predictors,C, X, y,cpd,C_mean = regression(experiment_aligned)
+     A1_A2 = cdist(C[:,:,0], C[:,:,1], metric = 'correlation')
+     A2_A3 = cdist(C[:,:,1], C[:,:,2], metric = 'correlation')
+     A3_A1 = cdist(C[:,:,2], C[:,:,0], metric = 'correlation')
+     B1_B2 = cdist(C[:,:,3], C[:,:,4], metric = 'correlation')
+     B2_B3 = cdist(C[:,:,4], C[:,:,5], metric = 'correlation')
+     B3_B1 = cdist(C[:,:,5], C[:,:,3], metric = 'correlation')
+     mean_a = (A1_A2 + A2_A3 + A3_A1)/3
+     mean_b = (B1_B2 + B2_B3 + B3_B1)/3
+     a_b = cdist(mean_a,mean_b, metric = 'correlation')
+     #norm = (a_b - np.min(a_b,1)[:, None]) / (np.max(a_b,1)[:, None] - np.min(a_b,1)[:, None])
+
 def _CPD(X,y):
     '''Evaluate coefficient of partial determination for each predictor in X'''
     ols = LinearRegression(copy_X = True,fit_intercept= False)
@@ -259,7 +267,7 @@ def regression(experiment):
     
     C = np.concatenate(C,0)
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
-    #C_mean = np.mean(C,axis = 0)
+    C_mean = np.mean(C,axis = 1)
    # 
 #    for i, predictor in enumerate(predictors):
 #        if predictor == 'a_task_1':
@@ -327,7 +335,7 @@ def regression(experiment):
 #            ax[1][0].legend(fontsize = 'xx-small')
 #        plt.title('{}'.format(session.file_name))
     
-    return predictors, C, X, y,cpd
+    return predictors, C, X, y,cpd, C_mean
     
 
 def target_times_f(experiment):
