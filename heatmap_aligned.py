@@ -21,55 +21,101 @@ from scipy.spatial.distance import correlation
 from scipy.spatial.distance import seuclidean
 import pylab as pl
 
+from scipy.stats import pearsonr
+from itertools import combinations
 import ephys_beh_import as ep
+
+import math
+
+def dotproduct(v1, v2):
+  return sum((a*b) for a, b in zip(v1, v2))
+
+def length(v):
+  return math.sqrt(dotproduct(v, v))
+
+def angle(v1, v2):
+  return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
 #ephys_path = '/Users/veronikasamborska/Desktop/neurons'
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-###
-###
+  
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
 #experiment_aligned = all_sessions_aligment(HP)
-#
 
 
-
-
-def correlations(session):
+def correlation_trials(session):
+    list_a = []
+    list_b =[]
+    spikes_a = []
+    corr_list_A = []
+    corr_list_B = []
     aligned_spikes= session.aligned_rates 
     n_trials, n_neurons, n_timepoints = aligned_spikes.shape
-    state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good = ep.state_indices(session)
-    task = session.trial_data['task']
-    forced_trials = session.trial_data['forced_trial']
-    non_forced_array = np.where(forced_trials == 0)[0]
-    task_non_forced = task[non_forced_array]
-    task_2 = np.where(task_non_forced == 2)[0] 
-    ind_start_task_2 = min(task_2)
-    ind_start_task_3 = max(task_2)+1
-    state_t2_a_good = state_t2_a_good + ind_start_task_2
-    state_t3_a_good = state_t3_a_good + ind_start_task_3
-    state_t2_b_good = state_t2_b_good + ind_start_task_2
-    state_t3_b_good = state_t3_b_good + ind_start_task_3
-    state_a = np.concatenate((state_a_good,state_t2_a_good, state_t3_a_good), axis = 0)
-    state_b = np.concatenate((state_b_good,state_t2_b_good, state_t3_b_good), axis = 0)
-    aligned_spikes_state_a = aligned_spikes[state_a]
-    aligned_spikes_state_b = aligned_spikes[state_b]  
-    combinations =list(itertools.combinations(x, 2))
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
+    predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
+    spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
+    spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
+    spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
+    spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
+    spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
+    spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
     
+    a1 = np.arange(spikes_A_task_1.shape[0])
+    a2 = np.arange(spikes_A_task_2.shape[0])
+    a3 = np.arange(spikes_A_task_3.shape[0])
+    spikes_a.append(spikes_A_task_1)
+    spikes_a.append(spikes_A_task_2)
+    spikes_a.append(spikes_A_task_3)
     
+    #list_a.append(spikes_A_task_1)
+    #list_a.append(spikes_A_task_2)
+    #list_a.append(spikes_A_task_3)
+    list_comb_a = list(combinations(a_list,2))
+    list_comb_a  = np.array(list_comb_a)
+    for i in list_comb_a:
+        for neuron in range(len(spikes_a[0])):
+            corr, p_value = pearsonr(spikes_a[i[0]][neuron], spikes_a[i[1]][neuron])
+            corr_list_A.append(corr)
+   
     
-def similarity(experiment_aligned):
-     predictors,C, X, y,cpd,C_mean = regression(experiment_aligned)
-     A1_A2 = cdist(C[:,:,0], C[:,:,1], metric = 'correlation')
-     A2_A3 = cdist(C[:,:,1], C[:,:,2], metric = 'correlation')
-     A3_A1 = cdist(C[:,:,2], C[:,:,0], metric = 'correlation')
-     B1_B2 = cdist(C[:,:,3], C[:,:,4], metric = 'correlation')
-     B2_B3 = cdist(C[:,:,4], C[:,:,5], metric = 'correlation')
-     B3_B1 = cdist(C[:,:,5], C[:,:,3], metric = 'correlation')
-     mean_a = (A1_A2 + A2_A3 + A3_A1)/3
-     mean_b = (B1_B2 + B2_B3 + B3_B1)/3
-     a_b = cdist(mean_a,mean_b, metric = 'correlation')
-     #norm = (a_b - np.min(a_b,1)[:, None]) / (np.max(a_b,1)[:, None] - np.min(a_b,1)[:, None])
 
+    
+def angle_similarity(experiment_aligned):
+     predictors, C, X, y,cpd, C_choice_mean = regression(experiment_aligned)
+     
+     A1_A2 = angle(C_choice_mean[:,0], C_choice_mean[:,1])
+     A2_A3 = angle(C_choice_mean[:,1], C_choice_mean[:,2])
+     A3_A1 = angle(C_choice_mean[:,2], C_choice_mean[:,0])
+     
+     B1_B2 = angle(C_choice_mean[:,3], C_choice_mean[:,4])
+     B2_B3 = angle(C_choice_mean[:,4], C_choice_mean[:,5])
+     B3_B1 = angle(C_choice_mean[:,5], C_choice_mean[:,3])
+     
+     A1_B1 = angle(C_choice_mean[:,0], C_choice_mean[:,3])
+     A1_B2 = angle(C_choice_mean[:,0], C_choice_mean[:,4])
+     A1_B3 = angle(C_choice_mean[:,0], C_choice_mean[:,5])
+     A2_B1 = angle(C_choice_mean[:,1], C_choice_mean[:,3])
+     A2_B2 = angle(C_choice_mean[:,1], C_choice_mean[:,4])
+     A2_B3 = angle(C_choice_mean[:,1], C_choice_mean[:,5])
+     A3_B1 = angle(C_choice_mean[:,2], C_choice_mean[:,3])
+     A3_B2 = angle(C_choice_mean[:,2], C_choice_mean[:,4])
+     A3_B3 = angle(C_choice_mean[:,2], C_choice_mean[:,5])
+     
+     mean_a = np.mean([A1_A2,A2_A3,A3_A1])
+     mean_b = np.mean([B1_B2,B2_B3,B3_B1])
+     mean_a_b = np.mean([A1_B1,A1_B2,A1_B3,A2_B1,A2_B2,A2_B3,A3_B1,A3_B2,A3_B3 ])
+     std_a = np.std([A1_A2,A2_A3,A3_A1])/np.sqrt(3)
+     std_b = np.std([B1_B2,B2_B3,B3_B1])/np.sqrt(3)
+     std_a_b = np.std([A1_B1,A1_B2,A1_B3,A2_B1,A2_B2,A2_B3,A3_B1,A3_B2,A3_B3 ])/np.sqrt(9)
+     mean_a_b_ab = [mean_a, mean_b, mean_a_b]
+     std_a_b_ab = [std_a,std_b,std_a_b]
+     x_pos = [1,2,3]
+     plt.errorbar(x = x_pos, y = mean_a_b_ab, yerr = std_a_b_ab, alpha=0.8,  linestyle='None', marker='*', color = 'Black')    
+     plt.xticks([1,2,3], ('A', 'B', 'AB'))
+     plt.ylabel('cosine of the angle between two vectors')
+     plt.title('PFC')
+     
+     
 def _CPD(X,y):
     '''Evaluate coefficient of partial determination for each predictor in X'''
     ols = LinearRegression(copy_X = True,fit_intercept= False)
@@ -131,7 +177,7 @@ def predictors_f(session):
     task_2 = np.where(task_non_forced == 2)[0] 
     poke_A = session.trial_data['poke_A']
     poke_B = session.trial_data['poke_B']
-    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3  = ep.extract_choice_pokes(session)
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
     
     #Task 1 
     choices_a = np.where(choice_non_forced == 1)
@@ -228,6 +274,7 @@ def regression(experiment):
     for s,session in enumerate(experiment):
         t_out = session.t_out
         initiate_choice_t = session.target_times 
+        ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
         forced_trials = session.trial_data['forced_trial']
         choices = session.trial_data['choices']
         non_forced_array = np.where(forced_trials == 0)[0]
@@ -267,8 +314,10 @@ def regression(experiment):
     
     C = np.concatenate(C,0)
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
-    C_mean = np.mean(C,axis = 1)
-   # 
+    ind_before_choice = ind_choice-7
+    ind_after_choice = ind_choice+7
+    C_choice = C[:,ind_before_choice:ind_after_choice,:]
+    C_choice_mean  = np.mean(C_choice, axis =1) 
 #    for i, predictor in enumerate(predictors):
 #        if predictor == 'a_task_1':
 #            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
@@ -284,29 +333,29 @@ def regression(experiment):
 #            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'blue')
 #        elif predictor == 'reward':
 #            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'yellow')
-#    for t in initiate_choice_t[1:-1]:
-#        plt.axvline(t, color='k', linestyle=':')
+
 #    reward_time = initiate_choice_t[-2]+250
 #    plt.axvline(reward_time, color='red', linestyle=':')
 #    plt.legend()
-    
-    plt.figure()
-    for i, predictor in enumerate(predictors):
-        if predictor == 'a_task_1':
-            plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'red')   
-        elif predictor == 'a_task_2':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'pink')
-        elif predictor == 'a_task_3':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'purple')
-        elif predictor == 'b_task_1':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'black')
-        elif predictor == 'b_task_2':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'grey')
-        elif predictor == 'b_task_3':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'blue')
-        elif predictor == 'reward':
-             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'yellow')
-            
+#    
+#    plt.figure()
+#    for i, predictor in enumerate(predictors):
+#        if predictor == 'a_task_1':
+#            plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'red')   
+#        elif predictor == 'a_task_2':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'pink')
+#        elif predictor == 'a_task_3':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'purple')
+#        elif predictor == 'b_task_1':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'black')
+#        elif predictor == 'b_task_2':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'grey')
+#        elif predictor == 'b_task_3':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'blue')
+#        elif predictor == 'reward':
+#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'yellow')
+#    for t in initiate_choice_t[1:-1]:
+#        plt.axvline(t, color='k', linestyle=':')
         #figure, ax = plt.subplots(figsize = (15,5), ncols = n_neurons , nrows =2 )
 #        for neuron in range(n_neurons):
 #            for i,predictor in enumerate(predictors): 
@@ -335,7 +384,7 @@ def regression(experiment):
 #            ax[1][0].legend(fontsize = 'xx-small')
 #        plt.title('{}'.format(session.file_name))
     
-    return predictors, C, X, y,cpd, C_mean
+    return predictors, C, X, y,cpd, C_choice_mean
     
 
 def target_times_f(experiment):
@@ -393,14 +442,25 @@ def heatplot_aligned(experiment_aligned):
     for session in experiment_aligned:
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
+        t_out = session.t_out
+        initiate_choice_t = session.target_times 
+        reward = initiate_choice_t[-2] +250
         cluster_list_task_1 = []
         cluster_list_task_2 = []
         aligned_rates = session.aligned_rates
+        poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = ep.extract_choice_pokes(session)
         trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3, ITI_task_1, ITI_task_2,ITI_task_3 = ep.initiation_and_trial_end_timestamps(session)
         task_1 = len(trial_сhoice_state_task_1)
         task_2 = len(trial_сhoice_state_task_2)
-        aligned_rates_task_1 = aligned_rates[:task_1]
-        aligned_rates_task_2 = aligned_rates[task_1:task_1+task_2]
+        if poke_I == poke_I_task_2: 
+            aligned_rates_task_1 = aligned_rates[:task_1]
+            aligned_rates_task_2 = aligned_rates[:task_1+task_2]
+        elif poke_I == poke_I_task_3:
+            aligned_rates_task_1 = aligned_rates[:task_1]
+            aligned_rates_task_2 = aligned_rates[task_1+task_2:]
+        elif poke_I_task_2 == poke_I_task_3:
+            aligned_rates_task_1 = aligned_rates[:task_1+task_2]
+            aligned_rates_task_2 = aligned_rates[task_1+task_2:]
         unique_neurons  = np.unique(spikes[0])
         for i in range(len(unique_neurons)):
             mean_firing_rate_task_1  = np.mean(aligned_rates_task_1[:,i,:],0)
@@ -424,13 +484,19 @@ def heatplot_aligned(experiment_aligned):
     peak_inds = np.argmax(same_shape_task_1,1)
     ordering = np.argsort(peak_inds)
     activity_sorted = same_shape_task_2[ordering,:]
-    not_normed = same_shape_task_1[ordering,:]
-    not_normed += 1
-    not_normed = np.log(not_normed)
+    #not_normed = same_shape_task_1[ordering,:]
+    #not_normed += 1
+    #not_normed = np.log(not_normed)
     norm_activity_sorted = (activity_sorted - np.min(activity_sorted,1)[:, None]) / (np.max(activity_sorted,1)[:, None] - np.min(activity_sorted,1)[:, None])
-    where_are_Nans = isnan(norm_activity_sorted)
+    where_are_Nans = np.isnan(norm_activity_sorted)
     norm_activity_sorted[where_are_Nans] = 0
     plt.imshow(norm_activity_sorted, aspect='auto')  
+    ind_init = (np.abs(t_out-initiate_choice_t[1])).argmin()
+    ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
+    ind_reward = (np.abs(t_out-reward)).argmin()
+    
+    plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'R'))
+    plt.title('PFC')
     plt.colorbar()
     
 

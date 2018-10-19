@@ -108,6 +108,9 @@ def extract_choice_pokes(session):
     task = session.trial_data['task']
     task_2_change = np.where(task ==2)[0]
     task_3_change = np.where(task ==3)[0]
+    poke_I = 'poke_'+ str(session.trial_data['configuration_i'][0])
+    poke_I_task_2 = 'poke_'+ str(session.trial_data['configuration_i'][task_2_change[0]])
+    poke_I_task_3 = 'poke_'+ str(session.trial_data['configuration_i'][task_3_change[0]])  
     poke_A = 'poke_'+str(session.trial_data['poke_A'][0])
     poke_A_task_2 = 'poke_'+str(session.trial_data['poke_A'][task_2_change[0]])
     poke_A_task_3 = 'poke_'+str(session.trial_data['poke_A'][task_3_change[0]])
@@ -115,11 +118,11 @@ def extract_choice_pokes(session):
     poke_B_task_2  = 'poke_'+str(session.trial_data['poke_B'][task_2_change[0]])
     poke_B_task_3 = 'poke_'+str(session.trial_data['poke_B'][task_3_change[0]])    
     
-    return poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3
+    return poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3
 
 # Extracts trial initiation timestamps and ITI timestamps
 def extract_times_of_initiation_and_ITIs(session):
-    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3 = extract_choice_pokes(session)
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = extract_choice_pokes(session)
 
     pyControl_choice = [event.time for event in session.events if event.name in ['choice_state']]
     pyControl_choice = np.array(pyControl_choice)
@@ -138,7 +141,7 @@ def extract_times_of_initiation_and_ITIs(session):
 # Extracts Choices of A and B
 # Looks for the first events after initiation trial so only adds A and B pokes that are choices that lead to outcomes and ITIs
 def only_meaningful_A_and_B_pokes(session): 
-    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3 = extract_choice_pokes(session)
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = extract_choice_pokes(session)
     events_and_times = [[event.name, event.time] for event in session.events if event.name in ['choice_state',poke_B, poke_A, poke_A_task_2,poke_A_task_3, poke_B_task_2,poke_B_task_3]]
     poke_B_list = []       
     poke_A_list = []
@@ -499,9 +502,8 @@ def initiation_state_task_3(session):
     return a_good_choice_time_task_3, a_bad_choice_time_task_3, b_bad_choice_time_task_3, b_good_choice_time_task_3
 
 
-
 def poke_A_B_make_consistent(session):
-    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3  = extract_choice_pokes(session)
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = extract_choice_pokes(session)
     # Task 2
     # If Poke A in task 2 is the same as in task 1 keep it    
     poke_A1_A2_A3 = False
