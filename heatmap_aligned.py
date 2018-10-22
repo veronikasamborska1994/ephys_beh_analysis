@@ -43,43 +43,107 @@ def angle(v1, v2):
 #experiment_aligned = all_sessions_aligment(HP)
 
 
-def correlation_trials(session):
-    list_a = []
-    list_b =[]
-    spikes_a = []
-    corr_list_A = []
-    corr_list_B = []
-    aligned_spikes= session.aligned_rates 
-    n_trials, n_neurons, n_timepoints = aligned_spikes.shape
-    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
-    predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
-    spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
-    spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
-    spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
-    spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
-    spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
-    spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
+def correlation_trials(experiment):
+    a1_a2_all_neurons = []
+    a2_a3_all_neurons = []
+    a1_a3_all_neurons = []
+    b1_b2_all_neurons = []
+    b2_b3_all_neurons = []
+    b1_b3_all_neurons = []
+    for session in experiment_aligned:
+        spikes_a = []
+        spikes_b = []
+        aligned_spikes= session.aligned_rates 
+        n_trials, n_neurons, n_timepoints = aligned_spikes.shape
+        poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
+        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
+        spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
+        spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
+        spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
+        spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
+        spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
+        spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
+        
+        a1 = np.arange(spikes_A_task_1.shape[0])
+        a2 = np.arange(spikes_A_task_2.shape[0])
+        a3 = np.arange(spikes_A_task_3.shape[0])
     
-    a1 = np.arange(spikes_A_task_1.shape[0])
-    a2 = np.arange(spikes_A_task_2.shape[0])
-    a3 = np.arange(spikes_A_task_3.shape[0])
-    spikes_a.append(spikes_A_task_1)
-    spikes_a.append(spikes_A_task_2)
-    spikes_a.append(spikes_A_task_3)
     
-    #list_a.append(spikes_A_task_1)
-    #list_a.append(spikes_A_task_2)
-    #list_a.append(spikes_A_task_3)
-    list_comb_a = list(combinations(a_list,2))
-    list_comb_a  = np.array(list_comb_a)
-    for i in list_comb_a:
-        for neuron in range(len(spikes_a[0])):
-            corr, p_value = pearsonr(spikes_a[i[0]][neuron], spikes_a[i[1]][neuron])
-            corr_list_A.append(corr)
-   
+        spikes_a.append(spikes_A_task_1)
+        spikes_a.append(spikes_A_task_2)
+        spikes_a.append(spikes_A_task_3)
     
-
+        combinations_a1_a2 = list(itertools.product(range(a1.shape[0]),range(a2.shape[0])))
+        combinations_a2_a3 = list(itertools.product(range(a2.shape[0]),range(a3.shape[0])))
+        combinations_a1_a3 = list(itertools.product(range(a1.shape[0]),range(a3.shape[0])))
+        neurons_n = spikes_a[0].shape[1]
+        a1_a2 = np.ones(shape=(neurons_n,len(combinations_a1_a2)))
+        a1_a2[:] = np.NaN
+        a2_a3 = np.ones(shape=(neurons_n,len(combinations_a2_a3)))
+        a2_a3[:] = np.NaN
+        a3_a1 = np.ones(shape=(neurons_n,len(combinations_a1_a3)))
+        a3_a1[:]= np.NaN
+        
+        for i,combination in enumerate(combinations_a1_a2):
+            for neuron in range(spikes_a[0].shape[1]):
+                corr, p_value = pearsonr(spikes_a[0][combinations_a1_a2[i][0],neuron,:], spikes_a[1][combinations_a1_a2[i][1],neuron,:])
+                a1_a2[neuron,i] = corr
+                a1_a2_median = np.nanmedian(a1_a2, axis =1)
+        for i,combination in enumerate(combinations_a2_a3):
+            for neuron in range(spikes_a[0].shape[1]):
+                corr, p_value = pearsonr(spikes_a[1][combinations_a2_a3[i][0],neuron,:], spikes_a[2][combinations_a2_a3[i][1],neuron,:])
+                a2_a3[neuron,i] = corr
+                a2_a3_median = np.nanmedian(a2_a3, axis =1)
+        for i,combination in enumerate(combinations_a1_a3):
+            for neuron in range(spikes_a[0].shape[1]):
+                corr, p_value = pearsonr(spikes_a[0][combinations_a1_a3[i][0],neuron,:], spikes_a[2][combinations_a1_a3[i][1],neuron,:])
+                a3_a1[neuron,i] = corr
+                a1_a3_median = np.nanmedian(a3_a1, axis =1)
     
+        b1 = np.arange(spikes_B_task_1.shape[0])
+        b2 = np.arange(spikes_B_task_2.shape[0])
+        b3 = np.arange(spikes_B_task_3.shape[0])
+        spikes_b.append(spikes_B_task_1)
+        spikes_b.append(spikes_B_task_2)
+        spikes_b.append(spikes_B_task_3)
+        
+        combinations_b1_b2 = list(itertools.product(range(b1.shape[0]),range(b2.shape[0])))
+        combinations_b2_b3 = list(itertools.product(range(b2.shape[0]),range(b3.shape[0])))
+        combinations_b1_b3 = list(itertools.product(range(b1.shape[0]),range(b3.shape[0])))
+        
+        b1_b2 = np.ones(shape=(neurons_n,len(combinations_b1_b2)))
+        b1_b2[:] = np.NaN
+        b2_b3 = np.ones(shape=(neurons_n,len(combinations_b2_b3)))
+        b1_b2[:] = np.NaN
+        b3_b1 = np.ones(shape=(neurons_n,len(combinations_b1_b3)))
+        b3_b1[:]= np.NaN
+        
+        for i,combination in enumerate(combinations_b1_b2):
+            for neuron in range(spikes_b[0].shape[1]):
+                corr, p_value = pearsonr(spikes_b[0][combinations_b1_b2[i][0],neuron,:], spikes_b[1][combinations_b1_b2[i][1],neuron,:])
+                b1_b2[neuron,i] = corr
+                b1_b2_median = np.nanmedian(b1_b2, axis = 1)
+        for i,combination in enumerate(combinations_b2_b3):
+            for neuron in range(spikes_b[0].shape[1]):
+                corr, p_value = pearsonr(spikes_b[1][combinations_b2_b3[i][0],neuron,:], spikes_b[2][combinations_b2_b3[i][1],neuron,:])
+                b2_b3[neuron,i] = corr
+                b2_b3_median = np.nanmedian(b2_b3, axis = 1)
+        for i,combination in enumerate(combinations_b1_b3):
+            for neuron in range(spikes_b[0].shape[1]):
+                corr, p_value = pearsonr(spikes_b[0][combinations_b1_b3[i][0],neuron,:], spikes_b[2][combinations_b1_b3[i][1],neuron,:])
+                b3_b1[neuron,i] = corr
+                b3_b1_median = np.nanmedian(b3_b1, axis = 1)
+                
+        a1_a2_all_neurons.append(a1_a2_median)
+        a2_a3_all_neurons.append(a2_a3_median)
+        a1_a3_all_neurons.append(a1_a3_median)
+        b1_b2_all_neurons.append(b1_b2_median)
+        b2_b3_all_neurons.append(b2_b3_median)
+        b1_b3_all_neurons.append(b3_b1_median)
+                
+                  
+            
+            
 def angle_similarity(experiment_aligned):
      predictors, C, X, y,cpd, C_choice_mean = regression(experiment_aligned)
      
