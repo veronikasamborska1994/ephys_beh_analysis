@@ -40,8 +40,73 @@ def angle(v1, v2):
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
   
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-#experiment_aligned = all_sessions_aligment(HP)
+#experiment_aligned_HP = all_sessions_aligment(HP)
+#experiment_aligned_PFC = all_sessions_aligment(PFC)
 
+#a1_a2_all_neurons_hp, a2_a3_all_neurons_hp, a1_a3_all_neurons_hp, b1_b2_all_neurons_hp, b2_b3_all_neurons_hp, b1_b3_all_neurons_hp =  correlation_trials(experiment_aligned_HP)
+#a1_a2_all_neurons_pfc, a2_a3_all_neurons_pfc, a1_a3_all_neurons_pfc, b1_b2_all_neurons_pfc, b2_b3_all_neurons_pfc, b1_b3_all_neurons_pfc=  correlation_trials(experiment_aligned_PFC)
+
+
+
+#flattened__hp_list_a2_a3 = np.array(flattened__hp_list_a2_a3)
+#flattened__hp_list_a2_a3 = flattened__hp_list_a2_a3[~np.isnan(flattened__hp_list_a2_a3)]
+#
+#bins_a = int(len(flattened_list_a2_a3)/100)
+#hist(flattened_list_a2_a3, bins = bins_a)
+#
+#
+#flattened_hp_list_a1_a2 = []
+#flattened__hp_list_a2_a3 = []
+#for x in a1_a2_all_neurons_hp:
+#    for y in x:
+#        flattened_hp_list_a1_a2.append(y)
+#
+#for x in a2_a3_all_neurons_hp:
+#    for y in x:
+#        flattened__hp_list_a2_a3.append(y)    
+#        
+#        
+#
+#flattened_list_hp_b1_b2 = []
+#flattened_list_hp_b2_b3 = []
+#for x in b1_b2_all_neurons_hp:
+#    for y in x:
+#        flattened_list_hp_b1_b2.append(y)
+#
+#for x in b2_b3_all_neurons_hp:
+#    for y in x:
+#        flattened_list_hp_b2_b3.append(y)    
+#        
+#        
+#flattened_pfc_list_a1_a2 = []
+#flattened__pfc_list_a2_a3 = []
+#for x in a1_a2_all_neurons_pfc:
+#    for y in x:
+#        flattened_pfc_list_a1_a2.append(y)
+#
+#for x in a2_a3_all_neurons_pfc:
+#    for y in x:
+#        flattened__pfc_list_a2_a3.append(y)    
+#            
+#flattened_pfc_list_b1_b2 = []
+#flattened__pfc_list_b2_b3 = []
+#for x in b1_b2_all_neurons_pfc:
+#    for y in x:
+#        flattened_pfc_list_b1_b2.append(y)
+#
+#for x in b2_b3_all_neurons_pfc:
+#    for y in x:
+#        flattened__pfc_list_b2_b3.append(y)    
+#            
+#flattened_pfc_list_a1_a2 = np.array(flattened_pfc_list_a1_a2)
+#flattened_pfc_list_a1_a2 = flattened_pfc_list_a1_a2[~np.isnan(flattened_pfc_list_a1_a2)]
+#flattened_pfc_list_a2_a3 = np.array(flattened__pfc_list_a2_a3)
+#flattened_pfc_list_a2_a3 = flattened_pfc_list_a2_a3[~np.isnan(flattened__pfc_list_a2_a3)]
+#flattened_pfc_list_b1_b2 = np.array(flattened_pfc_list_b1_b2)
+#flattened_pfc_list_b1_b2 = flattened_pfc_list_b1_b2[~np.isnan(flattened_pfc_list_b1_b2)]
+#
+#bins_a = int(len(flattened_pfc_list_b1_b2)/100)
+#hist(flattened_pfc_list_b1_b2, bins = 50)
 
 def correlation_trials(experiment):
     a1_a2_all_neurons = []
@@ -50,7 +115,7 @@ def correlation_trials(experiment):
     b1_b2_all_neurons = []
     b2_b3_all_neurons = []
     b1_b3_all_neurons = []
-    for session in experiment_aligned:
+    for session in experiment:
         spikes_a = []
         spikes_b = []
         aligned_spikes= session.aligned_rates 
@@ -140,6 +205,8 @@ def correlation_trials(experiment):
         b1_b2_all_neurons.append(b1_b2_median)
         b2_b3_all_neurons.append(b2_b3_median)
         b1_b3_all_neurons.append(b3_b1_median)
+        
+    return a1_a2_all_neurons, a2_a3_all_neurons, a1_a3_all_neurons, b1_b2_all_neurons, b2_b3_all_neurons, b1_b3_all_neurons
                 
                   
             
@@ -195,7 +262,7 @@ def _CPD(X,y):
 
 def plot_firing_rate_time_course(experiment):
     for session in experiment:
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3 = predictors_f(session)
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
         aligned_spikes= session.aligned_rates 
         n_neurons = aligned_spikes.shape[1]
         n_trials = aligned_spikes.shape[0]
