@@ -6,24 +6,21 @@ Created on Fri Oct  5 11:37:21 2018
 @author: behrenslab
 """
 import os
-import os
 import numpy as np
-import pandas as pd
 import data_import as di
-import OpenEphys as op 
-import Esync as es
 import re
 import datetime
-from datetime import datetime
-import align_activity as aa
 import copy 
-ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
-beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
+from datetime import datetime
+
+#ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
+#beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
 
 
 
 def import_code(ephys_path,beh_path):
     subjects_ephys = os.listdir(ephys_path)
+    subjects_ephys = [subject for subject in subjects_ephys if not subject.startswith('.')] #Exclude .DS store from subject list
     subjects_beh = os.listdir(beh_path)
     m480 = []
     m483 = []
@@ -35,6 +32,8 @@ def import_code(ephys_path,beh_path):
     for subject_ephys in subjects_ephys: 
         subject_subfolder = ephys_path + '/' + subject_ephys
         subject_sessions = os.listdir(subject_subfolder)
+        subject_sessions = [session for session in subject_sessions if not session.startswith('.')] #Exclude .DS store from subject list
+
         for session in subject_sessions:
             match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', session)
             date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()

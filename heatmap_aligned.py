@@ -7,26 +7,24 @@ Created on Fri Oct  5 17:03:19 2018
 """
 import copy 
 import numpy as np
-import pandas as pd
-import data_import as di
-import OpenEphys as op 
-import Esync as es
 import align_activity as aa
-from scipy.ndimage import gaussian_filter1d
 from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 import itertools
-from scipy.spatial.distance import cdist
-from scipy.spatial.distance import correlation
-from scipy.spatial.distance import seuclidean
-import pylab as pl
-
 from scipy.stats import pearsonr
-from itertools import combinations
 import ephys_beh_import as ep
-
 import math
+import pylab as plt
 
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+  
+#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
+#experiment_aligned_HP = all_sessions_aligment(HP)
+#experiment_aligned_PFC = all_sessions_aligment(PFC)
+
+
+# Function for finding the dot product of two vectors 
 def dotproduct(v1, v2):
   return sum((a*b) for a, b in zip(v1, v2))
 
@@ -36,12 +34,7 @@ def length(v):
 def angle(v1, v2):
   return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-  
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-#experiment_aligned_HP = all_sessions_aligment(HP)
-#experiment_aligned_PFC = all_sessions_aligment(PFC)
+
 
 #a1_a2_all_neurons_hp, a2_a3_all_neurons_hp, a1_a3_all_neurons_hp, b1_b2_all_neurons_hp, b2_b3_all_neurons_hp, b1_b3_all_neurons_hp =  correlation_trials(experiment_aligned_HP)
 #a1_a2_all_neurons_pfc, a2_a3_all_neurons_pfc, a1_a3_all_neurons_pfc, b1_b2_all_neurons_pfc, b2_b3_all_neurons_pfc, b1_b3_all_neurons_pfc=  correlation_trials(experiment_aligned_PFC)
@@ -260,35 +253,7 @@ def _CPD(X,y):
         cpd[:,i]=(sse_X_i-sse)/sse_X_i
     return cpd
 
-def plot_firing_rate_time_course(experiment):
-    for session in experiment:
-        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_f(session)
-        aligned_spikes= session.aligned_rates 
-        n_neurons = aligned_spikes.shape[1]
-        n_trials = aligned_spikes.shape[0]
-        spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
-        spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
-        spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
-        spikes_A_task_2 =aligned_spikes[np.where(predictor_A_Task_2 ==1)]
-        spikes_B_task_3 =aligned_spikes[np.where(predictor_B_Task_3 ==1)]
-        spikes_A_task_3 =aligned_spikes[np.where(predictor_A_Task_3 ==1)]
-        fig, axes = plt.subplots(figsize = (15,5), ncols = n_neurons , sharex=True, sharey = 'col')
-        mean_spikes_B_task_1 = np.mean(spikes_B_task_1,axis = 0)
-        mean_spikes_A_task_1 = np.mean(spikes_A_task_1,axis = 0)
-        mean_spikes_B_task_2 = np.mean(spikes_B_task_2,axis = 0)
-        mean_spikes_A_task_2 = np.mean(spikes_A_task_2,axis = 0)
-        mean_spikes_B_task_3 = np.mean(spikes_B_task_3,axis = 0)
-        mean_spikes_A_task_3 = np.mean(spikes_A_task_3,axis = 0)
-        for neuron in range(n_neurons):
-            axes[neuron].plot(mean_spikes_B_task_1[neuron], label = 'B Task 1')
-            axes[neuron].plot(mean_spikes_A_task_1[neuron], label = 'A Task 1')
-            axes[neuron].plot(mean_spikes_B_task_2[neuron], label = 'B Task 2')
-            axes[neuron].plot(mean_spikes_A_task_2[neuron], label = 'A Task 2')
-            axes[neuron].plot(mean_spikes_B_task_3[neuron], label = 'B Task 3')
-            axes[neuron].plot(mean_spikes_A_task_3[neuron], label = 'A Task 3')
-        axes[0].legend()
-        plt.title('{}'.format(session.file_name))
-        
+
 def predictors_f(session):
     n_trials = session.aligned_rates.shape[0]
     choices = session.trial_data['choices']
