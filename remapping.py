@@ -9,11 +9,11 @@ import numpy as np
 import ephys_beh_import as ep
 import heatmap_aligned as ha
 from scipy.stats import pearsonr
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-#experiment_aligned_HP = ha.all_sessions_aligment(HP)
-#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
+ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
+experiment_aligned_HP = ha.all_sessions_aligment(HP)
+experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
 
 
 def remapping_control(experiment):
@@ -132,20 +132,16 @@ def remapping_control(experiment):
     std_within = np.nanstd([mean_angle_a1_a1,mean_angle_a2_a2])
     mean_between = np.mean([mean_angle_a1_a2,mean_angle_a2_a3])
     std_between = np.nanstd([mean_angle_a1_a2,mean_angle_a2_a3])
-
+    
+    bar([1,2,3,4],[mean_within_HP,mean_within_PFC, mean_between_HP, mean_between_PFC], tick_label =['Within HP', 'Within PFC','Between HP','Between PFC',], yerr = [std_within_HP,std_within_PFC,std_between_HP, std_between_PFC],\
+    color = ['Black', 'Grey', 'Black', 'Grey'])
+    
     return mean_within, mean_between, std_within, std_between
 
 
-bar([1,2,3,4],[mean_within_HP,mean_within_PFC, mean_between_HP, mean_between_PFC], tick_label =['Within HP', 'Within PFC','Between HP','Between PFC',], yerr = [std_within_HP,std_within_PFC,std_between_HP, std_between_PFC],\
-    color = ['Black', 'Grey', 'Black', 'Grey'])
-    
 
     
-
-        
-                
               
-                    
                     
 #for neuron in range(n_neurons):   
 #            trials_firing = mean_spikes_around_choice[:,neuron]  # Firing rate of each neuron 

@@ -19,8 +19,8 @@ from scipy.ndimage.filters import gaussian_filter1d as gs
 #experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
 
 
-ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 
 # Plotting timecourse of cells that either decreased or increased their firing rates. Selection bias so not a great analysis.
 def remapping_timecourse(experiment):
@@ -144,7 +144,6 @@ def remapping_timecourse(experiment):
     flattened_a_list_decrease = np.array(flattened_a_list_decrease)
     x_array = np.arange(1,101)
     task_change = 50
-    #imshow(flattened_a_list_increase, aspect='auto')
     mean_increase = np.nanmean(flattened_a_list_increase, axis = 0)
     mean_decrease = np.nanmean(flattened_a_list_decrease, axis = 0)
     plt.figure()

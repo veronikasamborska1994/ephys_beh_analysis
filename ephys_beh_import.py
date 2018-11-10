@@ -502,6 +502,7 @@ def initiation_state_task_3(session):
 
 
 def poke_A_B_make_consistent(session):
+    #
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = extract_choice_pokes(session)
     # Task 2
     # If Poke A in task 2 is the same as in task 1 keep it    
