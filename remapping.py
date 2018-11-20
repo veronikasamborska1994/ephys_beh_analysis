@@ -12,7 +12,8 @@ from scipy.stats import pearsonr
 ephys_path = '/Users/veronikasamborska/Desktop/neurons'
 beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-experiment_aligned_HP = ha.all_sessions_aligment(HP)
+#experiment_aligned_HP = ha.all_sessions_aligment(HP)
+
 experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
 
 
@@ -34,7 +35,7 @@ def remapping_control(experiment):
         predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session) # Indicies for Choices 
         t_out = session.t_out
         initiate_choice_t = session.target_times #T Times of initiation and choice 
-        #Find firinf rates around choice
+        #Find firing rates around choice
       
         initiate_choice_t = session.target_times #Initiation and Choice Times
         
