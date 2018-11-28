@@ -747,6 +747,7 @@ def coordinates_for_plots(session):
         y_coordinates_B_3_nR = B_task_3_norm_nR + 3
         
     # Times of events      
+     
     return x_coordinates_A_1_R, x_coordinates_A_2_R, x_coordinates_A_3_R,y_coordinates_A_1_R,\
     y_coordinates_A_2_R, y_coordinates_A_3_R, x_coordinates_B_1_R, x_coordinates_B_2_R,\
     x_coordinates_B_3_R, y_coordinates_B_1_R, y_coordinates_B_2_R, y_coordinates_B_3_R, x_coordinates_I_1_R,\
@@ -776,182 +777,187 @@ def plotting(experiment,experiment_aligned):
     
     bin_width_ms = 1000
     smooth_sd_ms = 4000
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/PFC_check.pdf')
+    pdf = PdfPages('/Users/veronikasamborska/Desktop/PFC_ID.pdf')
 
     for s,session in zip(experiment, experiment_aligned):     
         #if session.file_name == 'm483-2018-06-14-172430.txt':
         # Get raw spike data across the task 
         raw_spikes = s.ephys
+        neurons = np.unique(raw_spikes[0])
         # Get trial times
         pyControl_choice = [event.time for event in s.events if event.name in ['choice_state']]
-        spikes_list,session_duration_ms =  session_spikes_vs_trials_plot(raw_spikes,pyControl_choice)
-        aligned_spikes= session.aligned_rates
-        n_neurons = aligned_spikes.shape[1]
-        n_trials = aligned_spikes.shape[0]
-        t_out = session.t_out
-        initiate_choice_t = session.target_times 
-        initiate_t = initiate_choice_t[1]
-        choice_t = initiate_choice_t[2]
-        reward_t = initiate_choice_t[-2] +250
-        ind_init = np.abs(t_out-initiate_t).argmin()
-        ind_choice = np.abs(t_out-choice_t).argmin()
-        ind_reward = np.abs(t_out-reward_t).argmin()
-        
-        ind_init_poke_1 = ind_init+300
-        ind_choice_poke_1 = ind_choice+300
-        ind_reward_poke_1 = ind_reward +300
-        
-        ind_init_poke_2 = ind_init+200
-        ind_choice_poke_2 = ind_choice+200
-        ind_reward_poke_2 = ind_reward +200
-        
-        ind_init_poke_3 = ind_init+400
-        ind_choice_poke_3 = ind_choice+400
-        ind_reward_poke_3 = ind_reward +400
-        
-                    
-        ind_init_poke_4 = ind_init+100
-        ind_choice_poke_4 = ind_choice+100
-        ind_reward_poke_4 = ind_reward +100
-        
-        
-        ind_init_poke_6 = ind_init+500
-        ind_choice_poke_6 = ind_choice+500
-        ind_reward_poke_6 = ind_reward +500
-        
-        ind_init_poke_7 = ind_init+200
-        ind_choice_poke_7 = ind_choice+200
-        ind_reward_poke_7 = ind_reward +200
-        
-        ind_init_poke_8 = ind_init+400
-        ind_choice_poke_8 = ind_choice+400
-        ind_reward_poke_8 = ind_reward +400
-        
-        
-        ind_init_poke_9 = ind_init+300
-        ind_choice_poke_9 = ind_choice+300
-        ind_reward_poke_9 = ind_reward +300
-        
-        ioff()
-        
-        x_coordinates_A_1_R, x_coordinates_A_2_R, x_coordinates_A_3_R,y_coordinates_A_1_R,\
-        y_coordinates_A_2_R, y_coordinates_A_3_R, x_coordinates_B_1_R, x_coordinates_B_2_R,\
-        x_coordinates_B_3_R, y_coordinates_B_1_R, y_coordinates_B_2_R, y_coordinates_B_3_R, x_coordinates_I_1_R,\
-        x_coordinates_I_2_R, x_coordinates_I_3_R, y_coordinates_I_1_R, y_coordinates_I_2_R, y_coordinates_I_3_R,\
-        x_coordinates_A_1_nR, x_coordinates_A_2_nR, x_coordinates_A_3_nR,y_coordinates_A_1_nR,\
-        y_coordinates_A_2_nR, y_coordinates_A_3_nR, x_coordinates_B_1_nR, x_coordinates_B_2_nR,\
-        x_coordinates_B_3_nR, y_coordinates_B_1_nR, y_coordinates_B_2_nR, y_coordinates_B_3_nR, x_coordinates_I_1_nR,\
-        x_coordinates_I_2_nR, x_coordinates_I_3_nR, y_coordinates_I_1_nR, y_coordinates_I_2_nR, y_coordinates_I_3_nR = coordinates_for_plots(session)
-        
-        x_points = [132,232,232,332,332,432,432,532]
-        y_points = [2.8,3.8,1.8,4.8,0.8,3.8,1.8,2.8]
-        task_2_start, task_3_start = task_indicies(session) 
-        task_1_end_time = pyControl_choice[task_2_start-1]/1000
-        task_2_start_time = pyControl_choice[task_2_start]/1000
-        task_2_end_time = pyControl_choice[task_3_start-1]/1000
-        task_3_start_time = pyControl_choice[task_3_start]/1000
-        task_3_end_time = pyControl_choice[-1]/1000
-        
-        task_arrays = np.zeros(shape=(n_trials,3))
-        task_arrays[:task_2_start,0] = 1
-        task_arrays[task_2_start:task_3_start,1] = 1
-        task_arrays[task_3_start:,2] = 1
-        for neuron in range(n_neurons):
-            bin_edges = np.arange(0,session_duration_ms, bin_width_ms)
-            hist,edges = np.histogram(spikes_list[neuron], bins= bin_edges)# histogram per second
-            normalised = gaussian_filter1d(hist.astype(float), smooth_sd_ms/bin_width_ms)
+        if len(raw_spikes[0]) > 0:
+            spikes_list,session_duration_ms =  session_spikes_vs_trials_plot(raw_spikes,pyControl_choice)
+            aligned_spikes= session.aligned_rates
+            n_neurons = aligned_spikes.shape[1]
+            n_trials = aligned_spikes.shape[0]
+            t_out = session.t_out
+            initiate_choice_t = session.target_times 
+            initiate_t = initiate_choice_t[1]
+            choice_t = initiate_choice_t[2]
+            reward_t = initiate_choice_t[-2] +250
+            ind_init = np.abs(t_out-initiate_t).argmin()
+            ind_choice = np.abs(t_out-choice_t).argmin()
+            ind_reward = np.abs(t_out-reward_t).argmin()
             
-            #Firing rate and trial rate 
-            figure()
-            gridspec.GridSpec(2,2)
-            subplot2grid((2,1), (0,0))
-            axvspan(0, task_1_end_time, alpha=0.1, color='firebrick',zorder =0)
-            axvspan(task_2_start_time, task_2_end_time, alpha=0.1, color='cadetblue',zorder =0)
-            axvspan(task_3_start_time, task_3_end_time, alpha=0.1, color='olive',zorder =0)
-            plot(bin_edges[:-1]/bin_width_ms, normalised/max(normalised), label='Firing Rate', color ='cadetblue',zorder =1) 
-            trial_rate,edges_py = np.histogram(pyControl_choice, bins=bin_edges)
-            trial_rate = gaussian_filter1d(trial_rate.astype(float), smooth_sd_ms/bin_width_ms)
-            plot(bin_edges[:-1]/bin_width_ms, trial_rate/max(trial_rate), label='Rate', color = 'lightblue',zorder =1)
-
-             
-            xlabel('Time (ms)')
-            ylabel('Smoothed Firing Rate')
-            title('{}'.format(session.file_name))
-            legend()
+            ind_init_poke_1 = ind_init+300
+            ind_choice_poke_1 = ind_choice+300
+            ind_reward_poke_1 = ind_reward +300
             
-            #Port Firing
-            subplot2grid((2,2), (1,0))
-            plot(x_coordinates_A_1_R, y_coordinates_A_1_R[neuron], color = 'firebrick')   
-            plot(x_coordinates_A_2_R, y_coordinates_A_2_R[neuron], color = 'cadetblue')      
-            plot(x_coordinates_A_3_R, y_coordinates_A_3_R[neuron], color = 'olive')      
-            plot(x_coordinates_B_1_R, y_coordinates_B_1_R[neuron], color = 'firebrick')    
-            plot(x_coordinates_B_2_R, y_coordinates_B_2_R[neuron], color = 'cadetblue' )       
-            plot(x_coordinates_B_3_R, y_coordinates_B_3_R[neuron], color = 'olive')   
-            #plot(x_coordinates_I_1_R, y_coordinates_I_1_R[neuron], color = 'red', linestyle = ':')   
-            #plot(x_coordinates_I_2_R, y_coordinates_I_2_R[neuron], color = 'blue',  linestyle = ':')      
-            #plot(x_coordinates_I_3_R, y_coordinates_I_3_R[neuron], color = 'green',  linestyle = ':')  
+            ind_init_poke_2 = ind_init+200
+            ind_choice_poke_2 = ind_choice+200
+            ind_reward_poke_2 = ind_reward +200
             
-            plot(x_coordinates_A_1_nR, y_coordinates_A_1_nR[neuron], color = 'red', linestyle='dashed')   
-            plot(x_coordinates_A_2_nR, y_coordinates_A_2_nR[neuron], color = 'blue', linestyle='dashed')      
-            plot(x_coordinates_A_3_nR, y_coordinates_A_3_nR[neuron], color = 'green',linestyle='dashed')      
-            plot(x_coordinates_B_1_nR, y_coordinates_B_1_nR[neuron], color = 'red',linestyle='dashed')    
-            plot(x_coordinates_B_2_nR, y_coordinates_B_2_nR[neuron], color = 'blue',linestyle='dashed' )       
-            plot(x_coordinates_B_3_nR, y_coordinates_B_3_nR[neuron], color = 'green', linestyle='dashed')   
-            #plot(x_coordinates_I_1_nR, y_coordinates_I_1_nR[neuron], color = 'red',linestyle='dashed')   
-            #plot(x_coordinates_I_2_nR, y_coordinates_I_2_nR[neuron], color = 'blue',  linestyle='dashed')      
-            #plot(x_coordinates_I_3_nR, y_coordinates_I_3_nR[neuron], color = 'green',  linestyle='dashed')    
+            ind_init_poke_3 = ind_init+400
+            ind_choice_poke_3 = ind_choice+400
+            ind_reward_poke_3 = ind_reward +400
             
-                                         
-            
-            axvline(ind_init_poke_1,ymin=0.85, ymax=0.9,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_1,ymin=0.85, ymax=0.9,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_1, ymin=0.85, ymax=0.9,linestyle = '--', c = 'Pink', linewidth=0.5)
-            
-            axvline(ind_init_poke_2,ymin=0.7, ymax=0.8,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_2,ymin=0.7, ymax=0.8,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_2, ymin=0.7, ymax=0.8,linestyle = '--', c = 'Pink', linewidth=0.5)
+                        
+            ind_init_poke_4 = ind_init+100
+            ind_choice_poke_4 = ind_choice+100
+            ind_reward_poke_4 = ind_reward +100
             
             
-            axvline(ind_init_poke_3,ymin=0.7, ymax=0.8,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_3,ymin=0.7, ymax=0.8,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_3, ymin=0.7, ymax=0.8,linestyle = '--', c = 'Pink', linewidth=0.5)
-           
-            axvline(ind_init_poke_4,ymin=0.5, ymax=0.6,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_4,ymin=0.5, ymax=0.6,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_4, ymin=0.5, ymax=0.6,linestyle = '--', c = 'Pink', linewidth=0.5)
-           
-           
-            axvline(ind_init_poke_6,ymin=0.5, ymax=0.6,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_6,ymin=0.5, ymax=0.6,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_6, ymin=0.5, ymax=0.6,linestyle = '--', c = 'Pink', linewidth=0.5)
+            ind_init_poke_6 = ind_init+500
+            ind_choice_poke_6 = ind_choice+500
+            ind_reward_poke_6 = ind_reward +500
             
-            axvline(ind_init_poke_7,ymin=0.3, ymax=0.4,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_7,ymin=0.3, ymax=0.4,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_7, ymin=0.3, ymax=0.4,linestyle = '--', c = 'Pink', linewidth=0.5)
+            ind_init_poke_7 = ind_init+200
+            ind_choice_poke_7 = ind_choice+200
+            ind_reward_poke_7 = ind_reward +200
             
-            axvline(ind_init_poke_8,ymin=0.3, ymax=0.4,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_8,ymin=0.3, ymax=0.4,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_8, ymin=0.3, ymax=0.4,linestyle = '--', c = 'Pink', linewidth=0.5)
-          
+            ind_init_poke_8 = ind_init+400
+            ind_choice_poke_8 = ind_choice+400
+            ind_reward_poke_8 = ind_reward +400
             
-            axvline(ind_init_poke_9,ymin=0.1, ymax=0.2,linestyle = '--' ,c = 'Grey', linewidth=0.5)
-            axvline(ind_choice_poke_9,ymin=0.1, ymax=0.2,linestyle = '--', c = 'Black', linewidth=0.5)
-            axvline(ind_reward_poke_9, ymin=0.1, ymax=0.2,linestyle = '--', c = 'Pink', linewidth=0.5)
-            # Pokes 
-            scatter(x_points,y_points,s =100, c = 'black')
-            axis('off')
             
-            #H Heatmap  
-            subplot2grid((2,2), (1,1))
-            heatplot = aligned_spikes[:,neuron,:]
-            normalised = (heatplot - np.min(heatplot,1)[:, None]) / (np.max(heatplot,1)[:, None]+1e-08 - np.min(heatplot,1)[:, None])
-            heatplot_con = np.concatenate([normalised,task_arrays], axis = 1)
-
-            imshow(heatplot_con,aspect = 'auto')
-            plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'O'))
+            ind_init_poke_9 = ind_init+300
+            ind_choice_poke_9 = ind_choice+300
+            ind_reward_poke_9 = ind_reward +300
             
-            pdf.savefig()
-            clf()
+            ioff()
+            
+            x_coordinates_A_1_R, x_coordinates_A_2_R, x_coordinates_A_3_R,y_coordinates_A_1_R,\
+            y_coordinates_A_2_R, y_coordinates_A_3_R, x_coordinates_B_1_R, x_coordinates_B_2_R,\
+            x_coordinates_B_3_R, y_coordinates_B_1_R, y_coordinates_B_2_R, y_coordinates_B_3_R, x_coordinates_I_1_R,\
+            x_coordinates_I_2_R, x_coordinates_I_3_R, y_coordinates_I_1_R, y_coordinates_I_2_R, y_coordinates_I_3_R,\
+            x_coordinates_A_1_nR, x_coordinates_A_2_nR, x_coordinates_A_3_nR,y_coordinates_A_1_nR,\
+            y_coordinates_A_2_nR, y_coordinates_A_3_nR, x_coordinates_B_1_nR, x_coordinates_B_2_nR,\
+            x_coordinates_B_3_nR, y_coordinates_B_1_nR, y_coordinates_B_2_nR, y_coordinates_B_3_nR, x_coordinates_I_1_nR,\
+            x_coordinates_I_2_nR, x_coordinates_I_3_nR, y_coordinates_I_1_nR, y_coordinates_I_2_nR, y_coordinates_I_3_nR = coordinates_for_plots(session)
+            
+            x_points = [132,232,232,332,332,432,432,532]
+            y_points = [2.8,3.8,1.8,4.8,0.8,3.8,1.8,2.8]
+            task_2_start, task_3_start = task_indicies(session) 
+            task_1_end_time = pyControl_choice[task_2_start-1]/1000
+            task_2_start_time = pyControl_choice[task_2_start]/1000
+            task_2_end_time = pyControl_choice[task_3_start-1]/1000
+            task_3_start_time = pyControl_choice[task_3_start]/1000
+            task_3_end_time = pyControl_choice[-1]/1000
+            
+            task_arrays = np.zeros(shape=(n_trials,3))
+            task_arrays[:task_2_start,0] = 1
+            task_arrays[task_2_start:task_3_start,1] = 1
+            task_arrays[task_3_start:,2] = 1
+            for neuron,ID in enumerate(neurons):
+                bin_edges = np.arange(0,session_duration_ms, bin_width_ms)
+                hist,edges = np.histogram(spikes_list[neuron], bins= bin_edges)# histogram per second
+                normalised = gaussian_filter1d(hist.astype(float), smooth_sd_ms/bin_width_ms)
+                
+                #Firing rate and trial rate 
+                figure()
+                gridspec.GridSpec(2,2)
+                subplot2grid((2,1), (0,0))
+                axvspan(0, task_1_end_time, alpha=0.1, color='firebrick',zorder =0)
+                axvspan(task_2_start_time, task_2_end_time, alpha=0.1, color='cadetblue',zorder =0)
+                axvspan(task_3_start_time, task_3_end_time, alpha=0.1, color='olive',zorder =0)
+                plot(bin_edges[:-1]/bin_width_ms, normalised/max(normalised), label='Firing Rate', color ='cadetblue',zorder =1) 
+                trial_rate,edges_py = np.histogram(pyControl_choice, bins=bin_edges)
+                trial_rate = gaussian_filter1d(trial_rate.astype(float), smooth_sd_ms/bin_width_ms)
+                plot(bin_edges[:-1]/bin_width_ms, trial_rate/max(trial_rate), label='Rate', color = 'lightblue',zorder =1)
+    
+                 
+                xlabel('Time (ms)')
+                ylabel('Smoothed Firing Rate')
+                title('{}'.format(session.file_name))
+                legend()
+                
+                #Port Firing
+                subplot2grid((2,2), (1,0))
+                plot(x_coordinates_A_1_R, y_coordinates_A_1_R[neuron], color = 'firebrick')   
+                plot(x_coordinates_A_2_R, y_coordinates_A_2_R[neuron], color = 'cadetblue')      
+                plot(x_coordinates_A_3_R, y_coordinates_A_3_R[neuron], color = 'olive')      
+                plot(x_coordinates_B_1_R, y_coordinates_B_1_R[neuron], color = 'firebrick')    
+                plot(x_coordinates_B_2_R, y_coordinates_B_2_R[neuron], color = 'cadetblue' )       
+                plot(x_coordinates_B_3_R, y_coordinates_B_3_R[neuron], color = 'olive')   
+                #plot(x_coordinates_I_1_R, y_coordinates_I_1_R[neuron], color = 'red', linestyle = ':')   
+                #plot(x_coordinates_I_2_R, y_coordinates_I_2_R[neuron], color = 'blue',  linestyle = ':')      
+                #plot(x_coordinates_I_3_R, y_coordinates_I_3_R[neuron], color = 'green',  linestyle = ':')  
+                
+                plot(x_coordinates_A_1_nR, y_coordinates_A_1_nR[neuron], color = 'red', linestyle='dashed')   
+                plot(x_coordinates_A_2_nR, y_coordinates_A_2_nR[neuron], color = 'blue', linestyle='dashed')      
+                plot(x_coordinates_A_3_nR, y_coordinates_A_3_nR[neuron], color = 'green',linestyle='dashed')      
+                plot(x_coordinates_B_1_nR, y_coordinates_B_1_nR[neuron], color = 'red',linestyle='dashed')    
+                plot(x_coordinates_B_2_nR, y_coordinates_B_2_nR[neuron], color = 'blue',linestyle='dashed' )       
+                plot(x_coordinates_B_3_nR, y_coordinates_B_3_nR[neuron], color = 'green', linestyle='dashed')   
+                #plot(x_coordinates_I_1_nR, y_coordinates_I_1_nR[neuron], color = 'red',linestyle='dashed')   
+                #plot(x_coordinates_I_2_nR, y_coordinates_I_2_nR[neuron], color = 'blue',  linestyle='dashed')      
+                #plot(x_coordinates_I_3_nR, y_coordinates_I_3_nR[neuron], color = 'green',  linestyle='dashed')    
+                
+                                             
+                
+                axvline(ind_init_poke_1,ymin=0.85, ymax=0.9,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_1,ymin=0.85, ymax=0.9,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_1, ymin=0.85, ymax=0.9,linestyle = '--', c = 'Pink', linewidth=0.5)
+                
+                axvline(ind_init_poke_2,ymin=0.7, ymax=0.8,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_2,ymin=0.7, ymax=0.8,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_2, ymin=0.7, ymax=0.8,linestyle = '--', c = 'Pink', linewidth=0.5)
+                
+                
+                axvline(ind_init_poke_3,ymin=0.7, ymax=0.8,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_3,ymin=0.7, ymax=0.8,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_3, ymin=0.7, ymax=0.8,linestyle = '--', c = 'Pink', linewidth=0.5)
+               
+                axvline(ind_init_poke_4,ymin=0.5, ymax=0.6,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_4,ymin=0.5, ymax=0.6,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_4, ymin=0.5, ymax=0.6,linestyle = '--', c = 'Pink', linewidth=0.5)
+               
+               
+                axvline(ind_init_poke_6,ymin=0.5, ymax=0.6,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_6,ymin=0.5, ymax=0.6,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_6, ymin=0.5, ymax=0.6,linestyle = '--', c = 'Pink', linewidth=0.5)
+                
+                axvline(ind_init_poke_7,ymin=0.3, ymax=0.4,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_7,ymin=0.3, ymax=0.4,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_7, ymin=0.3, ymax=0.4,linestyle = '--', c = 'Pink', linewidth=0.5)
+                
+                axvline(ind_init_poke_8,ymin=0.3, ymax=0.4,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_8,ymin=0.3, ymax=0.4,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_8, ymin=0.3, ymax=0.4,linestyle = '--', c = 'Pink', linewidth=0.5)
+              
+                
+                axvline(ind_init_poke_9,ymin=0.1, ymax=0.2,linestyle = '--' ,c = 'Grey', linewidth=0.5)
+                axvline(ind_choice_poke_9,ymin=0.1, ymax=0.2,linestyle = '--', c = 'Black', linewidth=0.5)
+                axvline(ind_reward_poke_9, ymin=0.1, ymax=0.2,linestyle = '--', c = 'Pink', linewidth=0.5)
+                
+                
+                # Pokes 
+                scatter(x_points,y_points,s =100, c = 'black')
+                axis('off')
+                
+                # Heatmap  
+                subplot2grid((2,2), (1,1))
+                heatplot = aligned_spikes[:,neuron,:]
+                normalised = (heatplot - np.min(heatplot,1)[:, None]) / (np.max(heatplot,1)[:, None]+1e-08 - np.min(heatplot,1)[:, None])
+                heatplot_con = np.concatenate([normalised,task_arrays], axis = 1)
+    
+                imshow(heatplot_con,aspect = 'auto')
+                plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'O'))
+                title('{}'.format(ID))
+                
+                pdf.savefig()
+                clf()
     pdf.close()
             
             
