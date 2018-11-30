@@ -1,12 +1,12 @@
 # Ephys and Behaviour Analyses
 
-**Esync** _ _script includes functions to synchronise behaviour, camera and ephys_ _ 
+**Esync** _script includes functions to synchronise behaviour, camera and ephys_ 
 
-**OpenEphys.py** _ _are functions provided by the openephys system (use pack2dat for coverting openephys files to .dat format; mean/median referencing)_ _
+**OpenEphys.py** _are functions provided by the openephys system (use pack2dat for coverting openephys files to .dat format; mean/median referencing)_
 
-**beh_and_ephys_plots.py** _ _is an ugly scipt for initial analyses for the grant write-up; might have useful lines of code for behavioural analyses 
+**beh_and_ephys_plots.py** _is an ugly scipt for initial analyses for the grant write-up; might have useful lines of code for behavioural analyses_
 
-**align_activity.py** _ _is a master function for syncronising behaviour and ephys 
+**align_activity.py** _is a master function for syncronising behaviour and ephys_
 
 **channel_maps** _ _has channels maps for packing the openephys data to .dat format; can be used for simultaneous recordings from multiple animals
 
