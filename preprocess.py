@@ -12,11 +12,12 @@ import pandas as pd
 import data_import as di
 import OpenEphys as op 
 import Esync as es
-import datefinder
+#import datefinder
 import re
 import fnmatch
 import datetime
 from datetime import datetime
+from scipy.signal import decimate
 
 def converttime(time):
     #offset = time & 0xFFF
@@ -51,9 +52,9 @@ ephys_data_folder ='/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Ephys
 
 files_ephys = os.listdir(ephys_data_folder)
 
-behaviour_filename = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys/m486'
+behaviour_filename = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys/'+ subject
 files_behaviour = os.listdir(behaviour_filename)
-spikes_df_csv_out_folder =  '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons/m486'
+spikes_df_csv_out_folder =  '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons/'+ subject
 
 for file_ephys in files_ephys:
     if file_ephys in m486:
@@ -103,6 +104,40 @@ for file_ephys in files_ephys:
                             #PyControl
                             aligner = es.Rsync_aligner(pycon_pulse_times, ephys_pulse_times, plot=True)
                             
+                            LFP_dir = spikes_df_csv_out_folder + '/' + 'LFP'
+                            MUA_dir = spikes_df_csv_out_folder + '/' + 'MUA'
+                            if not os.path.exists(LFP_dir):
+                                os.makedirs(LFP_dir)
+                            
+                            if not os.path.exists(MUA_dir):
+                                os.makedirs(MUA_dir)
+                                
+                                
+                            #Extract LFP 
+                            n_channels = 32
+                            all_channels = []
+                            time = []
+                            for file in os.listdirephys_path():
+                                if file.endswith('.dat'):
+                                    tmp = np.memmap(file, dtype = np.int16)
+                                    shp = int(len(tmp)/n_channels)
+                                    lfp = np.memmap(file, dtype = np.int16, shape = (shp,n_channels))
+                                    
+                            for channel in range(n_channels):
+                                channel_lfp = lfp[:,channel]
+                                downsample_3000 = decimate(channel_lfp, 10, zero_phase = True)
+                                downsample_500 = decimate(downsample_3000, 6, zero_phase = True)
+                                recording_offset_add = downsample_500 + recording_start_sample
+                                recording_ms_frame = 1000/sampling_rate
+                                # Convert LFP time
+                                time_channel = aligner.B_to_A(recording_ms_frame)
+                                all_channels.append(downsample_500)
+                                time.append(time_channel)
+                                
+                            all_channels = np.asarray(all_channels)
+                            time = np.asarray(time)
+                            
+                            lfp_to_save = np.vstack((time,all_channels))
                             
                             spike_clusters = np.load(os.path.join(ephys_path,'spike_clusters.npy'))
                             spike_samples = np.load(os.path.join(ephys_path,'spike_times.npy'   ))[:,0] # Samples when spikes occured.
@@ -124,14 +159,26 @@ for file_ephys in files_ephys:
                             good_clusters_df = cluster_groups.loc[cluster_groups['group']=='good', :]
                             good_cluster_numbers = good_clusters_df['cluster_id'].values
                             
+                            #Find multiunit activity 
+                            mua_clusters_df = cluster_groups.loc[cluster_groups['group']=='mua', :]
+                            mua_cluster_numbers = mua_clusters_df['cluster_id'].values
+                            
                             # Filter only rows corresponding to spikes from single units
                             good_spikes_df = df_with_bad_spikes.loc[df_with_bad_spikes['spike_cluster'].isin(good_cluster_numbers), :]
                             good_spikes_np = good_spikes_df['spike_cluster']
                             spike_times_np = good_spikes_df['spike_time']
                             good_spikes_df = np.vstack((good_spikes_np,spike_times_np))
                             
+                            # Filter only rows corresponding to spikes from multiunit
+
+                            mua_spikes_df = df_with_bad_spikes.loc[df_with_bad_spikes['spike_cluster'].isin(mua_cluster_numbers), :]
+                            mua_spikes_np = mua_spikes_df['spike_cluster']
+                            mua_spike_times_np = mua_spikes_df['spike_time']
+                            mua_spikes_df = np.vstack((mua_spikes_np,mua_spike_times_np))
+                            
                             # Save good spikes df to np
                             np.save((spikes_df_csv_out_folder + '/'+ data_folder), good_spikes_df)
-                            
-                            
+                            np.save((LFP_dir + '/'+ data_folder), lfp_to_save)
+                            np.save((MUA_dir + '/'+ data_folder), mua_spikes_df)
+
                               

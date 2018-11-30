@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 from scipy.stats.distributions import poisson
 
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 #ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
 ##beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)

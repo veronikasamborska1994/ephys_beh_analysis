@@ -32,14 +32,28 @@ def import_code(ephys_path,beh_path):
     m484 = []
     
     for subject_ephys in subjects_ephys: 
+        # Go through each animal
         subject_subfolder = ephys_path + '/' + subject_ephys
         subject_sessions = os.listdir(subject_subfolder)
+        # List all ephys_sessions
         subject_sessions = [session for session in subject_sessions if not session.startswith('.')] #Exclude .DS store from subject list
+        subject_sessions = [session for session in subject_sessions if not session.startswith('LFP')] #Exclude LFP from subject list
+        subject_sessions = [session for session in subject_sessions if not session.startswith('MUA')] #Exclude MUA from subject list
+
+        # List all ephys sessions in LFP folder
+        lfp_folder = subject_subfolder + '/'  + 'LFP'
+        lfp_sessions = os.listdir(lfp_folder)
+        lfp_sessions = [s for s in lfp_sessions if not s.startswith('.')] #Exclude .DS store from subject list
+
 
         for session in subject_sessions:
             match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', session)
             date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()
             date_ephys = match_ephys.group()
+            for s in lfp_sessions: 
+                 match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
+                 date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
+                 date_lfp = match_lfp.group()
             for subject in subjects_beh:
                 if subject == subject_ephys:
                     subject_beh_subfolder = beh_path + '/' + subject
@@ -54,39 +68,19 @@ def import_code(ephys_path,beh_path):
                             neurons_path = subject_subfolder+'/'+session 
                             neurons = np.load(neurons_path)
                             neurons = neurons[:,~np.isnan(neurons[1,:])]
-                            
-#                            # Exclude neurons that had less than 200 spikes in a session 
-#                            neuron_IDs = np.unique(neurons[0])
-#                            for n in neuron_IDs:
-#                                n_ind = np.where(neurons[0] == n)
-#                                spike_list = neurons[1][n_ind]
-#                                if len(spike_list) < 200:
-#                                    neuron_id_exclude  = np.delete(neurons[0], n_ind)
-#                                    spike_exclude = np.delete[neurons[1], n_ind]       
-#                            if 'neuron_id_exclude' in dir():
-#                                neurons_exclusion = np.vstack((neuron_id_exclude,spike_exclude)) 
-#                            else:
-#                                neurons_exclusion = copy.copy(neurons)
-#                                
-#                            # Exclude neurons with firing rate higher than 7 Hz
-#                            min_time = min(neurons[1])
-#                            max_time = max(neurons[1])
-#                            range_time = (max_time- min_time)/1000
-#                            n_IDs = np.unique(neurons_exclusion[0])
-#                            for n in n_IDs:
-#                                n_i = np.where(neurons_exclusion[0] == n)
-#                                n_spike_list = neurons_exclusion[1][n_i]
-#                                firing_rate = len(n_spike_list)/range_time
-#                                if firing_rate > 7:
-#                                    neuron_id_firing_ex  = np.delete(neurons_exclusion[0], n_i)
-#                                    spike_firing_ex = np.delete(neurons_exclusion[1], n_i)
-#                            if 'neuron_id_firing_ex' in dir():
-#                                neurons_firing_ex = np.vstack((neuron_id_firing_ex,spike_firing_ex)) 
-#                            else:
-#                                neurons_firing_ex = copy.copy(neurons_exclusion)
-                                    
-                            #behaviour_session.ephys = neurons_firing_ex
                             behaviour_session.ephys = neurons
+                            if date_lfp == date_behaviour:                             
+                                lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
+                                print(lfp_path)
+                                lfp = np.load(lfp_path)
+                                lfp_time = lfp[:,0,:]
+                                lfp_signal = lfp[:,1,:]
+                                lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
+                                lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
+                                behaviour_session.lfp = lfp_nan
+                                behaviour_session.lfp_time = lfp_time_ex_nan
+
+                            
                             if subject_ephys == 'm480':
                                 m480.append(behaviour_session)
                             elif subject_ephys == 'm483':
