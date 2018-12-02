@@ -777,7 +777,7 @@ def plotting(experiment,experiment_aligned):
     
     bin_width_ms = 1000
     smooth_sd_ms = 4000
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/PFC_ID.pdf')
+    pdf = PdfPages('/Users/veronikasamborska/Desktop/HP.pdf')
 
     for s,session in zip(experiment, experiment_aligned):     
         #if session.file_name == 'm483-2018-06-14-172430.txt':

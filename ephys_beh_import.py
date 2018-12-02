@@ -69,18 +69,17 @@ def import_code(ephys_path,beh_path):
                             neurons = np.load(neurons_path)
                             neurons = neurons[:,~np.isnan(neurons[1,:])]
                             behaviour_session.ephys = neurons
-                            if date_lfp == date_behaviour:                             
-                                lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
-                                print(lfp_path)
-                                lfp = np.load(lfp_path)
-                                lfp_time = lfp[:,0,:]
-                                lfp_signal = lfp[:,1,:]
-                                lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
-                                lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
-                                behaviour_session.lfp = lfp_nan
-                                behaviour_session.lfp_time = lfp_time_ex_nan
-
-                            
+                        if date_lfp == date_behaviour:                             
+                            lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
+                            print(lfp_path)
+                            lfp = np.load(lfp_path)
+                            lfp_time = lfp[:,0,:]
+                            lfp_signal = lfp[:,1,:]
+                            lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
+                            lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
+                            behaviour_session.lfp = lfp_nan
+                            behaviour_session.lfp_time = lfp_time_ex_nan
+                    
                             if subject_ephys == 'm480':
                                 m480.append(behaviour_session)
                             elif subject_ephys == 'm483':

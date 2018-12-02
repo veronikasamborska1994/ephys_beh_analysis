@@ -20,7 +20,6 @@ import pylab as plt
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
   
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-#experiment_aligned_HP = all_sessions_aligment(HP)
 #experiment_aligned_PFC = all_sessions_aligment(PFC)
 
 

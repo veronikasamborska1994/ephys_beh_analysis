@@ -38,7 +38,6 @@ def change_block_firing_rates(ephys_session, beh_session):
     state_1 = state_non_forced[:len(task_1)]
     state_a_good = np.where(state_1 == 1)[0]
     state_b_good = np.where(state_1 == 0)[0]
-    import pylab as pl
 
     state_2 = state_non_forced[len(task_1): (len(task_1) +len(task_2))]
     state_t2_a_good = np.where(state_2 == 1)[0]
