@@ -13,6 +13,10 @@ import ephys_beh_import as ep
 import neuron_firing_all_pokes as nf
 import ephys_beh_import as ep
 from scipy.signal import hilbert, chirp
+sys.path.append('/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages')
+
+import neurodsp
+from neurodsp.timefrequency import amp_by_time, freq_by_time, phase_by_time
 
 #ephys_path = '/Users/veronikasamborska/Desktop/neurons_lfp'
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
@@ -110,7 +114,6 @@ fs = 500       # sample rate, Hz
 cutoff_low = 10   # desired cutoff frequency of the filter, Hz
 cutoff_high = 6   # desired cutoff frequency of the filter, Hz
 
-Fs = 500
 s = HP[session_n]
 lfp = s.lfp
 lfp_time = s.lfp_time
@@ -127,6 +130,8 @@ signalPSD = np.abs(frequency) ** 2
 #f, t, Zxx = signal.stft(y,fs = 500)
 #plt.pcolormesh(t, f, np.abs(Zxx))
 
+Fs = 500
+f_range = (6,10)
 
 raw_spikes = s.ephys
 neurons = np.unique(raw_spikes[0])
@@ -164,6 +169,8 @@ for choice in all_events:
 trial = 295
 session_spike_list = np.asarray(session_spike_list)
 one_trial = session_spike_list[trial,:]
+pha = phase_by_time(lfp_times_list[trial], Fs, f_range)
+
 min_time = min(lfp_times_list[trial])
 max_time = max(lfp_times_list[trial])
 colors = ["red", "orange", "grey", "green", "blue", "purple", "black"]
