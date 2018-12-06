@@ -116,29 +116,33 @@ for file_ephys in files_ephys:
                             #Extract LFP 
                             n_channels = 32
                             all_channels = []
-                            time = []
-                            for file in os.listdirephys_path():
+                            time_lfp_list = []
+                            for file in os.listdir(ephys_path):
                                 if file.endswith('.dat'):
-                                    tmp = np.memmap(file, dtype = np.int16)
+                                    tmp = np.memmap(ephys_path +'/' + file, dtype = np.int16)
                                     shp = int(len(tmp)/n_channels)
-                                    lfp = np.memmap(file, dtype = np.int16, shape = (shp,n_channels))
+                                    lfp = np.memmap(ephys_path + '/' + file, dtype = np.int16, shape = (shp,n_channels))
                                     
                             for channel in range(n_channels):
                                 channel_lfp = lfp[:,channel]
+                                # Find timestamps for each point
+                                time_lfp = np.arange(lfp.shape[0])
                                 downsample_3000 = decimate(channel_lfp, 10, zero_phase = True)
                                 downsample_500 = decimate(downsample_3000, 6, zero_phase = True)
-                                recording_offset_add = downsample_500 + recording_start_sample
-                                recording_ms_frame = 1000/sampling_rate
+                                # Downsample time
+                                downsample_time = time_lfp[::60]
+                                recording_offset_add = downsample_time + recording_start_sample
+                                recording_ms_frame = recording_offset_add * 1000/sampling_rate
                                 # Convert LFP time
                                 time_channel = aligner.B_to_A(recording_ms_frame)
                                 all_channels.append(downsample_500)
-                                time.append(time_channel)
+                                time_lfp_list.append(time_channel)
                                 
                             all_channels = np.asarray(all_channels)
-                            time = np.asarray(time)
+                            time_LFP = np.asarray(time_lfp_list)
                             
-                            lfp_to_save = np.vstack((time,all_channels))
-                            
+                            lfp_to_save = np.vstack((time_LFP,all_channels))
+                                                            
                             spike_clusters = np.load(os.path.join(ephys_path,'spike_clusters.npy'))
                             spike_samples = np.load(os.path.join(ephys_path,'spike_times.npy'   ))[:,0] # Samples when spikes occured.
                             spike_samples = spike_samples + recording_start_sample # Correct for offset of Kilosort samples and OpenEphys samples.
