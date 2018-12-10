@@ -259,15 +259,11 @@ def predictors_pokes(session):
     forced_trials = session.trial_data['forced_trial']
     non_forced_array = np.where(forced_trials == 0)[0]
     task = session.trial_data['task']
-    task_non_forced = task[non_forced_array]
-    
+    task_non_forced = task[non_forced_array]   
     outcomes_all = session.trial_data['outcomes'] 
     reward = outcomes_all[non_forced_array]
-    
-    
     choice_non_forced = choices[non_forced_array]
-#    if n_trials != len(choice_non_forced):
-#        n_trials = n_trials -1
+    
     task_1 = np.where(task_non_forced == 1)[0]
     task_2 = np.where(task_non_forced == 2)[0] 
     poke_A = session.trial_data['poke_A']
@@ -289,6 +285,7 @@ def predictors_pokes(session):
     
     # Task 2
     # If Poke A in task 2 is the same as in task 1 keep it 
+    
     predictor_a_1 = copy.copy(predictor_a)
     predictor_a_1[0][len(task_1):] = 0
     predictor_a_2 =  copy.copy(predictor_a)
@@ -365,9 +362,12 @@ def predictors_pokes(session):
     return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward
         
 def regression(experiment):
-    C = []    # To strore predictor loadings for each session.
+    C_task_1= []     # To strore predictor loadings for each session in task 1.
+    C_task_2 = []    # To strore predictor loadings for each session in task 2.
     cpd = []  # To strore cpd for each session.
-    for s,session in enumerate(experiment):
+    
+    # Finding correlation coefficients for task 1 
+    for s,session in enumerate(experiment_aligned_PFC):
         aligned_spikes= session.aligned_rates[:]
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
         t_out = session.t_out
@@ -376,38 +376,88 @@ def regression(experiment):
         ind_after_choice = ind_choice + 7 # 1 sec after choice
         spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
         mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)     
+        
+        # Getting out task indicies   
+        task = session.trial_data['task']
+        forced_trials = session.trial_data['forced_trial']
+        non_forced_array = np.where(forced_trials == 0)[0]
 
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)
+        task_non_forced = task[non_forced_array]
+        task_1 = np.where(task_non_forced == 1)[0]
+        task_2 = np.where(task_non_forced == 2)[0]        
+        firing_rate_task_1 =  mean_spikes_around_choice[:len(task_1)]
+        firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+        
+        # For regressions for each task independently 
+        predictor_B_Task_1 = predictor_B_Task_1[:len(task_1)]
+        predictor_B_Task_2 = predictor_B_Task_2[len(task_1):len(task_1)+len(task_2)]
+        reward_t1 = reward[:len(task_1)]
+        reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]
 
-        # Creating choice regressors 1 for choice A and -1 for choice B
-        predictor_B_Task_1 = -predictor_B_Task_1
-        predictor_B_Task_2 = -predictor_B_Task_2
-        predictor_B_Task_3 = -predictor_B_Task_3
-        choice_task_1 = predictor_A_Task_1 +predictor_B_Task_1
-        choice_task_2 = predictor_A_Task_2 +predictor_B_Task_2
-        choice_task_3 = predictor_A_Task_3 +predictor_B_Task_3
-
-
-        predictors = OrderedDict([
-                                      ('choice_task_1' , choice_task_1),
-                                      ('choice_task_2' , choice_task_2),
-                                      ('choice_task_3' , choice_task_3),
-                                      ('reward', reward)])
-            
-        X = np.vstack(predictors.values()).T[:n_trials,:].astype(float)
-        n_predictors = X.shape[1]
-        y = mean_spikes_around_choice.reshape([n_trials,-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-        ols = LinearRegression(copy_X = True,fit_intercept= False)
-        ols.fit(X,y)
-        C.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
-        cpd.append(_CPD(X,y).reshape(n_neurons, n_predictors))
-        #C.append(ols.coef_.reshape(n_neurons, n_timepoints, n_predictors)) # Predictor loadings
-        #cpd.append(_CPD(X,y).reshape(n_neurons, n_timepoints, n_predictors))
+        
+        predictors_task_1 = OrderedDict([
+                                      ('B_task_1' , predictor_B_Task_1),
+                                      ('reward_t1', reward_t1)])
     
-    C = np.concatenate(C,0)
-    cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.   
+       
+        X_task_1 = np.vstack(predictors_task_1.values()).T[:len(predictor_B_Task_1),:].astype(float)
+        n_predictors = X_task_1.shape[1]
+        y_t1 = firing_rate_task_1.reshape([len(firing_rate_task_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+        ols = LinearRegression(copy_X = True,fit_intercept= False)
+        ols.fit(X_task_1,y_t1)
+        C_task_1.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+          
+    C_task_1 = np.concatenate(C_task_1,0)
+    
+    # Using correlation coefficients from task one as a coding scheme 
+    for s,session in enumerate(experiment_aligned_PFC):
+        aligned_spikes= session.aligned_rates[:]
+        n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+        t_out = session.t_out
+        initiate_choice_t = session.target_times #Initiation and Choice Times
+        ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
+        ind_after_choice = ind_choice + 7 # 1 sec after choice
+        spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
+        mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)
+       
+        
+        # Getting out task indicies
+        task = session.trial_data['task']
+        task_non_forced = task[non_forced_array]
+        task_1 = np.where(task_non_forced == 1)[0]
+        task_2 = np.where(task_non_forced == 2)[0]        
+        firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+        
+        # For regressions for each task independently 
+        predictor_B_Task_2 = predictor_B_Task_2[len(task_1):len(task_1)+len(task_2)]
+        reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]
+
+        for n in range(n_neurons):
+            
+        predictors_task_2 = OrderedDict([
+                                      ('B_task_1' , predictor_B_Task_2),
+                                      ('reward_t1', reward_t2)])
+    
+       
+        X_task_2 = np.vstack(predictors_task_2.values()).T[:len(predictors_task_2),:].astype(float)
+        n_predictors = X_task_2.shape[1]
+        y_t2 = firing_rate_task_2.reshape([len(firing_rate_task_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+        ols = LinearRegression(copy_X = True,fit_intercept= False)
+        ols.fit(X_task_2,y_t2)
+        C_task_2.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+        
+    
+    C_task_2 = np.concatenate(C_task_2,0)
+    
+    #cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.   
+    
+    
+    # Used to be plots for making sure the coefficients make sense
     
     #C_choice_mean  = np.mean(C_choice, axis =1) 
+    
 #    for i, predictor in enumerate(predictors):
 #        if predictor == 'a_task_1':
 #            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
@@ -444,6 +494,7 @@ def regression(experiment):
 #             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'blue')
 #        elif predictor == 'reward':
 #             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'yellow')
+    
 #    for t in initiate_choice_t[1:-1]:
 #        plt.axvline(t, color='k', linestyle=':')
         #figure, ax = plt.subplots(figsize = (15,5), ncols = n_neurons , nrows =2 )
@@ -474,6 +525,5 @@ def regression(experiment):
 #            ax[1][0].legend(fontsize = 'xx-small')
 #        plt.title('{}'.format(session.file_name))
     
-    return predictors, C, X, y,cpd
+#    return predictors, C, X, y,cpd
 
-#exp_average= ut.exp_mov_ave(choices,initValue = 0.5,tau = 8)

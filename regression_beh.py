@@ -186,6 +186,7 @@ for s,session in enumerate(all_sessions):
                               ('ra_three_trial', ra_three_trials)])
     
     X = np.vstack(predictors.values()).T[:n_trials,:].astype(float)
+    
     if subj_ID == '478':
         reg_m478_p.append(X)
         reg_m478_dv.append(A)
