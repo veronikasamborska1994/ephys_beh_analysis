@@ -18,7 +18,7 @@ from datetime import datetime
 
 
 
-def import_code(ephys_path,beh_path):
+def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
     subjects_ephys = os.listdir(ephys_path)
     subjects_ephys = [subject for subject in subjects_ephys if not subject.startswith('.')] #Exclude .DS store from subject list
     subjects_beh = os.listdir(beh_path)
@@ -41,19 +41,21 @@ def import_code(ephys_path,beh_path):
         subject_sessions = [session for session in subject_sessions if not session.startswith('MUA')] #Exclude MUA from subject list
 
         # List all ephys sessions in LFP folder
-        lfp_folder = subject_subfolder + '/'  + 'LFP'
-        lfp_sessions = os.listdir(lfp_folder)
-        lfp_sessions = [s for s in lfp_sessions if not s.startswith('.')] #Exclude .DS store from subject list
-
+        if lfp_analyse == 'True':
+            lfp_folder = subject_subfolder + '/'  + 'LFP'
+            lfp_sessions = os.listdir(lfp_folder)
+            lfp_sessions = [s for s in lfp_sessions if not s.startswith('.')] #Exclude .DS store from subject list
+    
 
         for session in subject_sessions:
             match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', session)
             date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()
             date_ephys = match_ephys.group()
-            for s in lfp_sessions: 
-                 match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
-                 date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
-                 date_lfp = match_lfp.group()
+            if lfp_analyse == 'True': 
+                for s in lfp_sessions: 
+                     match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
+                     date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
+                     date_lfp = match_lfp.group()
             for subject in subjects_beh:
                 if subject == subject_ephys:
                     subject_beh_subfolder = beh_path + '/' + subject
@@ -69,17 +71,6 @@ def import_code(ephys_path,beh_path):
                             neurons = np.load(neurons_path)
                             neurons = neurons[:,~np.isnan(neurons[1,:])]
                             behaviour_session.ephys = neurons
-                        if date_lfp == date_behaviour:                             
-                            lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
-                            print(lfp_path)
-                            lfp = np.load(lfp_path)
-                            lfp_time = lfp[:,0,:]
-                            lfp_signal = lfp[:,1,:]
-                            lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
-                            lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
-                            behaviour_session.lfp = lfp_nan
-                            behaviour_session.lfp_time = lfp_time_ex_nan
-                    
                             if subject_ephys == 'm480':
                                 m480.append(behaviour_session)
                             elif subject_ephys == 'm483':
@@ -94,6 +85,20 @@ def import_code(ephys_path,beh_path):
                                 m481.append(behaviour_session)
                             elif subject_ephys == 'm484':
                                 m484.append(behaviour_session)
+                                
+                        if lfp_analyse == 'True':
+                            if date_lfp == date_behaviour:                             
+                                lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
+                                print(lfp_path)
+                                lfp = np.load(lfp_path)
+                                lfp_time = lfp[:,0,:]
+                                lfp_signal = lfp[:,1,:]
+                                lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
+                                lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
+                                behaviour_session.lfp = lfp_nan
+                                behaviour_session.lfp_time = lfp_time_ex_nan
+                        
+                            
     HP = m484 + m479 + m483
     PFC = m478 + m486 + m480 + m481
     

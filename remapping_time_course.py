@@ -9,6 +9,8 @@ Created on Wed Oct 24 17:33:54 2018
 import numpy as np
 #import ephys_beh_import as ep
 import heatmap_aligned as ha
+import regressions as re
+
 import matplotlib.pyplot as plt
 
 from scipy.ndimage.filters import gaussian_filter1d as gs
@@ -35,6 +37,7 @@ def remapping_timecourse(experiment):
     
     for session in experiment:
         
+        
         aligned_spikes= session.aligned_rates 
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape
         
@@ -50,7 +53,8 @@ def remapping_timecourse(experiment):
         a2_a3_decrease[:] = np.NaN
         
         # Trial indices  of choices 
-        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1,\
+        predictor_B_Task_2, predictor_B_Task_3, reward = re.predictors_pokes(session)
         t_out = session.t_out
       
         initiate_choice_t = session.target_times #Initiation and Choice Times
