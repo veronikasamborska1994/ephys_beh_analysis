@@ -13,14 +13,7 @@ from scipy.stats import pearsonr
 import ephys_beh_import as ep
 import pylab as plt
 
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-  
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-#experiment_aligned_PFC = all_sessions_aligment(PFC)
-#experiment_aligned_HP = all_sessions_aligment(HP)
-
-
+## Target times for aligned rates of non-forced trials 
 def target_times_f(experiment):
     # Trial times is array of reference point times for each trial. Shape: [n_trials, n_ref_points]
     # Here we are using [init-1000, init, choice, choice+1000]    
@@ -45,6 +38,7 @@ def target_times_f(experiment):
         
     return target_times
 
+## Target times for aligned rates of non-forced trials 
 def all_sessions_aligment(experiment):
     target_times  = target_times_f(experiment)
     experiment_aligned = []

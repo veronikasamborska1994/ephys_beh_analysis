@@ -39,9 +39,10 @@ for s,session in enumerate(all_sessions):
     choice_non_forced = choices[non_forced_array]
     n_trials = len(choice_non_forced)
     
-    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1,\
-     predictor_B_Task_2, predictor_B_Task_3, reward = re.predictors_pokes(session)
-    # Check if a choice happened before the end of the
+    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
+    # Check if a choice happened before the end of the session
     if len(predictor_A_Task_1) != len(choice_non_forced):
         predictor_A_Task_1 = predictor_A_Task_1[:len(choice_non_forced)]
         predictor_A_Task_2 = predictor_A_Task_2[:len(choice_non_forced)]
@@ -180,10 +181,10 @@ for s,session in enumerate(all_sessions):
                               ('three_trials' , three_trials),
                               ('r_one_trial', r_previous_trial),
                               ('r_two_trial', r_two_trials),
-                              ('r_three_trial', r_three_trials),
-                              ('ra_one_trial', ra_previous_trial),
-                              ('ra_two_trial', ra_two_trials),
-                              ('ra_three_trial', ra_three_trials)])
+                              ('r_three_trial', r_three_trials)])
+                              #('ra_one_trial', ra_previous_trial),
+                              #('ra_two_trial', ra_two_trials),
+                              #('ra_three_trial', ra_three_trials)])
     
     X = np.vstack(predictors.values()).T[:n_trials,:].astype(float)
     

@@ -32,8 +32,8 @@ adj_connections = np.ones(8)
 adj_connections.fill(0.5)
 
 np.fill_diagonal(adj_loop[:,1:], adj_connections)
-#np.fill_diagonal(adj_loop[1:], adj_connections)
-#adj_loop[0,7] = 0.5
+np.fill_diagonal(adj_loop[1:], adj_connections)
+adj_loop[0,7] = 0.5
 adj_loop[7,0] = 0.5
 
 a[0,7] = 1

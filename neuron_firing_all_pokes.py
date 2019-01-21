@@ -12,8 +12,10 @@ import heatmap_aligned as ha
 from scipy.ndimage import gaussian_filter1d
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
+import regressions as re
 
 def make_consistent_poke_names(session):
+# Function to make A pokes to be in the same spatial position in three tasks 
     poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3, poke_B1_B2_A3  = ep.poke_A_B_make_consistent(session)        
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
 
@@ -102,25 +104,7 @@ def latent_state_indices(session):
     state_t3_a_good += task_3_start
     state_t3_b_good += task_3_start
     return state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good
-#
-#def latent_state_means(session):   
-#    # Extract spikes and event times for the session 
-#    aligned_spikes= session.aligned_rates 
-#    # Find times of events
-#
-#    
-#     # Find Task Indicies
-#    forced_trials = session.trial_data['forced_trial']
-#    non_forced_array = np.where(forced_trials == 0)[0]
-#    task = session.trial_data['task']
-#    task_non_forced = task[non_forced_array]
-#    task_2 = np.where(task_non_forced == 2)[0] 
-#    task_2_start = task_2[0]
-#    task_3_start = task_2[-1]+1
-#    
-#    # Indicies for A and B choices
-#    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)    
-#    
+
 
 def means_for_heatplots(session):
   
@@ -132,7 +116,7 @@ def means_for_heatplots(session):
     task_2_start, task_3_start = task_indicies(session)
     
     # Indicies for A and B choices
-    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)    
+    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = re.predictors_pokes(session)    
     
     index_reward = np.where(reward ==1)
     index_no_reward = np.where(reward ==0)

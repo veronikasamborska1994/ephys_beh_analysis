@@ -31,73 +31,6 @@ def length(v):
 def angle(v1, v2):
   return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
-
-
-#a1_a2_all_neurons_hp, a2_a3_all_neurons_hp, a1_a3_all_neurons_hp, b1_b2_all_neurons_hp, b2_b3_all_neurons_hp, b1_b3_all_neurons_hp =  correlation_trials(experiment_aligned_HP)
-#a1_a2_all_neurons_pfc, a2_a3_all_neurons_pfc, a1_a3_all_neurons_pfc, b1_b2_all_neurons_pfc, b2_b3_all_neurons_pfc, b1_b3_all_neurons_pfc=  correlation_trials(experiment_aligned_PFC)
-
-
-
-#flattened__hp_list_a2_a3 = np.array(flattened__hp_list_a2_a3)
-#flattened__hp_list_a2_a3 = flattened__hp_list_a2_a3[~np.isnan(flattened__hp_list_a2_a3)]
-#
-#bins_a = int(len(flattened_list_a2_a3)/100)
-#hist(flattened_list_a2_a3, bins = bins_a)
-#
-#
-#flattened_hp_list_a1_a2 = []
-#flattened__hp_list_a2_a3 = []
-#for x in a1_a2_all_neurons_hp:
-#    for y in x:
-#        flattened_hp_list_a1_a2.append(y)
-#
-#for x in a2_a3_all_neurons_hp:
-#    for y in x:
-#        flattened__hp_list_a2_a3.append(y)    
-#        
-#        
-#
-#flattened_list_hp_b1_b2 = []
-#flattened_list_hp_b2_b3 = []
-#for x in b1_b2_all_neurons_hp:
-#    for y in x:
-#        flattened_list_hp_b1_b2.append(y)
-#
-#for x in b2_b3_all_neurons_hp:
-#    for y in x:
-#        flattened_list_hp_b2_b3.append(y)    
-#        
-#        
-#flattened_pfc_list_a1_a2 = []
-#flattened__pfc_list_a2_a3 = []
-#for x in a1_a2_all_neurons_pfc:
-#    for y in x:
-#        flattened_pfc_list_a1_a2.append(y)
-#
-#for x in a2_a3_all_neurons_pfc:
-#    for y in x:
-#        flattened__pfc_list_a2_a3.append(y)    
-#            
-#flattened_pfc_list_b1_b2 = []
-#flattened__pfc_list_b2_b3 = []
-#for x in b1_b2_all_neurons_pfc:
-#    for y in x:
-#        flattened_pfc_list_b1_b2.append(y)
-#
-#for x in b2_b3_all_neurons_pfc:
-#    for y in x:
-#        flattened__pfc_list_b2_b3.append(y)    
-#            
-#flattened_pfc_list_a1_a2 = np.array(flattened_pfc_list_a1_a2)
-#flattened_pfc_list_a1_a2 = flattened_pfc_list_a1_a2[~np.isnan(flattened_pfc_list_a1_a2)]
-#flattened_pfc_list_a2_a3 = np.array(flattened__pfc_list_a2_a3)
-#flattened_pfc_list_a2_a3 = flattened_pfc_list_a2_a3[~np.isnan(flattened__pfc_list_a2_a3)]
-#flattened_pfc_list_b1_b2 = np.array(flattened_pfc_list_b1_b2)
-#flattened_pfc_list_b1_b2 = flattened_pfc_list_b1_b2[~np.isnan(flattened_pfc_list_b1_b2)]
-#
-#bins_a = int(len(flattened_pfc_list_b1_b2)/100)
-#hist(flattened_pfc_list_b1_b2, bins = 50)
-
 def correlation_trials(experiment):
     a1_a2_all_neurons = []
     a2_a3_all_neurons = []
@@ -302,6 +235,8 @@ def predictors_pokes(session):
     predictor_b_3 = copy.copy(predictor_b)
     predictor_b_3[0][:len(task_1)+len(task_2)] = 0
     
+    state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good = ep.state_indices(session)
+
     if poke_A1_A2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -309,6 +244,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
+        predictor_a_good_task_1 = copy.copy(state_a_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+
     elif poke_A1_B2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_b_2[0])
@@ -316,6 +255,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
+        predictor_a_good_task_1 = copy.copy(state_a_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+
     elif poke_A1_B2_A3 == True: 
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_b_2[0])
@@ -323,6 +266,11 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
+        predictor_a_good_task_1 = copy.copy(state_a_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+
+
     elif poke_A1_A2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -330,6 +278,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
+        predictor_a_good_task_1 = copy.copy(state_a_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+
     elif poke_B1_B2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
         predictor_A_Task_2 = copy.copy(predictor_b_2[0])
@@ -337,6 +289,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
+        predictor_a_good_task_1 = copy.copy(state_b_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+
     elif poke_B1_A2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -344,6 +300,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
+        predictor_a_good_task_1 = copy.copy(state_b_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+        
     elif poke_B1_A2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -351,6 +311,10 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
+        predictor_a_good_task_1 = copy.copy(state_b_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+
     elif poke_B1_B2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
         predictor_A_Task_2 = copy.copy(predictor_b_2[0])
@@ -358,8 +322,13 @@ def predictors_pokes(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
+        predictor_a_good_task_1 = copy.copy(state_b_good)
+        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
+        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
     
-    return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward
+    return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3
         
 def regression(experiment):
     C_task_1= []     # To strore predictor loadings for each session in task 1.
@@ -367,7 +336,7 @@ def regression(experiment):
     cpd = []  # To strore cpd for each session.
     
     # Finding correlation coefficients for task 1 
-    for s,session in enumerate(experiment_aligned_PFC):
+    for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
         t_out = session.t_out
@@ -411,7 +380,7 @@ def regression(experiment):
     C_task_1 = np.concatenate(C_task_1,0)
     
     # Finding correlation coefficients from task two 
-    for s,session in enumerate(experiment_aligned_PFC):
+    for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
         t_out = session.t_out
@@ -448,9 +417,10 @@ def regression(experiment):
     
     C_task_2 = np.concatenate(C_task_2,0)
     C = []
+    
     # Finding mean on B choices of trials  
     all_trial_means_list = []
-    for s,session in enumerate(experiment_aligned_PFC):
+    for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
         t_out = session.t_out
@@ -480,80 +450,4 @@ def regression(experiment):
     
     C.append(ols.coef_.reshape(C_task_2.shape[1])) # Predictor loadings
         
-    
-    #cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.   
-    
-    
-    # Used to be plots for making sure the coefficients make sense
-    
-    #C_choice_mean  = np.mean(C_choice, axis =1) 
-    
-#    for i, predictor in enumerate(predictors):
-#        if predictor == 'a_task_1':
-#            plot(t_out,C_mean[:, i], label = '{}'.format(predictor), color = 'red')
-#        elif predictor == 'a_task_2':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'pink')
-#        elif predictor == 'a_task_3':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'purple')
-#        elif predictor == 'b_task_1':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'black')
-#        elif predictor == 'b_task_2':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'grey')
-#        elif predictor == 'b_task_3':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'blue')
-#        elif predictor == 'reward':
-#            plot(t_out, C_mean[:, i], label = '{}'.format(predictor), color = 'yellow')
-
-#    reward_time = initiate_choice_t[-2]+250
-#    plt.axvline(reward_time, color='red', linestyle=':')
-#    plt.legend()
-#    
-#    plt.figure()
-#    for i, predictor in enumerate(predictors):
-#        if predictor == 'a_task_1':
-#            plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'red')   
-#        elif predictor == 'a_task_2':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'pink')
-#        elif predictor == 'a_task_3':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'purple')
-#        elif predictor == 'b_task_1':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'black')
-#        elif predictor == 'b_task_2':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'grey')
-#        elif predictor == 'b_task_3':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor, color = 'blue')
-#        elif predictor == 'reward':
-#             plt.plot(t_out, 100*cpd[:,i], label=predictor,  color = 'yellow')
-    
-#    for t in initiate_choice_t[1:-1]:
-#        plt.axvline(t, color='k', linestyle=':')
-        #figure, ax = plt.subplots(figsize = (15,5), ncols = n_neurons , nrows =2 )
-#        for neuron in range(n_neurons):
-#            for i,predictor in enumerate(predictors): 
-#                if predictor == 'a_task_1':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'red')
-#                elif predictor == 'a_task_2':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'pink')
-#                elif predictor == 'a_task_3':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'purple')
-#                elif predictor == 'b_task_1':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'black')
-#                elif predictor == 'b_task_2':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'grey')
-#                elif predictor == 'b_task_3':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'blue')
-#                elif predictor == 'reward':
-#                    ax[1][neuron].plot(C[s][neuron,:, i], label = '{}'.format(predictor), color = 'yellow')
-#                    
-#            ax[0][neuron].plot(mean_spikes_A_task_1[neuron], label = 'A Task 1', color = 'red')
-#            ax[0][neuron].plot(mean_spikes_A_task_2[neuron], label = 'A Task 2', color = 'pink')
-#            ax[0][neuron].plot(mean_spikes_A_task_3[neuron], label = 'A Task 3', color = 'purple')
-#            ax[0][neuron].plot(mean_spikes_B_task_1[neuron], label = 'B Task 1', color = 'black')
-#            ax[0][neuron].plot(mean_spikes_B_task_2[neuron], label = 'B Task 2', color = 'grey')
-#            ax[0][neuron].plot(mean_spikes_B_task_3[neuron], label = 'B Task 3', color = 'blue')
-#            
-#            ax[1][0].legend(fontsize = 'xx-small')
-#        plt.title('{}'.format(session.file_name))
-    
-#    return predictors, C, X, y,cpd
-
+ 
