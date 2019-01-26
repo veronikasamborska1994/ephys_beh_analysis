@@ -5,6 +5,10 @@ Created on Wed Jan 16 11:06:37 2019
 
 @author: veronikasamborska
 """
+import numpy as np
+import matplotlib.pyplot as plt
+import ephys_beh_import as ep
+import regressions as re
 
 # Script for finding SVDs based on whether A and B happened in good or bad blocks
 
@@ -53,11 +57,11 @@ def extract_session_a_b_based_on_block(session, tasks_unchanged = True):
             aligned_rates_task_1 = aligned_rates[:task_1]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
             predictor_B_Task_1 = predictor_B_Task_1[:task_1]
-            reward_task_1 = reward[:task_1]
+            #reward_task_1 = reward[:task_1]
             aligned_rates_task_2 = aligned_rates[task_1+task_2:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
             predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
-            reward_task_2 = reward[task_1+task_2:]
+            #reward_task_2 = reward[task_1+task_2:]
             
             predictor_a_good_task_1 = predictor_a_good_task_1
             predictor_a_good_task_2 = predictor_a_good_task_3
@@ -66,11 +70,11 @@ def extract_session_a_b_based_on_block(session, tasks_unchanged = True):
             aligned_rates_task_1 = aligned_rates[:task_1+task_2]
             predictor_A_Task_1 = predictor_A_Task_2[:task_1+task_2]
             predictor_B_Task_1 = predictor_B_Task_2[:task_1+task_2]
-            reward_task_1 = reward[:task_1+task_2]
+            #reward_task_1 = reward[:task_1+task_2]
             aligned_rates_task_2 = aligned_rates[task_1+task_2:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
             predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
-            reward_task_2 = reward[task_1+task_2:]
+            #reward_task_2 = reward[task_1+task_2:]
             
             predictor_a_good_task_1 = predictor_a_good_task_2
             predictor_a_good_task_2 = predictor_a_good_task_3
@@ -82,13 +86,13 @@ def extract_session_a_b_based_on_block(session, tasks_unchanged = True):
     
     #Indicies of A choices in each task (1s) and Bs are just 0s 
     predictor_A_Task_1_cut = predictor_A_Task_1[:task_1]
-    reward_task_1_cut = reward[:task_1]
+    #reward_task_1_cut = reward[:task_1]
           
     predictor_A_Task_2_cut = predictor_A_Task_2[task_1:task_1+task_2]
-    reward_task_2_cut = reward[task_1:task_1+task_2]
+    #reward_task_2_cut = reward[task_1:task_1+task_2]
           
     predictor_A_Task_3_cut = predictor_A_Task_3[task_1+task_2:]
-    reward_task_3_cut = reward[task_1+task_2:]
+    #reward_task_3_cut = reward[task_1+task_2:]
     
     
     # Make arrays with 1s and 0s to mark states in the task
@@ -281,24 +285,25 @@ def svd_plotting_block_analysis(experiment, tasks_unchanged = False, plot_HP = T
 #    plot(average_between, label = 'Explain B block from A block PFC')
     
     if plot_a == False and plot_HP == True :
-        plot(average_within, label = 'Explain A from A HP', color='black')
-        plot(average_between, label = 'Explain B from A HP', linestyle = '--', color='black')
+        plt.plot(average_within, label = 'Explain A from A HP', color='black')
+        plt.plot(average_between, label = 'Explain B from A HP', linestyle = '--', color='black')
+        
     elif plot_a == False and plot_HP == False:
-        plot(average_within, label = 'Explain A from A PFC', color='red')
-        plot(average_between, label = 'Explain B from A HP', linestyle = '--', color='red')
+        plt.plot(average_within, label = 'Explain A from A PFC', color='red')
+        plt.plot(average_between, label = 'Explain B from A HP', linestyle = '--', color='red')
         
     if plot_a == True and plot_HP == True :
-        plot(average_a_to_a, label = 'Explain A from A HP', color='blue')
-        plot(average_b_to_b, label = 'Explain B from B HP', linestyle = '--', color='blue')
-        plot(average_b_to_a, label = 'Explain B from A HP', color='green')
-        plot(average_a_to_b, label = 'Explain A from B HP', linestyle = '--', color='green')
+        plt.plot(average_a_to_a, label = 'Explain A from A HP', color='blue')
+        plt.plot(average_b_to_b, label = 'Explain B from B HP', linestyle = '--', color='blue')
+        plt.plot(average_b_to_a, label = 'Explain B from A HP', color='green')
+        plt.plot(average_a_to_b, label = 'Explain A from B HP', linestyle = '--', color='green')
         
     elif plot_a == True and plot_HP == False:
-        plot(average_a_to_a, label = 'Explain A from A PFC', color='grey')
-        plot(average_b_to_b, label = 'Explain B from B PFC', linestyle = '--', color='grey')
-        plot(average_b_to_a, label = 'Explain B from A PFC', color='orange')
-        plot(average_a_to_b, label = 'Explain A from B PFC', linestyle = '--', color='orange')
+        plt.plot(average_a_to_a, label = 'Explain A from A PFC', color='grey')
+        plt.plot(average_b_to_b, label = 'Explain B from B PFC', linestyle = '--', color='grey')
+        plt.plot(average_b_to_a, label = 'Explain B from A PFC', color='orange')
+        plt.plot(average_a_to_b, label = 'Explain A from B PFC', linestyle = '--', color='orange')
 #        
-    legend()
+    plt.legend()
     
     

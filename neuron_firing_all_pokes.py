@@ -243,8 +243,11 @@ def means_for_heatplots(session):
     
     
 def a_b_times(session):
-    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1,\
-    predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
+    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
+       
     
 
     task = session.trial_data['task']
@@ -764,7 +767,6 @@ def plotting(experiment,experiment_aligned):
     pdf = PdfPages('/Users/veronikasamborska/Desktop/HP.pdf')
 
     for s,session in zip(experiment, experiment_aligned):     
-        #if session.file_name == 'm483-2018-06-14-172430.txt':
         # Get raw spike data across the task 
         raw_spikes = s.ephys
         neurons = np.unique(raw_spikes[0])

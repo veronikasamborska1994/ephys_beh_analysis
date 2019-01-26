@@ -80,9 +80,9 @@ def state_indices_forced(session):
     state_forced = state[forced_array]
     task = session.trial_data['task']
     task_forced = task[forced_array]
-    
     task_1 = np.where(task_forced == 1)[0]
     task_2 = np.where(task_forced == 2)[0] 
+    
     
     #Task 1 
     state_1 = state_forced[:len(task_1)]
@@ -92,17 +92,34 @@ def state_indices_forced(session):
     # Task 2
     state_2 = state_forced[len(task_1): (len(task_1) +len(task_2))]
     state_t2_a_good = np.where(state_2 == 1)[0]
+    state_t2_a_good = state_t2_a_good+len(task_1)
     state_t2_b_good = np.where(state_2 == 0)[0]
+    state_t2_b_good = state_t2_b_good+len(task_1)
+
 
     #Task 3 
     state_3 = state_forced[len(task_1) + len(task_2):]
     state_t3_a_good = np.where(state_3 == 1)[0]
     state_t3_b_good = np.where(state_3 == 0)[0]
+    state_t3_a_good =state_t3_a_good + (len(task_1) + len(task_2))
+    state_t3_b_good = state_t3_b_good + (len(task_1) + len(task_2))
+    
     return state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good
 
 
+def extract_correct_forced_states(session):
+    events = session.events
+    forced_trials = []
+    for event in events:
+        if 'a_forced_state' in event:
+            forced_trials.append(1)
+        elif 'b_forced_state' in event:
+            forced_trials.append(0)
+    forced_trials = np.asarray(forced_trials)
+    return forced_trials
+                        
+                        
 def predictors_forced(session):
-    choices = session.trial_data['choices']
     forced_trials = session.trial_data['forced_trial']
     forced_array = np.where(forced_trials == 1)[0]
     
@@ -110,7 +127,7 @@ def predictors_forced(session):
     task_forced = task[forced_array]   
     outcomes_all = session.trial_data['outcomes'] 
     reward = outcomes_all[forced_array]
-    choice_forced = choices[forced_array]
+    choice_forced = extract_correct_forced_states(session)
     n_trials = len(choice_forced)
     task_1 = np.where(task_forced == 1)[0]
     task_2 = np.where(task_forced == 2)[0] 
@@ -131,9 +148,6 @@ def predictors_forced(session):
         
     poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3,poke_B1_B2_A3 = ep.poke_A_B_make_consistent(session)
     
-    # Task 2
-    # If Poke A in task 2 is the same as in task 1 keep it 
-    
     predictor_a_1 = copy.copy(predictor_a)
     predictor_a_1[0][len(task_1):] = 0
     predictor_a_2 =  copy.copy(predictor_a)
@@ -151,7 +165,24 @@ def predictors_forced(session):
     predictor_b_3[0][:len(task_1)+len(task_2)] = 0
     
     state_a_good, state_b_good, state_t2_a_good, state_t2_b_good, state_t3_a_good, state_t3_b_good = state_indices_forced(session)
+    
+    predictor_state_a = np.zeros([n_trials])
+    predictor_state_b = np.zeros([n_trials])
+    predictor_state_a_1_good = copy.copy(predictor_state_a)
+    predictor_state_a_2_good = copy.copy(predictor_state_a)
+    predictor_state_a_3_good = copy.copy(predictor_state_a)
+    
+    predictor_state_b_1_good = copy.copy(predictor_state_b)
+    predictor_state_b_2_good = copy.copy(predictor_state_b)
+    predictor_state_b_3_good = copy.copy(predictor_state_b)
 
+    predictor_state_a_1_good[state_a_good] = 1
+    predictor_state_b_1_good[state_b_good] = 1
+    predictor_state_a_2_good[state_t2_a_good] = 1
+    predictor_state_b_2_good[state_t2_b_good] = 1
+    predictor_state_a_3_good[state_t3_a_good] = 1
+    predictor_state_b_3_good[state_t3_b_good] = 1
+    
     if poke_A1_A2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -159,9 +190,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
-        predictor_a_good_task_1 = copy.copy(state_a_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_a_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_a_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_a_3_good)
 
     elif poke_A1_B2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
@@ -170,9 +201,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
-        predictor_a_good_task_1 = copy.copy(state_a_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_a_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_b_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_b_3_good)
 
     elif poke_A1_B2_A3 == True: 
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
@@ -181,9 +212,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
-        predictor_a_good_task_1 = copy.copy(state_a_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_a_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_b_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_a_3_good)
 
 
     elif poke_A1_A2_B3 == True:
@@ -193,9 +224,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_b_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
-        predictor_a_good_task_1 = copy.copy(state_a_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_a_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_a_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_b_3_good)
 
     elif poke_B1_B2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
@@ -204,9 +235,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
-        predictor_a_good_task_1 = copy.copy(state_b_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_b_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_b_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_b_3_good)
 
     elif poke_B1_A2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
@@ -215,9 +246,10 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
-        predictor_a_good_task_1 = copy.copy(state_b_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_b_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_a_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_a_3_good)
+        
     elif poke_B1_A2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -225,9 +257,9 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_b_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_a_3[0])
-        predictor_a_good_task_1 = copy.copy(state_b_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_a_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_b_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_b_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_a_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_b_3_good)
 
     elif poke_B1_B2_A3 == True:
         predictor_A_Task_1 = copy.copy(predictor_b_1[0])
@@ -236,10 +268,12 @@ def predictors_forced(session):
         predictor_B_Task_1 =  copy.copy(predictor_a_1[0])
         predictor_B_Task_2 =  copy.copy(predictor_a_2[0])
         predictor_B_Task_3 =  copy.copy(predictor_b_3[0])
-        predictor_a_good_task_1 = copy.copy(state_b_good)
-        predictor_a_good_task_2 = copy.copy(state_t2_b_good)
-        predictor_a_good_task_3 = copy.copy(state_t3_a_good)
+        predictor_a_good_task_1 = copy.copy(predictor_state_b_1_good)
+        predictor_a_good_task_2 = copy.copy(predictor_state_b_2_good)
+        predictor_a_good_task_3 = copy.copy(predictor_state_a_3_good)
     
     return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
     predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3
+    
+    

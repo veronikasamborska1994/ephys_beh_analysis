@@ -7,19 +7,10 @@ Created on Tue Oct 30 16:09:55 2018
 """
 
 import numpy as np
-import ephys_beh_import as ep
-import heatmap_aligned as ha
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from scipy.stats.distributions import poisson
-
-ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-#ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
-##beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-#experiment_aligned_HP = ha.all_sessions_aligment(HP)
-#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
+import regressions as re
 
 
 def remapping_surprise(experiment, distribution):
@@ -35,8 +26,9 @@ def remapping_surprise(experiment, distribution):
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape   
         
         # Trial indices  of choices 
-        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)
-        index_no_reward = np.where(reward ==0)
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
         t_out = session.t_out
       
         initiate_choice_t = session.target_times #Initiation and Choice Times
@@ -147,24 +139,24 @@ def remapping_surprise(experiment, distribution):
     allmeans = mean_1_2 + mean_2_3/2
     allserr = serr_1_2 + serr_2_3/2
 
-    figure()
-    plot(x_pos,mean_1_2)
+    plt.figure()
+    plt.plot(x_pos,mean_1_2)
     plt.fill_between(x_pos, mean_1_2 -serr_1_2, mean_1_2 + serr_1_2, alpha=0.2)
     plt.axvline(task_change, color='k', linestyle=':')
     plt.title('Task 1 and 2')
     plt.ylabel('-log(p(X))')
     plt.xlabel('Trial #')
 
-    figure()
-    plot(x_pos,mean_2_3)
+    plt.figure()
+    plt.plot(x_pos,mean_2_3)
     plt.fill_between(x_pos, mean_2_3 -serr_2_3, mean_2_3 + serr_2_3, alpha=0.2)
     plt.axvline(task_change, color='k', linestyle=':')
     plt.title('Task 2 and 3')
     plt.ylabel('-log(p(X))')
     plt.xlabel('Trial #')
                
-    figure()
-    plot(x_pos,allmeans)
+    plt.figure()
+    plt.plot(x_pos,allmeans)
     plt.fill_between(x_pos, allmeans -allserr, allmeans + allserr, alpha=0.2)
     plt.axvline(task_change, color='k', linestyle=':')
     plt.title('Combined')
@@ -174,10 +166,13 @@ def remapping_surprise(experiment, distribution):
 
 def plot_firing_rate_time_course(experiment):
     for session in experiment:
-        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session)
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
+        
         aligned_spikes= session.aligned_rates 
         n_neurons = aligned_spikes.shape[1]
-        n_trials = aligned_spikes.shape[0]
+        
         spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
         spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
         spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
@@ -192,13 +187,13 @@ def plot_firing_rate_time_course(experiment):
         mean_spikes_B_task_3 = np.mean(spikes_B_task_3,axis = 0)
         mean_spikes_A_task_3 = np.mean(spikes_A_task_3,axis = 0)
         for neuron in range(n_neurons):
-            axes[neuron].plot(mean_spikes_B_task_1[neuron], label = 'B Task 1')
-            axes[neuron].plot(mean_spikes_A_task_1[neuron], label = 'A Task 1')
-            axes[neuron].plot(mean_spikes_B_task_2[neuron], label = 'B Task 2')
-            axes[neuron].plot(mean_spikes_A_task_2[neuron], label = 'A Task 2')
-            axes[neuron].plot(mean_spikes_B_task_3[neuron], label = 'B Task 3')
-            axes[neuron].plot(mean_spikes_A_task_3[neuron], label = 'A Task 3')
-        axes[0].legend()
+            plt.axes[neuron].plot(mean_spikes_B_task_1[neuron], label = 'B Task 1')
+            plt.axes[neuron].plot(mean_spikes_A_task_1[neuron], label = 'A Task 1')
+            plt.axes[neuron].plot(mean_spikes_B_task_2[neuron], label = 'B Task 2')
+            plt.axes[neuron].plot(mean_spikes_A_task_2[neuron], label = 'A Task 2')
+            plt.axes[neuron].plot(mean_spikes_B_task_3[neuron], label = 'B Task 3')
+            plt.axes[neuron].plot(mean_spikes_A_task_3[neuron], label = 'A Task 3')
+        plt.axes[0].legend()
         plt.title('{}'.format(session.file_name))
 
     

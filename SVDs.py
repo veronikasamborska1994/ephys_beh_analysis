@@ -9,22 +9,20 @@ Created on Mon Jan  7 13:14:22 2019
 #SVDs script for finding SVDs based on A and B (rewarded and unrewarded) in trials split in halfs
 
 import ephys_beh_import as ep
-import heatmap_aligned as ha 
 import regressions as re
-import neuron_firing_all_pokes as ne
-import copy 
-import forced_trials_extract_data as ft 
 import numpy as np
+import matplotlib.pyplot as plt
+import heatmap_aligned as ha
+import forced_trials_extract_data as ft
 
 ephys_path = '/Users/veronikasamborska/Desktop/neurons'
 beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+experiment_aligned_HP = ha.all_sessions_aligment(HP)
+experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
 
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-#experiment_aligned_HP = ha.all_sessions_aligment(HP)
-#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
-
-#HP_forced = ft.all_sessions_aligment_forced(HP)
-#PFC_forced = ft.all_sessions_aligment_forced(PFC)
+PFC_forced = ft.all_sessions_aligment_forced(PFC)
+HP_forced = ft.all_sessions_aligment_forced(HP)
 
 
 def extract_session_predictors_rates(session, tasks_unchanged = True):
@@ -62,6 +60,7 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
             predictor_A_Task_2 = predictor_A_Task_2[:task_1+task_2]
             predictor_B_Task_2 = predictor_B_Task_2[:task_1+task_2]
             reward_task_2 = reward[:task_1+task_2]
+            
         elif poke_I == poke_I_task_3:
             aligned_rates_task_1 = aligned_rates[:task_1]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
@@ -71,6 +70,7 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
             predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
             reward_task_2 = reward[task_1+task_2:]
+            
         elif poke_I_task_2 == poke_I_task_3:
             aligned_rates_task_1 = aligned_rates[:task_1+task_2]
             predictor_A_Task_1 = predictor_A_Task_2[:task_1+task_2]
@@ -88,7 +88,6 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         
         predictor_A_Task_1_first_half = predictor_A_Task_1[:int(len(aligned_rates_task_1)/2)]
         predictor_A_Task_1_second_half = predictor_A_Task_1[int(len(aligned_rates_task_1)/2):]
-
         predictor_A_Task_2_first_half = predictor_B_Task_2[:int(len(predictor_A_Task_2)/2)]
         predictor_A_Task_2_second_half = predictor_B_Task_2[int(len(predictor_A_Task_2)/2):]
         
@@ -162,8 +161,7 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
           aligned_rates_task_1_first_half_A_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 1 ))]
           aligned_rates_task_1_first_half_A_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 0 ))]
           aligned_rates_task_1_second_half_A_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 1 ))]
-          aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 ))]
-        
+          aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 ))]     
 
           aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 ))]
           aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 ))]
@@ -172,10 +170,8 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
     
           aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 1) & (reward_Task_2_first_half == 1 ))]
           aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 ))]
-
           aligned_rates_task_2_second_half_A_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 1 ))]
           aligned_rates_task_2_second_half_A_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 0 ))]
-         
           
           aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 ))]
           aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 ))]
@@ -248,28 +244,22 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                 
                 mean_firing_rate_task_1_first_half_A_reward  = np.mean(aligned_rates_task_1_first_half_A_reward[:,i,:],0)
                 mean_firing_rate_task_1_first_half_A_Nreward  = np.mean(aligned_rates_task_1_first_half_A_Nreward[:,i,:],0)
-                
                 mean_firing_rate_task_1_second_half_A_reward  = np.mean(aligned_rates_task_1_second_half_A_reward[:,i,:],0)
                 mean_firing_rate_task_1_second_half_A_Nreward  = np.mean(aligned_rates_task_1_second_half_A_Nreward[:,i,:],0)
                 
       
                 mean_firing_rate_task_2_first_half_A_reward  = np.mean(aligned_rates_task_2_first_half_A_reward[:,i,:],0)
                 mean_firing_rate_task_2_first_half_A_Nreward  = np.mean(aligned_rates_task_2_first_half_A_Nreward[:,i,:],0)
-                
-               
                 mean_firing_rate_task_2_second_half_A_reward  = np.mean(aligned_rates_task_2_second_half_A_reward[:,i,:],0)
-                
                 mean_firing_rate_task_2_second_half_A_Nreward  = np.mean(aligned_rates_task_2_second_half_A_Nreward[:,i,:],0)
                 
                 mean_firing_rate_task_1_first_half_B_reward  = np.mean(aligned_rates_task_1_first_half_B_reward[:,i,:],0)
-                mean_firing_rate_task_1_first_half_B_Nreward  = np.mean(aligned_rates_task_1_first_half_B_Nreward[:,i,:],0)
-                
+                mean_firing_rate_task_1_first_half_B_Nreward  = np.mean(aligned_rates_task_1_first_half_B_Nreward[:,i,:],0)           
                 mean_firing_rate_task_1_second_half_B_reward  = np.mean(aligned_rates_task_1_second_half_B_reward[:,i,:],0)     
                 mean_firing_rate_task_1_second_half_B_Nreward  = np.mean(aligned_rates_task_1_second_half_B_Nreward[:,i,:],0)
         
                 mean_firing_rate_task_2_first_half_B_reward  = np.mean(aligned_rates_task_2_first_half_B_reward[:,i,:],0)
-                mean_firing_rate_task_2_first_half_B_Nreward  = np.mean(aligned_rates_task_2_first_half_B_Nreward[:,i,:],0)
-                
+                mean_firing_rate_task_2_first_half_B_Nreward  = np.mean(aligned_rates_task_2_first_half_B_Nreward[:,i,:],0)               
                 mean_firing_rate_task_2_second_half_B_reward  = np.mean(aligned_rates_task_2_second_half_B_reward[:,i,:],0)
                 mean_firing_rate_task_2_second_half_B_Nreward  = np.mean(aligned_rates_task_2_second_half_B_Nreward[:,i,:],0)
                 
@@ -511,26 +501,26 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
         sum_c_task_3_2_from_t_3_1 = np.cumsum(s_3_2_from_t_3_1)/flattened_all_clusters_task_3_second_half.shape[0]
     
         
-        average_3_tasks = np.mean([sum_c_task_2_1, sum_c_task_2_2, sum_c_task_3_1, sum_c_task_3_2], axis = 0)
+        #average_3_tasks = np.mean([sum_c_task_2_1, sum_c_task_2_2, sum_c_task_3_1, sum_c_task_3_2], axis = 0)
         
         average_within = np.mean([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
-        std_within = np.std([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
-        x_within = np.arange(len(average_within))
+        #std_within = np.std([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
+        #x_within = np.arange(len(average_within))
         average_between = np.mean([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2], axis = 0)
         
-        std_between = np.std([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2], axis = 0)
-        x_between = np.arange(len(average_between))
+        #std_between = np.std([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2], axis = 0)
+        #x_between = np.arange(len(average_between))
 
     if HP == True:
-        plot(average_within, label = 'Within Tasks_HP', linestyle = '--', color='red')
-        fill_between(x_within,average_within+std_within,average_within-std_within, color = 'red', alpha = 0.2)
-        plot(average_between, label = 'Between Tasks_HP', color = 'red')
-        fill_between(x_between,average_between+std_between, average_between-std_between, color = 'red', alpha = 0.2)
+        plt.plot(average_within, label = 'Within Tasks_HP', linestyle = '--', color='red')
+        #plt.fill_between(x_within,average_within+std_within,average_within-std_within, color = 'red', alpha = 0.2)
+        plt.plot(average_between, label = 'Between Tasks_HP', color = 'red')
+        #plt.fill_between(x_between,average_between+std_between, average_between-std_between, color = 'red', alpha = 0.2)
 
     if HP == False:
-        plot(average_within, label = 'Within Tasks_PFC', linestyle = '--', color='blue')
-        fill_between(x_within,average_within+std_within, average_within-std_within, color = 'blue', alpha = 0.2)
-        plot(average_between, label = 'Between Tasks_PFC', color = 'blue')
-        fill_between(x_between,average_between+std_between, average_between-std_between, color = 'blue', alpha = 0.2)
+        plt.plot(average_within, label = 'Within Tasks_PFC', linestyle = '--', color='blue')
+        #plt.fill_between(x_within,average_within+std_within, average_within-std_within, color = 'blue', alpha = 0.2)
+        plt.plot(average_between, label = 'Between Tasks_PFC', color = 'blue')
+        #plt.fill_between(x_between,average_between+std_between, average_between-std_between, color = 'blue', alpha = 0.2)
 
-    legend()
+    plt.legend()

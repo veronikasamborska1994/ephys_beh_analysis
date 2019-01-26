@@ -8,6 +8,7 @@ Created on Wed Jan 16 11:09:46 2019
 
 import SVDs as sv 
 import numpy as np 
+import matplotlib.pyplot as plt
 
 def replicate_Tim_interleave_trials(session):      
     spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
@@ -315,26 +316,26 @@ def svd_plotting_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b 
         
         task_a_b_c = np.mean([sum_c_task_2_1, sum_c_task_2_2,sum_c_task_3_1,sum_c_task_3_2], axis = 0)
         
-        std_within = np.std([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
-        x_within = np.arange(len(task_a_a))
-        std_between = np.std([sum_c_task_2_1, sum_c_task_2_2,sum_c_task_3_1,sum_c_task_3_2], axis = 0)
-        x_between = np.arange(len(task_a_b_c))
+        #std_within = np.std([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
+        #x_within = np.arange(len(task_a_a))
+        #std_between = np.std([sum_c_task_2_1, sum_c_task_2_2,sum_c_task_3_1,sum_c_task_3_2], axis = 0)
+        #x_between = np.arange(len(task_a_b_c))
         
 
     if HP == True:
-        plot(task_a_b_c, label = 'Explain Task B/C from A HP', linestyle = '--', color='red')
-        fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'red', alpha = 0.2)
+        plt.plot(task_a_b_c, label = 'Explain Task B/C from A HP', linestyle = '--', color='red')
+        #plt.fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'red', alpha = 0.2)
 
-        plot(task_a_a, label = 'Explain Task A from A HP', color = 'red')
-        fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'red', alpha = 0.2)
+        plt.plot(task_a_a, label = 'Explain Task A from A HP', color = 'red')
+        #plt.fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'red', alpha = 0.2)
 
     if HP == False:
-        plot(task_a_b_c, label = 'Explain Task B/C from A PFC', linestyle = '--', color='blue')
-        fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'blue', alpha = 0.2)
+        plt.plot(task_a_b_c, label = 'Explain Task B/C from A PFC', linestyle = '--', color='blue')
+        #plt.fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'blue', alpha = 0.2)
 
-        plot(task_a_a, label = 'Explain Task A from A PFC', color = 'blue')
+        plt.plot(task_a_a, label = 'Explain Task A from A PFC', color = 'blue')
 
-        fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'blue', alpha = 0.2)
+        #plt.fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'blue', alpha = 0.2)
 
 
-    legend()
+    plt.legend()

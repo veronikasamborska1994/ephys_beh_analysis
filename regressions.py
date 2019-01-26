@@ -44,7 +44,10 @@ def correlation_trials(experiment):
         aligned_spikes= session.aligned_rates 
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape
         poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3  = predictors_pokes(session)
+        
         spikes_B_task_1 =aligned_spikes[np.where(predictor_B_Task_1 ==1)]
         spikes_A_task_1 =aligned_spikes[np.where(predictor_A_Task_1 ==1)]
         spikes_B_task_2 =aligned_spikes[np.where(predictor_B_Task_2 ==1)]
@@ -184,6 +187,11 @@ def _CPD(X,y):
     return cpd
 
 
+def angle_between_vectors(experiment):
+    C_task_1, C_task_2 = regression(experiment)
+    angle_between = angle(C_task_1[:,0], C_task_2[:,0])
+    return angle_between
+
 def predictors_pokes(session):
     pyControl_choice = [event.time for event in session.events if event.name in ['choice_state']]
 
@@ -270,7 +278,6 @@ def predictors_pokes(session):
         predictor_a_good_task_2 = copy.copy(state_t2_b_good)
         predictor_a_good_task_3 = copy.copy(state_t3_a_good)
 
-
     elif poke_A1_A2_B3 == True:
         predictor_A_Task_1 = copy.copy(predictor_a_1[0])
         predictor_A_Task_2 = copy.copy(predictor_a_2[0])
@@ -333,121 +340,91 @@ def predictors_pokes(session):
 def regression(experiment):
     C_task_1= []     # To strore predictor loadings for each session in task 1.
     C_task_2 = []    # To strore predictor loadings for each session in task 2.
-    cpd = []  # To strore cpd for each session.
     
     # Finding correlation coefficients for task 1 
     for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
-        n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-        t_out = session.t_out
-        initiate_choice_t = session.target_times #Initiation and Choice Times
-        ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-        ind_after_choice = ind_choice + 7 # 1 sec after choice
-        spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-        mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)     
-        
-        # Getting out task indicies   
-        task = session.trial_data['task']
-        forced_trials = session.trial_data['forced_trial']
-        non_forced_array = np.where(forced_trials == 0)[0]
-
-        task_non_forced = task[non_forced_array]
-        task_1 = np.where(task_non_forced == 1)[0]
-        task_2 = np.where(task_non_forced == 2)[0]        
-        firing_rate_task_1 =  mean_spikes_around_choice[:len(task_1)]
-        firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
-        
-        # For regressions for each task independently 
-        predictor_B_Task_1 = predictor_B_Task_1[:len(task_1)]
-        predictor_B_Task_2 = predictor_B_Task_2[len(task_1):len(task_1)+len(task_2)]
-        reward_t1 = reward[:len(task_1)]
-        reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]
-
-        
-        predictors_task_1 = OrderedDict([
-                                      ('B_task_1' , predictor_B_Task_1),
-                                      ('reward_t1', reward_t1)])
+        if aligned_spikes.shape[1] > 0: # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            t_out = session.t_out
+            initiate_choice_t = session.target_times #Initiation and Choice Times
+            ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
+            ind_after_choice = ind_choice + 7 # 1 sec after choice
+            spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
+            mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+            predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+            predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
+            
+            # Getting out task indicies   
+            task = session.trial_data['task']
+            forced_trials = session.trial_data['forced_trial']
+            non_forced_array = np.where(forced_trials == 0)[0]
     
-       
-        X_task_1 = np.vstack(predictors_task_1.values()).T[:len(predictor_B_Task_1),:].astype(float)
-        n_predictors = X_task_1.shape[1]
-        y_t1 = firing_rate_task_1.reshape([len(firing_rate_task_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-        ols = LinearRegression(copy_X = True,fit_intercept= False)
-        ols.fit(X_task_1,y_t1)
-        C_task_1.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
-          
+            task_non_forced = task[non_forced_array]
+            task_1 = np.where(task_non_forced == 1)[0]
+            task_2 = np.where(task_non_forced == 2)[0]        
+            firing_rate_task_1 =  mean_spikes_around_choice[:len(task_1)]
+            firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+            
+            # For regressions for each task independently 
+            predictor_A_Task_1 = predictor_A_Task_1[:len(task_1)]
+            reward_t1 = reward[:len(task_1)]
+            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]
+    
+            
+            predictors_task_1 = OrderedDict([
+                                          ('A_task_1' , predictor_A_Task_1),
+                                          ('reward_t1', reward_t1)])
+        
+           
+            X_task_1 = np.vstack(predictors_task_1.values()).T[:len(predictor_A_Task_1),:].astype(float)
+            n_predictors = X_task_1.shape[1]
+            y_t1 = firing_rate_task_1.reshape([len(firing_rate_task_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols.fit(X_task_1,y_t1)
+            C_task_1.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+    
     C_task_1 = np.concatenate(C_task_1,0)
-    
     # Finding correlation coefficients from task two 
     for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
-        n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-        t_out = session.t_out
-        initiate_choice_t = session.target_times #Initiation and Choice Times
-        ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-        ind_after_choice = ind_choice + 7 # 1 sec after choice
-        spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-        mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)
-       
-        
-        # Getting out task indicies
-        task = session.trial_data['task']
-        task_non_forced = task[non_forced_array]
-        task_1 = np.where(task_non_forced == 1)[0]
-        task_2 = np.where(task_non_forced == 2)[0]        
-        firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
-        
-        # For regressions for each task independently 
-        predictor_B_Task_2 = predictor_B_Task_2[len(task_1):len(task_1)+len(task_2)]
-        reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]            
-        predictors_task_2 = OrderedDict([
-                                      ('B_task_2' , predictor_B_Task_2),
-                                      ('reward_t2', reward_t2)])
-    
-       
-        X_task_2 = np.vstack(predictors_task_2.values()).T[:len(predictor_B_Task_2),:].astype(float)
-        n_predictors = X_task_2.shape[1]
-        y_t2 = firing_rate_task_2.reshape([len(firing_rate_task_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-        ols = LinearRegression(copy_X = True,fit_intercept= False)
-        ols.fit(X_task_2,y_t2)
-        C_task_2.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
-        
-    
-    C_task_2 = np.concatenate(C_task_2,0)
-    C = []
-    
-    # Finding mean on B choices of trials  
-    all_trial_means_list = []
-    for s,session in enumerate(experiment):
-        aligned_spikes= session.aligned_rates[:]
-        n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-        t_out = session.t_out
-        initiate_choice_t = session.target_times #Initiation and Choice Times
-        ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-        ind_after_choice = ind_choice + 7 # 1 sec after choice
-        spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-        mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
-        predictor_A_Task_1,  predictor_A_Task_2,  predictor_A_Task_3, predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward = predictors_pokes(session)
+        if aligned_spikes.shape[1] > 0:  # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            t_out = session.t_out
+            initiate_choice_t = session.target_times #Initiation and Choice Times
+            ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
+            ind_after_choice = ind_choice + 7 # 1 sec after choice
+            spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
+            mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+            predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+            predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
+            
+            # Getting out task indicies
+            task = session.trial_data['task']
+            forced_trials = session.trial_data['forced_trial']
 
-        task = session.trial_data['task']
-        task_non_forced = task[non_forced_array]
-        task_1 = np.where(task_non_forced == 1)[0]
-        task_2 = np.where(task_non_forced == 2)[0]        
-        firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+            non_forced_array = np.where(forced_trials == 0)[0]
+            task_non_forced = task[non_forced_array]
+            task_1 = np.where(task_non_forced == 1)[0]
+            task_2 = np.where(task_non_forced == 2)[0]        
+            firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+            
+            # For regressions for each task independently 
+            predictor_A_Task_2 = predictor_A_Task_2[len(task_1):len(task_1)+len(task_2)]
+            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]            
+            predictors_task_2 = OrderedDict([
+                                          ('A_task_2' , predictor_A_Task_2),
+                                          ('reward_t2', reward_t2)])
         
-        predictor_B_Task_2 = predictor_B_Task_2[len(task_1):len(task_1)+len(task_2)]
-        
-        firing_rate_task_2_B_choice = firing_rate_task_2[np.where(predictor_B_Task_2 == 1)]
-        all_trial_means = np.mean(firing_rate_task_2_B_choice, axis = 0)
-        all_trial_means_list.append(all_trial_means)
-    
-    all_trial_means_list = np.concatenate(all_trial_means_list,0)
-    all_trial_means_list.reshape([len(all_trial_means_list),-1])
-    ols = LinearRegression(copy_X = True,fit_intercept= False)
-    ols.fit(C_task_1,all_trial_means_list)
-    
-    C.append(ols.coef_.reshape(C_task_2.shape[1])) # Predictor loadings
-        
- 
+           
+            X_task_2 = np.vstack(predictors_task_2.values()).T[:len(predictor_A_Task_2),:].astype(float)
+            n_predictors = X_task_2.shape[1]
+            y_t2 = firing_rate_task_2.reshape([len(firing_rate_task_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols.fit(X_task_2,y_t2)
+            C_task_2.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+                
+    C_task_2 = np.concatenate(C_task_2,0)
+    return C_task_1, C_task_2
