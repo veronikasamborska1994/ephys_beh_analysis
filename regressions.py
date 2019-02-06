@@ -18,8 +18,17 @@ from sklearn.linear_model import LinearRegression
 import itertools
 from scipy.stats import pearsonr
 import ephys_beh_import as ep
-import pylab as plt
 import math 
+import forced_trials_extract_data as ft
+import matplotlib.pyplot as plt
+
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
+#experiment_aligned_HP = ha.all_sessions_aligment(HP)
+
 
 # Function for finding the dot product of two vectors 
 def dotproduct(v1, v2):
@@ -363,19 +372,20 @@ def regression(experiment):
     
             task_non_forced = task[non_forced_array]
             task_1 = np.where(task_non_forced == 1)[0]
-            task_2 = np.where(task_non_forced == 2)[0]        
             firing_rate_task_1 =  mean_spikes_around_choice[:len(task_1)]
-            firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
             
             # For regressions for each task independently 
             predictor_A_Task_1 = predictor_A_Task_1[:len(task_1)]
             reward_t1 = reward[:len(task_1)]
-            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]
-    
+            reward_choice_interaction_t1 = reward_t1*predictor_A_Task_1
+            latent_state_t1 = np.zeros(len(reward_t1))
+            latent_state_t1[predictor_a_good_task_1] = 1
             
             predictors_task_1 = OrderedDict([
-                                          ('A_task_1' , predictor_A_Task_1),
-                                          ('reward_t1', reward_t1)])
+                                          ('choice_task_1' , predictor_A_Task_1),
+                                          ('reward_t1', reward_t1), 
+                                          ('choice_x_reward',reward_choice_interaction_t1),
+                                          ('latent_state', latent_state_t1)])
         
            
             X_task_1 = np.vstack(predictors_task_1.values()).T[:len(predictor_A_Task_1),:].astype(float)
@@ -413,10 +423,16 @@ def regression(experiment):
             
             # For regressions for each task independently 
             predictor_A_Task_2 = predictor_A_Task_2[len(task_1):len(task_1)+len(task_2)]
-            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]            
+            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]   
+            reward_choice_interaction_t2 = predictor_A_Task_2*reward_t2
+            latent_state_t2 = np.zeros(len(reward_t2))
+            latent_state_t2[predictor_a_good_task_2] = 1
+            
             predictors_task_2 = OrderedDict([
-                                          ('A_task_2' , predictor_A_Task_2),
-                                          ('reward_t2', reward_t2)])
+                                          ('choice_task_2' , predictor_A_Task_2),
+                                          ('reward_t2', reward_t2),
+                                          ('choice_x_reward_t2',reward_choice_interaction_t2),
+                                          ('latent_state_t2', latent_state_t2)])
         
            
             X_task_2 = np.vstack(predictors_task_2.values()).T[:len(predictor_A_Task_2),:].astype(float)
@@ -428,3 +444,64 @@ def regression(experiment):
                 
     C_task_2 = np.concatenate(C_task_2,0)
     return C_task_1, C_task_2
+
+
+def sorting_by_task_1(experiment, region = 'HP'):
+    C_task_1, C_task_2 = regression(experiment)
+   
+    # Sort in descending order by choice task 1 
+    choice_args = np.argsort(-C_task_1[:,0])
+    choice_task_1 = C_task_1[:,0]
+    choice_task_2 = C_task_2[:,0]
+    
+    reward_args = np.argsort(-C_task_1[:,1])
+    reward_task_1 = C_task_1[:,1]
+    reward_task_2 = C_task_2[:,1]
+    
+    reward_choice_int_args = np.argsort(-C_task_1[:,2])
+    reward_x_choice_task_1 = C_task_1[:,2]
+    reward_x_choice_task_2 = C_task_2[:,2]
+    
+    
+    latent_state_arg = np.argsort(-C_task_1[:,3])
+    latent_state_task_1 = C_task_1[:,3]
+    latent_state_task_2 = C_task_2[:,3]
+    
+    plt.figure()
+    plt.plot(choice_task_1[choice_args],color = 'red')
+    plt.plot(choice_task_2[choice_args], color = 'grey')
+    plt.ylabel('Correlation Coefficient')
+    plt.xlabel('Neuron Sorted by Task 1')
+    if region == 'HP':
+        plt.title('Choice HP')
+    else:
+        plt.title('Choice PFC')
+    plt.figure()
+    plt.plot(reward_task_1[reward_args], color = 'red')
+    plt.plot(reward_task_2[reward_args], color = 'grey')
+    plt.ylabel('Correlation Coefficient')
+    plt.xlabel('Neuron Sorted by Task 1')
+    if region == 'HP':
+        plt.title('Reward HP')
+    else: 
+        plt.title('Reward PFC')
+        
+    plt.figure()
+    plt.plot(reward_x_choice_task_1[reward_choice_int_args],color = 'red')
+    plt.plot(reward_x_choice_task_2[reward_choice_int_args], color = 'grey')
+    plt.ylabel('Correlation Coefficient')
+    plt.xlabel('Neuron Sorted by Task 1')
+    if region == 'HP':
+        plt.title('Reward x Choice HP')
+    else:
+         plt.title('Reward x Choice PFC')
+    
+    plt.figure()
+    plt.plot(latent_state_task_1[latent_state_arg],color = 'red')
+    plt.plot(latent_state_task_2[latent_state_arg],color = 'grey')
+    plt.ylabel('Correlation Coefficient')
+    plt.xlabel('Neuron Sorted by Task 1')
+    if region == 'HP':
+        plt.title('Latent State HP')
+    else:
+        plt.title('Latent State PFC')

@@ -15,14 +15,15 @@ import matplotlib.pyplot as plt
 import heatmap_aligned as ha
 import forced_trials_extract_data as ft
 
-ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-experiment_aligned_HP = ha.all_sessions_aligment(HP)
-experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 
-PFC_forced = ft.all_sessions_aligment_forced(PFC)
-HP_forced = ft.all_sessions_aligment_forced(HP)
+#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
+#experiment_aligned_HP = ha.all_sessions_aligment(HP)
+
+#PFC_forced = ft.all_sessions_aligment_forced(PFC)
+#HP_forced = ft.all_sessions_aligment_forced(HP)
 
 
 def extract_session_predictors_rates(session, tasks_unchanged = True):

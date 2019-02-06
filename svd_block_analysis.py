@@ -128,12 +128,19 @@ def extract_session_a_b_based_on_block(session, tasks_unchanged = True):
         
         
 def block_firings_rates_selection(experiment):   
-    cluster_list_task_1_a_good = []
-    cluster_list_task_1_b_good = []   
-    cluster_list_task_2_a_good = []
-    cluster_list_task_2_b_good = []
-    cluster_list_task_3_a_good = []
-    cluster_list_task_3_b_good = []
+    cluster_list_task_1_a_good_1_nf = []
+    cluster_list_task_1_b_good_1_nf = []   
+    cluster_list_task_2_a_good_1_nf = []
+    cluster_list_task_2_b_good_1_nf = []
+    cluster_list_task_3_a_good_1_nf = []
+    cluster_list_task_3_b_good_1_nf = []
+    
+    cluster_list_task_1_a_good_2_nf = []
+    cluster_list_task_1_b_good_2_nf = []   
+    cluster_list_task_2_a_good_2_nf = []
+    cluster_list_task_2_b_good_2_nf = []
+    cluster_list_task_3_a_good_2_nf = []
+    cluster_list_task_3_b_good_2_nf = []
         
     for s,session in enumerate(experiment):
         if session.trial_data['block'][-1] >= 11:
@@ -142,59 +149,127 @@ def block_firings_rates_selection(experiment):
             state_A_choice_A_t2, state_A_choice_B_t2,state_B_choice_A_t2,state_B_choice_B_t2,\
             state_A_choice_A_t3, state_A_choice_B_t3, state_B_choice_A_t3, state_B_choice_B_t3, spikes = extract_session_a_b_based_on_block(session)
             
+            state_A_choice_A_t1_1 = state_A_choice_A_t1[:int(len(state_A_choice_A_t1)/2)]
+            state_A_choice_B_t1_1 = state_A_choice_B_t1[:int(len(state_A_choice_B_t1)/2)]
+            state_B_choice_A_t1_1 = state_B_choice_A_t1[:int(len(state_B_choice_A_t1)/2)]
+            state_B_choice_B_t1_1 = state_B_choice_B_t1[:int(len(state_B_choice_B_t1)/2)]
+            state_A_choice_A_t2_1 = state_A_choice_A_t2[:int(len(state_A_choice_A_t2)/2)]
+            state_A_choice_B_t2_1 = state_A_choice_B_t2[:int(len(state_A_choice_B_t2)/2)]
+            state_B_choice_A_t2_1 = state_B_choice_A_t2[:int(len(state_B_choice_A_t2)/2)]
+            state_B_choice_B_t2_1 = state_B_choice_B_t2[:int(len(state_B_choice_B_t2)/2)]
+            state_A_choice_A_t3_1 = state_A_choice_A_t3[:int(len(state_A_choice_A_t3)/2)]
+            state_A_choice_B_t3_1 = state_A_choice_B_t3[:int(len(state_A_choice_B_t3)/2)]
+            state_B_choice_A_t3_1 = state_B_choice_A_t3[:int(len(state_B_choice_A_t3)/2)]
+            state_B_choice_B_t3_1 = state_B_choice_B_t3[:int(len(state_B_choice_B_t3)/2)]
             
-            if (len(state_A_choice_A_t1) > 0) & (len(state_A_choice_B_t1) > 0) & (len(state_B_choice_A_t1) > 0) &\
-                (len(state_B_choice_B_t1) > 0) & (len(state_A_choice_A_t2) > 0) & (len(state_A_choice_B_t2) > 0) &\
-                (len(state_B_choice_A_t2) > 0) & (len(state_B_choice_B_t2) > 0) & (len(state_A_choice_A_t3) > 0) &\
-                (len(state_A_choice_B_t3) > 0) & (len(state_B_choice_A_t3) > 0) & (len(state_B_choice_B_t3) > 0):
-                unique_neurons  = np.unique(spikes[0])   
-                for i in range(len(unique_neurons)):                
-                    mean_firing_rate_task_1_a_good_A_ch  = np.mean(state_A_choice_A_t1[:,i,:],0)
-                    mean_firing_rate_task_1_a_good_B_ch  = np.mean(state_A_choice_B_t1[:,i,:],0)
-                    mean_firing_rate_task_1_b_good_B_ch  = np.mean(state_B_choice_B_t1[:,i,:],0)
-                    mean_firing_rate_task_1_b_good_A_ch  = np.mean(state_B_choice_A_t1[:,i,:],0)
-                    
-                    mean_firing_rate_task_2_a_good_A_ch  = np.mean(state_A_choice_A_t2[:,i,:],0)
-                    mean_firing_rate_task_2_a_good_B_ch  = np.mean(state_A_choice_B_t2[:,i,:],0)
-                    mean_firing_rate_task_2_b_good_B_ch  = np.mean(state_B_choice_B_t2[:,i,:],0)
-                    mean_firing_rate_task_2_b_good_A_ch  = np.mean(state_B_choice_A_t2[:,i,:],0)
-                    
-                    mean_firing_rate_task_3_a_good_A_ch  = np.mean(state_A_choice_A_t3[:,i,:],0)
-                    mean_firing_rate_task_3_a_good_B_ch  = np.mean(state_A_choice_B_t3[:,i,:],0)
-                    mean_firing_rate_task_3_b_good_B_ch  = np.mean(state_B_choice_B_t3[:,i,:],0)
-                    mean_firing_rate_task_3_b_good_A_ch  = np.mean(state_B_choice_A_t3[:,i,:],0)
-                    
-                    mean_firing_rate_a_task_1 = np.concatenate((mean_firing_rate_task_1_a_good_A_ch,mean_firing_rate_task_1_a_good_B_ch), axis = 0)
-                    mean_firing_rate_a_task_2 = np.concatenate((mean_firing_rate_task_2_a_good_A_ch,mean_firing_rate_task_2_a_good_B_ch), axis = 0)
-                    mean_firing_rate_a_task_3 = np.concatenate((mean_firing_rate_task_3_a_good_A_ch,mean_firing_rate_task_3_a_good_B_ch), axis = 0)
-                    
-                    mean_firing_rate_b_task_1 = np.concatenate((mean_firing_rate_task_1_b_good_A_ch,mean_firing_rate_task_1_b_good_B_ch), axis = 0)
-                    mean_firing_rate_b_task_2 = np.concatenate((mean_firing_rate_task_2_b_good_A_ch,mean_firing_rate_task_2_b_good_B_ch), axis = 0)
-                    mean_firing_rate_b_task_3 = np.concatenate((mean_firing_rate_task_3_b_good_A_ch,mean_firing_rate_task_3_b_good_B_ch), axis = 0)
-                    
-                    
-                    cluster_list_task_1_a_good.append(mean_firing_rate_a_task_1)
-                    cluster_list_task_1_b_good.append(mean_firing_rate_b_task_1)        
-                    cluster_list_task_2_a_good.append(mean_firing_rate_a_task_2)
-                    cluster_list_task_2_b_good.append(mean_firing_rate_b_task_2)       
-                    cluster_list_task_3_a_good.append(mean_firing_rate_a_task_3)        
-                    cluster_list_task_3_b_good.append(mean_firing_rate_b_task_3)
+            state_A_choice_A_t1_2 = state_A_choice_A_t1[int(len(state_A_choice_A_t1)/2):]
+            state_A_choice_B_t1_2 = state_A_choice_B_t1[int(len(state_A_choice_B_t1)/2):]
+            state_B_choice_A_t1_2 = state_B_choice_A_t1[int(len(state_B_choice_A_t1)/2):]
+            state_B_choice_B_t1_2 = state_B_choice_B_t1[int(len(state_B_choice_B_t1)/2):]
+            state_A_choice_A_t2_2 = state_A_choice_A_t2[int(len(state_A_choice_A_t2)/2):]
+            state_A_choice_B_t2_2 = state_A_choice_B_t2[int(len(state_A_choice_B_t2)/2):]
+            state_B_choice_A_t2_2 = state_B_choice_A_t2[int(len(state_B_choice_A_t2)/2):]
+            state_B_choice_B_t2_2 = state_B_choice_B_t2[int(len(state_B_choice_B_t2)/2):]
+            state_A_choice_A_t3_2 = state_A_choice_A_t3[int(len(state_A_choice_A_t3)/2):]
+            state_A_choice_B_t3_2 = state_A_choice_B_t3[int(len(state_A_choice_B_t3)/2):]
+            state_B_choice_A_t3_2 = state_B_choice_A_t3[int(len(state_B_choice_A_t3)/2):]
+            state_B_choice_B_t3_2 = state_B_choice_B_t3[int(len(state_B_choice_B_t3)/2):]
+            
+            if (len(state_A_choice_A_t1_1) > 0) & (len(state_A_choice_B_t1_1) > 0) & (len(state_B_choice_A_t1_1) > 0) &\
+                (len(state_B_choice_B_t1_1) > 0) & (len(state_A_choice_A_t2_1) > 0) & (len(state_A_choice_B_t2_1) > 0) &\
+                (len(state_B_choice_A_t2_1) > 0) & (len(state_B_choice_B_t2_1) > 0) & (len(state_A_choice_A_t3_1) > 0) &\
+                (len(state_A_choice_B_t3_1) > 0) & (len(state_B_choice_A_t3_1) > 0) & (len(state_B_choice_B_t3_1) > 0) &\
+                (len(state_A_choice_A_t1_2) > 0) & (len(state_A_choice_B_t1_2) > 0) & (len(state_B_choice_A_t1_2) > 0) &\
+                (len(state_B_choice_B_t1_2) > 0) & (len(state_A_choice_A_t2_2) > 0) & (len(state_A_choice_B_t2_2) > 0) &\
+                (len(state_B_choice_A_t2_2) > 0) & (len(state_B_choice_B_t2_2) > 0) & (len(state_A_choice_A_t3_2) > 0) &\
+                (len(state_A_choice_B_t3_2) > 0) & (len(state_B_choice_A_t3_2) > 0) & (len(state_B_choice_B_t3_2) > 0):    
                 
-    cluster_list_task_1_a_good = np.asarray(cluster_list_task_1_a_good)
-
-    cluster_list_task_1_b_good = np.asarray(cluster_list_task_1_b_good)
-        
-    cluster_list_task_2_a_good = np.asarray(cluster_list_task_2_a_good)
-
-    cluster_list_task_2_b_good = np.asarray(cluster_list_task_2_b_good)
-        
-    cluster_list_task_3_a_good = np.asarray(cluster_list_task_3_a_good)
-
-    cluster_list_task_3_b_good = np.asarray(cluster_list_task_3_b_good)
+                unique_neurons  = np.unique(spikes[0])   
+                
+                for i in range(len(unique_neurons)):                
+                    mean_firing_rate_task_1_a_good_A_ch_1  = np.mean(state_A_choice_A_t1_1[:,i,:],0)
+                    mean_firing_rate_task_1_a_good_B_ch_1  = np.mean(state_A_choice_B_t1_1[:,i,:],0)
+                    mean_firing_rate_task_1_b_good_B_ch_1  = np.mean(state_B_choice_B_t1_1[:,i,:],0)
+                    mean_firing_rate_task_1_b_good_A_ch_1  = np.mean(state_B_choice_A_t1_1[:,i,:],0)
+                    
+                    mean_firing_rate_task_2_a_good_A_ch_1  = np.mean(state_A_choice_A_t2_1[:,i,:],0)
+                    mean_firing_rate_task_2_a_good_B_ch_1  = np.mean(state_A_choice_B_t2_1[:,i,:],0)
+                    mean_firing_rate_task_2_b_good_B_ch_1  = np.mean(state_B_choice_B_t2_1[:,i,:],0)
+                    mean_firing_rate_task_2_b_good_A_ch_1  = np.mean(state_B_choice_A_t2_1[:,i,:],0)
+                    
+                    mean_firing_rate_task_3_a_good_A_ch_1  = np.mean(state_A_choice_A_t3_1[:,i,:],0)
+                    mean_firing_rate_task_3_a_good_B_ch_1  = np.mean(state_A_choice_B_t3_1[:,i,:],0)
+                    mean_firing_rate_task_3_b_good_B_ch_1  = np.mean(state_B_choice_B_t3_1[:,i,:],0)
+                    mean_firing_rate_task_3_b_good_A_ch_1  = np.mean(state_B_choice_A_t3_1[:,i,:],0)
+                    
+                    
+                    mean_firing_rate_task_1_a_good_A_ch_2  = np.mean(state_A_choice_A_t1_2[:,i,:],0)
+                    mean_firing_rate_task_1_a_good_B_ch_2  = np.mean(state_A_choice_B_t1_2[:,i,:],0)
+                    mean_firing_rate_task_1_b_good_B_ch_2  = np.mean(state_B_choice_B_t1_2[:,i,:],0)
+                    mean_firing_rate_task_1_b_good_A_ch_2  = np.mean(state_B_choice_A_t1_2[:,i,:],0)
+                    
+                    mean_firing_rate_task_2_a_good_A_ch_2  = np.mean(state_A_choice_A_t2_2[:,i,:],0)
+                    mean_firing_rate_task_2_a_good_B_ch_2  = np.mean(state_A_choice_B_t2_2[:,i,:],0)
+                    mean_firing_rate_task_2_b_good_B_ch_2  = np.mean(state_B_choice_B_t2_2[:,i,:],0)
+                    mean_firing_rate_task_2_b_good_A_ch_2  = np.mean(state_B_choice_A_t2_2[:,i,:],0)
+                    
+                    mean_firing_rate_task_3_a_good_A_ch_2  = np.mean(state_A_choice_A_t3_2[:,i,:],0)
+                    mean_firing_rate_task_3_a_good_B_ch_2  = np.mean(state_A_choice_B_t3_2[:,i,:],0)
+                    mean_firing_rate_task_3_b_good_B_ch_2  = np.mean(state_B_choice_B_t3_2[:,i,:],0)
+                    mean_firing_rate_task_3_b_good_A_ch_2  = np.mean(state_B_choice_A_t3_2[:,i,:],0)
+                    
+                    mean_firing_rate_a_task_1_1 = np.concatenate((mean_firing_rate_task_1_a_good_A_ch_1,mean_firing_rate_task_1_a_good_B_ch_1), axis = 0)
+                    mean_firing_rate_a_task_2_1 = np.concatenate((mean_firing_rate_task_2_a_good_A_ch_1,mean_firing_rate_task_2_a_good_B_ch_1), axis = 0)
+                    mean_firing_rate_a_task_3_1 = np.concatenate((mean_firing_rate_task_3_a_good_A_ch_1,mean_firing_rate_task_3_a_good_B_ch_1), axis = 0)
+                        
+                    mean_firing_rate_b_task_1_1 = np.concatenate((mean_firing_rate_task_1_b_good_A_ch_1,mean_firing_rate_task_1_b_good_B_ch_1), axis = 0)
+                    mean_firing_rate_b_task_2_1 = np.concatenate((mean_firing_rate_task_2_b_good_A_ch_1,mean_firing_rate_task_2_b_good_B_ch_1), axis = 0)
+                    mean_firing_rate_b_task_3_1 = np.concatenate((mean_firing_rate_task_3_b_good_A_ch_1,mean_firing_rate_task_3_b_good_B_ch_1), axis = 0)
+                    
+                    mean_firing_rate_a_task_1_2 = np.concatenate((mean_firing_rate_task_1_a_good_A_ch_2,mean_firing_rate_task_1_a_good_B_ch_2), axis = 0)
+                    mean_firing_rate_a_task_2_2 = np.concatenate((mean_firing_rate_task_2_a_good_A_ch_2,mean_firing_rate_task_2_a_good_B_ch_2), axis = 0)
+                    mean_firing_rate_a_task_3_2 = np.concatenate((mean_firing_rate_task_3_a_good_A_ch_2,mean_firing_rate_task_3_a_good_B_ch_2), axis = 0)
+                        
+                    mean_firing_rate_b_task_1_2 = np.concatenate((mean_firing_rate_task_1_b_good_A_ch_2,mean_firing_rate_task_1_b_good_B_ch_2), axis = 0)
+                    mean_firing_rate_b_task_2_2 = np.concatenate((mean_firing_rate_task_2_b_good_A_ch_2,mean_firing_rate_task_2_b_good_B_ch_2), axis = 0)
+                    mean_firing_rate_b_task_3_2 = np.concatenate((mean_firing_rate_task_3_b_good_A_ch_2,mean_firing_rate_task_3_b_good_B_ch_2), axis = 0)
+                        
+                    cluster_list_task_1_a_good_1_nf.append(mean_firing_rate_a_task_1_1)
+                    cluster_list_task_1_b_good_1_nf.append(mean_firing_rate_b_task_1_1)   
+                    cluster_list_task_2_a_good_1_nf.append(mean_firing_rate_a_task_2_1)
+                    cluster_list_task_2_b_good_1_nf.append(mean_firing_rate_b_task_2_1)
+                    cluster_list_task_3_a_good_1_nf.append(mean_firing_rate_a_task_3_1)
+                    cluster_list_task_3_b_good_1_nf.append(mean_firing_rate_b_task_3_1)
+                    
+                    cluster_list_task_1_a_good_2_nf.append(mean_firing_rate_a_task_1_2)
+                    cluster_list_task_1_b_good_2_nf.append(mean_firing_rate_b_task_1_2)   
+                    cluster_list_task_2_a_good_2_nf.append(mean_firing_rate_a_task_2_2)
+                    cluster_list_task_2_b_good_2_nf.append(mean_firing_rate_b_task_2_2)
+                    cluster_list_task_3_a_good_2_nf.append(mean_firing_rate_a_task_3_2)
+                    cluster_list_task_3_b_good_2_nf.append(mean_firing_rate_b_task_3_2)
+            else:
+                print(session.file_name)
+                    
+    cluster_list_task_1_a_good_1_nf = np.asarray(cluster_list_task_1_a_good_1_nf)
+    cluster_list_task_1_b_good_1_nf = np.asarray(cluster_list_task_1_b_good_1_nf)   
+    cluster_list_task_2_a_good_1_nf = np.asarray(cluster_list_task_2_a_good_1_nf)
+    cluster_list_task_2_b_good_1_nf = np.asarray(cluster_list_task_2_b_good_1_nf)
+    cluster_list_task_3_a_good_1_nf = np.asarray(cluster_list_task_3_a_good_1_nf)
+    cluster_list_task_3_b_good_1_nf = np.asarray(cluster_list_task_3_b_good_1_nf)
     
-    return cluster_list_task_1_a_good, cluster_list_task_1_b_good,cluster_list_task_2_a_good,\
-    cluster_list_task_2_b_good, cluster_list_task_3_a_good, cluster_list_task_3_b_good
-        
+    cluster_list_task_1_a_good_2_nf = np.asarray(cluster_list_task_1_a_good_2_nf)
+    cluster_list_task_1_b_good_2_nf = np.asarray(cluster_list_task_1_b_good_2_nf) 
+    cluster_list_task_2_a_good_2_nf = np.asarray(cluster_list_task_2_a_good_2_nf)
+    cluster_list_task_2_b_good_2_nf = np.asarray(cluster_list_task_2_b_good_2_nf)
+    cluster_list_task_3_a_good_2_nf = np.asarray(cluster_list_task_3_a_good_2_nf)
+    cluster_list_task_3_b_good_2_nf = np.asarray(cluster_list_task_3_b_good_2_nf)
+    
+    return cluster_list_task_1_a_good_1_nf, cluster_list_task_1_b_good_1_nf,\
+    cluster_list_task_2_a_good_1_nf, cluster_list_task_2_b_good_1_nf,\
+    cluster_list_task_3_a_good_1_nf, cluster_list_task_3_b_good_1_nf, cluster_list_task_1_a_good_2_nf,\
+    cluster_list_task_1_b_good_2_nf, cluster_list_task_2_a_good_2_nf, cluster_list_task_2_b_good_2_nf,\
+    cluster_list_task_3_a_good_2_nf, cluster_list_task_3_b_good_2_nf 
+
 def svd_plotting_block_analysis(experiment, tasks_unchanged = False, plot_HP = True, plot_a = False):
     
     #Calculating SVDs for trials split by blocks

@@ -46,7 +46,7 @@ def target_times_forced(experiment_forced):
 
 ## Target times for aligned rates of forced trials 
 def all_sessions_aligment_forced(experiment_forced):
-    target_times_forced_trials  = target_times_forced(experiment_forced)
+    target_times_forced_trials  = ha.target_times_f(experiment_forced)
     experiment_aligned_forced = []
     for session in experiment_forced:
         spikes = session.ephys
