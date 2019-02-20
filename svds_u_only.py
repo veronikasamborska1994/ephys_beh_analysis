@@ -159,7 +159,7 @@ def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, p
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward,  demean_all_tasks = demean_all_tasks)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks)
@@ -652,20 +652,88 @@ def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, p
         plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
         plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
         plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+        
+        first = t_u[0,:]
+        return first
 
-def use_hp_pfc_all_tasks(HP_experiment,PFC_experiment, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False):
 
-    flattened_all_clusters_task_1_first_half_HP, flattened_all_clusters_task_1_second_half_HP,\
-    flattened_all_clusters_task_2_first_half_HP, flattened_all_clusters_task_2_second_half_HP,\
-    flattened_all_clusters_task_2_second_half_HP, flattened_all_clusters_task_3_first_half_HP,flattened_all_clusters_task_3_second_half_HP = sv.flatten(HP_experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
-    
-    
-    flattened_all_clusters_task_1_first_half_PFC, flattened_all_clusters_task_1_second_half_PFC,\
-    flattened_all_clusters_task_2_first_half_PFC, flattened_all_clusters_task_2_second_half_PFC,\
-    flattened_all_clusters_task_2_second_half_PFC, flattened_all_clusters_task_3_first_half_PFC,flattened_all_clusters_task_3_second_half_PFC = sv.flatten(PFC, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
-    
-    
-    
+
+#ind_loading_hp_1_eig = [38,  41,  86,  90, 206, 259, 261]
+#flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+#flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+#flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment_aligned_HP, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+#task_1_len = flattened_all_clusters_task_1_first_half.shape[1]/4
+#session =experiment_aligned_HP[0]
+#t_out = session.t_out
+#initiate_choice_t = session.target_times 
+#reward = initiate_choice_t[-2] +250
+#
+#ind_init = (np.abs(t_out-initiate_choice_t[1])).argmin()
+#ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
+#ind_reward = (np.abs(t_out-reward)).argmin()
+#   
+#fig = plt.figure(num = 11, figsize=(10,8))
+#fig.add_subplot(2,3,1)
+#plt.plot(flattened_all_clusters_task_1_first_half[38])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 1')
+#
+#
+#fig.add_subplot(2,3,2)
+#plt.plot(flattened_all_clusters_task_1_first_half[41])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 2')
+#
+#fig.add_subplot(2,3,3)
+#plt.plot(flattened_all_clusters_task_1_first_half[86])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 3')
+#
+#fig.add_subplot(2,3,4)
+#plt.plot(flattened_all_clusters_task_1_first_half[206])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 4')
+#
+#fig.add_subplot(2,3,5)
+#plt.plot(flattened_all_clusters_task_1_first_half[90])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 5')
+#
+#fig.add_subplot(2,3,6)
+#plt.plot(flattened_all_clusters_task_1_first_half[259])
+#plt.xticks([ind_init, ind_choice, ind_reward, ind_init+ task_1_len, ind_choice+task_1_len, ind_reward+task_1_len,  ind_init+(2*task_1_len), ind_choice+(2*task_1_len), ind_reward++(2*task_1_len), ind_init+(3*task_1_len), ind_choice+(3*task_1_len), ind_reward++(3*task_1_len)], ['I', 'A', 'R', 'I', 'A', 'N', 'I', 'B', 'R', 'I', 'B', 'N'])
+#
+#plt.axvline(x=task_1_len, label = 'A Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*2, label = 'A  No Reward', color = 'black',alpha = 0.5)
+#plt.axvline(x=task_1_len*3, label = 'B Reward', color = 'black', alpha = 0.5)
+#plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
+#plt.ylabel('Cell 6')
+
 def use_hp_vs_pfc(HP_experiment,PFC_experiment, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False):
     
 # =============================================================================
