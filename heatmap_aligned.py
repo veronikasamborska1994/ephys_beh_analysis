@@ -14,13 +14,13 @@ import ephys_beh_import as ep
 import pylab as plt
 
 ## Target times for aligned rates of non-forced trials 
-def target_times_f(experiment):
+def target_times_f(all_experiments):
     # Trial times is array of reference point times for each trial. Shape: [n_trials, n_ref_points]
     # Here we are using [init-1000, init, choice, choice+1000]    
     # target_times is the reference times to warp all trials to. Shape: [n_ref_points]
     # Here we are finding the median timings for a whole experiment 
     trial_times_all_trials  = []
-    for session in experiment:
+    for session in all_experiments:
         init_times = session.times['choice_state']
         inits_and_choices = [ev for ev in session.events if ev.name in 
                         ['choice_state', 'sound_a_reward', 'sound_b_reward',
@@ -39,8 +39,8 @@ def target_times_f(experiment):
     return target_times
 
 ## Target times for aligned rates of non-forced trials 
-def all_sessions_aligment(experiment):
-    target_times  = target_times_f(experiment)
+def all_sessions_aligment(experiment, all_experiments):
+    target_times  = target_times_f(all_experiments)
     experiment_aligned = []
     for session in experiment:
         spikes = session.ephys
@@ -67,7 +67,7 @@ def all_sessions_aligment(experiment):
 def heatplot_aligned(experiment_aligned): 
     all_clusters_task_1 = []
     all_clusters_task_2 = []
-    for session in experiment_aligned:
+    for session in experiment_aligned_HP:
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
         t_out = session.t_out
@@ -112,9 +112,11 @@ def heatplot_aligned(experiment_aligned):
     peak_inds = np.argmax(same_shape_task_1,1)
     ordering = np.argsort(peak_inds)
     activity_sorted = same_shape_task_2[ordering,:]
+    
     #not_normed = same_shape_task_1[ordering,:]
     #not_normed += 1
     #not_normed = np.log(not_normed)
+    
     norm_activity_sorted = (activity_sorted - np.min(activity_sorted,1)[:, None]) / (np.max(activity_sorted,1)[:, None] - np.min(activity_sorted,1)[:, None])
     where_are_Nans = np.isnan(norm_activity_sorted)
     norm_activity_sorted[where_are_Nans] = 0

@@ -6,11 +6,6 @@ Created on Tue Dec  4 16:01:30 2018
 @author: veronikasamborska
 """
 
-import data_import as di 
-import utility as ut
-import plotting as pl
-import heatmap_aligned as ha
-
 import copy 
 import numpy as np
 from collections import OrderedDict
@@ -19,7 +14,6 @@ import itertools
 from scipy.stats import pearsonr
 import ephys_beh_import as ep
 import math 
-import forced_trials_extract_data as ft
 import matplotlib.pyplot as plt
 
 #ephys_path = '/Users/veronikasamborska/Desktop/neurons'
@@ -355,12 +349,12 @@ def regression(experiment):
         aligned_spikes= session.aligned_rates[:]
         if aligned_spikes.shape[1] > 0: # sessions with neurons? 
             n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-            t_out = session.t_out
-            initiate_choice_t = session.target_times #Initiation and Choice Times
-            ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-            ind_after_choice = ind_choice + 7 # 1 sec after choice
-            spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-            mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+            #t_out = session.t_out
+            #initiate_choice_t = session.target_times #Initiation and Choice Times
+            #ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
+            #ind_after_choice = ind_choice + 7 # 1 sec after choice
+            #spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
+            #mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
             predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
             predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
             predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
@@ -372,7 +366,7 @@ def regression(experiment):
     
             task_non_forced = task[non_forced_array]
             task_1 = np.where(task_non_forced == 1)[0]
-            firing_rate_task_1 =  mean_spikes_around_choice[:len(task_1)]
+            firing_rate_task_1 =  aligned_spikes[:len(task_1)]
             
             # For regressions for each task independently 
             predictor_A_Task_1 = predictor_A_Task_1[:len(task_1)]
@@ -393,7 +387,7 @@ def regression(experiment):
             y_t1 = firing_rate_task_1.reshape([len(firing_rate_task_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
             ols = LinearRegression(copy_X = True,fit_intercept= False)
             ols.fit(X_task_1,y_t1)
-            C_task_1.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+            C_task_1.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
     
     C_task_1 = np.concatenate(C_task_1,0)
     # Finding correlation coefficients from task two 
@@ -401,12 +395,12 @@ def regression(experiment):
         aligned_spikes= session.aligned_rates[:]
         if aligned_spikes.shape[1] > 0:  # sessions with neurons? 
             n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-            t_out = session.t_out
-            initiate_choice_t = session.target_times #Initiation and Choice Times
-            ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-            ind_after_choice = ind_choice + 7 # 1 sec after choice
-            spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-            mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+            #t_out = session.t_out
+            ##initiate_choice_t = session.target_times #Initiation and Choice Times
+            #ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
+            #ind_after_choice = ind_choice + 7 # 1 sec after choice
+            #spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
+            #mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
             predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
             predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
             predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
@@ -419,7 +413,7 @@ def regression(experiment):
             task_non_forced = task[non_forced_array]
             task_1 = np.where(task_non_forced == 1)[0]
             task_2 = np.where(task_non_forced == 2)[0]        
-            firing_rate_task_2 =  mean_spikes_around_choice[len(task_1):len(task_1)+len(task_2)]
+            firing_rate_task_2 =  aligned_spikes[len(task_1):len(task_1)+len(task_2)]
             
             # For regressions for each task independently 
             predictor_A_Task_2 = predictor_A_Task_2[len(task_1):len(task_1)+len(task_2)]
@@ -440,7 +434,7 @@ def regression(experiment):
             y_t2 = firing_rate_task_2.reshape([len(firing_rate_task_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
             ols = LinearRegression(copy_X = True,fit_intercept= False)
             ols.fit(X_task_2,y_t2)
-            C_task_2.append(ols.coef_.reshape(n_neurons, n_predictors)) # Predictor loadings
+            C_task_2.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
                 
     C_task_2 = np.concatenate(C_task_2,0)
     return C_task_1, C_task_2
@@ -453,19 +447,26 @@ def sorting_by_task_1(experiment, region = 'HP'):
     choice_args = np.argsort(-C_task_1[:,0])
     choice_task_1 = C_task_1[:,0]
     choice_task_2 = C_task_2[:,0]
+    choice = np.corrcoef(choice_task_1,choice_task_2)
+    print(choice)
     
     reward_args = np.argsort(-C_task_1[:,1])
     reward_task_1 = C_task_1[:,1]
     reward_task_2 = C_task_2[:,1]
+    reward = np.corrcoef(reward_task_1,reward_task_2)
+    print(reward)
     
     reward_choice_int_args = np.argsort(-C_task_1[:,2])
     reward_x_choice_task_1 = C_task_1[:,2]
     reward_x_choice_task_2 = C_task_2[:,2]
-    
+    reward_x_choice = np.corrcoef(reward_x_choice_task_1,reward_x_choice_task_2)
+    print(reward_x_choice)
     
     latent_state_arg = np.argsort(-C_task_1[:,3])
     latent_state_task_1 = C_task_1[:,3]
     latent_state_task_2 = C_task_2[:,3]
+    latent_state = np.corrcoef(latent_state_task_1,latent_state_task_2)
+    print(latent_state)
     
     plt.figure()
     plt.plot(choice_task_1[choice_args],color = 'red')

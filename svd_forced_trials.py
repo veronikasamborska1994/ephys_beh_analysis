@@ -234,8 +234,7 @@ def block_firings_rates_selection_forced_split_in_half(experiment):
 
 def plot_blocks_split_intwo(experiment, HP = False):
     
-    #Explain A state from A state vs B state within a task 
-    
+    #Explain A state from A state vs B state within a task  
     cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,\
     cluster_list_task_2_a_good_1, cluster_list_task_2_b_good_1,\
     cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\

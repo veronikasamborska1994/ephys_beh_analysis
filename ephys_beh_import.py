@@ -101,8 +101,8 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                             
     HP = m484 + m479 + m483
     PFC = m478 + m486 + m480 + m481
-    
-    return HP,PFC, m484, m479, m483, m478, m486, m480, m481
+    all_sessions = m484  + m479 + m483 + m478 + m486 + m480 + m481
+    return HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions
 
 # Extracts poke identities of poke A and B (1-9) for each task
 def extract_choice_pokes(session):
