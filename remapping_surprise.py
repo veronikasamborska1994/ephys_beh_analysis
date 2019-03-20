@@ -41,10 +41,7 @@ def remapping_surprise(experiment, distribution):
         a_1 = np.where(predictor_A_Task_1 == 1)
         a_2 = np.where(predictor_A_Task_2 == 1)
         a_3 = np.where(predictor_A_Task_3 == 1)
-        
-        #a1_nR = [a for a in a_1[0] if a in index_no_reward[0]]
-        #a2_nR = [a for a in a_2[0] if a in index_no_reward[0]]
-        #a3_nR = [a for a in a_3[0] if a in index_no_reward[0]]
+    
 
         baseline_mean_trial = np.mean(aligned_spikes, axis =2)
         baseline_mean_all_trials = np.mean(baseline_mean_trial, axis =0)

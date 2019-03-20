@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -137,43 +138,8 @@ def correlation_trials(experiment):
         
     return a1_a2_all_neurons, a2_a3_all_neurons, a1_a3_all_neurons, b1_b2_all_neurons, b2_b3_all_neurons, b1_b3_all_neurons
                 
-                  
+                        
             
-            
-def angle_similarity(experiment_aligned):
-     predictors, C, X, y,cpd, C_choice_mean = regression(experiment_aligned)
-     
-     A1_A2 = angle(C_choice_mean[:,0], C_choice_mean[:,1])
-     A2_A3 = angle(C_choice_mean[:,1], C_choice_mean[:,2])
-     A3_A1 = angle(C_choice_mean[:,2], C_choice_mean[:,0])
-     
-     B1_B2 = angle(C_choice_mean[:,3], C_choice_mean[:,4])
-     B2_B3 = angle(C_choice_mean[:,4], C_choice_mean[:,5])
-     B3_B1 = angle(C_choice_mean[:,5], C_choice_mean[:,3])
-     
-     A1_B1 = angle(C_choice_mean[:,0], C_choice_mean[:,3])
-     A1_B2 = angle(C_choice_mean[:,0], C_choice_mean[:,4])
-     A1_B3 = angle(C_choice_mean[:,0], C_choice_mean[:,5])
-     A2_B1 = angle(C_choice_mean[:,1], C_choice_mean[:,3])
-     A2_B2 = angle(C_choice_mean[:,1], C_choice_mean[:,4])
-     A2_B3 = angle(C_choice_mean[:,1], C_choice_mean[:,5])
-     A3_B1 = angle(C_choice_mean[:,2], C_choice_mean[:,3])
-     A3_B2 = angle(C_choice_mean[:,2], C_choice_mean[:,4])
-     A3_B3 = angle(C_choice_mean[:,2], C_choice_mean[:,5])
-     
-     mean_a = np.mean([A1_A2,A2_A3,A3_A1])
-     mean_b = np.mean([B1_B2,B2_B3,B3_B1])
-     mean_a_b = np.mean([A1_B1,A1_B2,A1_B3,A2_B1,A2_B2,A2_B3,A3_B1,A3_B2,A3_B3 ])
-     std_a = np.std([A1_A2,A2_A3,A3_A1])/np.sqrt(3)
-     std_b = np.std([B1_B2,B2_B3,B3_B1])/np.sqrt(3)
-     std_a_b = np.std([A1_B1,A1_B2,A1_B3,A2_B1,A2_B2,A2_B3,A3_B1,A3_B2,A3_B3 ])/np.sqrt(9)
-     mean_a_b_ab = [mean_a, mean_b, mean_a_b]
-     std_a_b_ab = [std_a,std_b,std_a_b]
-     x_pos = [1,2,3]
-     plt.errorbar(x = x_pos, y = mean_a_b_ab, yerr = std_a_b_ab, alpha=0.8,  linestyle='None', marker='*', color = 'Black')    
-     plt.xticks([1,2,3], ('A', 'B', 'AB'))
-     plt.ylabel('cosine of the angle between two vectors')
-     plt.title('PFC')
      
      
 def _CPD(X,y):
@@ -340,24 +306,198 @@ def predictors_pokes(session):
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
     predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3
         
+    
+def predictors_include_previous_trial(session): 
+    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)    
+    same_task_1 = []
+    same_task_2 = []
+    same_task_3 = []
+    reward_previous = []
+    previous_trial_task_1 = []
+    previous_trial_task_2 = []
+    previous_trial_task_3 = []
+    
+    task = session.trial_data['task']
+    forced_trials = session.trial_data['forced_trial']
+    non_forced_array = np.where(forced_trials == 0)[0]
+    
+    task_non_forced = task[non_forced_array]
+    task_1 = np.where(task_non_forced == 1)[0]
+    task_1_len   = len(task_1) 
+                
+    task_2 = np.where(task_non_forced == 2)[0]        
+    task_2_len  = len(task_2)
+    
+    for i,predictor in enumerate(predictor_A_Task_1):
+        if i > 0:
+            if predictor_A_Task_1[i-1] == 1 and predictor_A_Task_1[i] == 1:
+                same_task_1.append(1)
+            elif predictor_A_Task_1[i-1] == 0 and predictor_A_Task_1[i] == 0:
+                same_task_1.append(1)
+            else:
+                same_task_1.append(0)
+                
+    for i,predictor in enumerate(predictor_A_Task_2):
+        if i > 0:
+            if predictor_A_Task_2[i-1] == 1 and predictor_A_Task_2[i] == 1 :
+                same_task_2.append(1)
+            elif predictor_A_Task_2[i-1] == 0 and predictor_A_Task_2[i] == 0:
+                same_task_2.append(1)
+            else:
+                same_task_2.append(0)
+                
+    for i,predictor in enumerate(predictor_A_Task_3):
+        if i > 0:
+            if predictor_A_Task_3[i-1] == 1 and predictor_A_Task_3[i] == 1 :
+                same_task_3.append(1)
+            elif predictor_A_Task_3[i-1] == 0 and predictor_A_Task_3[i] == 0:
+                same_task_3.append(1)
+            else:
+                same_task_3.append(0)
+                
+    for i,predictor in enumerate(reward):
+        if i > 0:
+            if reward[i-1] == 1 and reward[i] == 1 :
+                reward_previous.append(1)
+            else:
+                reward_previous.append(0)      
+                
+    for i,predictor in enumerate(predictor_A_Task_1):
+        if i > 0:
+            if predictor_A_Task_1[i-1] == 1:
+                trial = 1
+            else:
+                trial = 0
+        else:
+            trial = 0     
+        previous_trial_task_1.append(trial)
+        
+    for i,predictor in enumerate(predictor_A_Task_2):
+        if i > 0:
+            if predictor_A_Task_2[i-1] == 1:
+                trial = 1
+            else:
+                trial = 0
+        else:
+            trial = 0     
+        previous_trial_task_2.append(trial)
+        
+    for i,predictor in enumerate(predictor_A_Task_3):
+        if i > 0:
+            if predictor_A_Task_3[i-1] == 1:
+                trial = 1
+            else:
+                trial = 0
+        else:
+            trial = 0     
+        previous_trial_task_3.append(trial)
+                
+    same_task_1 = np.asarray(same_task_1)
+    same_task_2 = np.asarray(same_task_2)
+    same_task_3 = np.asarray(same_task_3)
+    
+    reward_previous = np.asarray(reward_previous)    
+    previous_trial_task_1 = np.asarray(previous_trial_task_1)
+    previous_trial_task_2 = np.asarray(previous_trial_task_2)
+    previous_trial_task_3 = np.asarray(previous_trial_task_3)
+    
+    same_outcome_task_1 = []
+    for same, r in zip(same_task_1,reward_previous):
+        if same ==1 and r ==1:
+            same_outcome_task_1.append(0.5)
+        elif same ==1 and r ==0:
+            same_outcome_task_1.append(-0.5)
+        else:
+            same_outcome_task_1.append(0)
+            
+    same_outcome_task_2 = []
+    for same, r in zip(same_task_2,reward_previous):
+        if same ==1 and r ==1:
+            same_outcome_task_2.append(0.5)
+        elif same ==1 and r ==0:
+            same_outcome_task_2.append(-0.5)
+        else:
+            same_outcome_task_2.append(0)
+            
+    same_outcome_task_3 = []
+    for same, r in zip(same_task_3,reward_previous):
+        if same ==1 and r ==1:
+            same_outcome_task_3.append(0.5)
+        elif same ==1 and r ==0:
+            same_outcome_task_3.append(-0.5)
+        else:
+            same_outcome_task_3.append(0)
+
+    
+    same_outcome_task_1 = np.asarray(same_outcome_task_1)
+    same_outcome_task_2 = np.asarray(same_outcome_task_2)
+    same_outcome_task_3 = np.asarray(same_outcome_task_3)
+    
+    same_task_1 = same_task_1[:task_1_len-1]
+    same_task_2 = same_task_2[task_1_len:task_1_len+task_2_len]
+    same_task_3 = same_task_3[task_1_len+task_2_len:]
+    
+    reward_previous_task_1 = reward_previous[:task_1_len-1]
+    reward_previous_task_2 = reward_previous[task_1_len:task_1_len+task_2_len]
+    reward_previous_task_3 = reward_previous[task_1_len+task_2_len:]
+
+
+    different_outcome_task_1 = []
+    for same, r in zip(same_task_1,reward_previous_task_1):
+        if same == 0 and r ==1:
+            different_outcome_task_1.append(0.5)
+        elif same == 0 and r ==0:
+            different_outcome_task_1.append(-0.5)
+        else:
+            different_outcome_task_1.append(0)
+            
+    different_outcome_task_2 = []
+    for same, r in zip(same_task_2,reward_previous_task_2):
+        if same == 0 and r ==1:
+            different_outcome_task_2.append(0.5)
+        elif same == 0 and r ==0:
+            different_outcome_task_2.append(-0.5)
+        else:
+            different_outcome_task_2.append(0)
+            
+    different_outcome_task_3 = []
+    for same, r in zip(same_task_3,reward_previous_task_3):
+        if same == 0 and r ==1:
+            different_outcome_task_3.append(0.5)
+        elif same == 0 and r ==0:
+            different_outcome_task_3.append(-0.5)
+        else:
+            different_outcome_task_3.append(0)
+    
+    different_outcome_task_1 = np.asarray(different_outcome_task_1)
+    different_outcome_task_2 = np.asarray(different_outcome_task_2)
+    different_outcome_task_3 = np.asarray(different_outcome_task_3)
+    
+    return predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+    reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3 
+    
 def regression(experiment):
     C_task_1= []     # To strore predictor loadings for each session in task 1.
     C_task_2 = []    # To strore predictor loadings for each session in task 2.
+    C_task_3 = []    # To strore predictor loadings for each session in task 2.
     
     # Finding correlation coefficients for task 1 
     for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
         if aligned_spikes.shape[1] > 0: # sessions with neurons? 
             n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-            #t_out = session.t_out
-            #initiate_choice_t = session.target_times #Initiation and Choice Times
-            #ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-            #ind_after_choice = ind_choice + 7 # 1 sec after choice
-            #spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-            #mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+        
             predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
             predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
-            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
+            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+            reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+            same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1,\
+            different_outcome_task_2, different_outcome_task_3 = predictors_include_previous_trial(session)     
             
             # Getting out task indicies   
             task = session.trial_data['task']
@@ -366,44 +506,48 @@ def regression(experiment):
     
             task_non_forced = task[non_forced_array]
             task_1 = np.where(task_non_forced == 1)[0]
-            firing_rate_task_1 =  aligned_spikes[:len(task_1)]
+            firing_rate_task_1 =  aligned_spikes[1:len(task_1)] # Ignore the first trial to align with previous trial predictors
             
             # For regressions for each task independently 
-            predictor_A_Task_1 = predictor_A_Task_1[:len(task_1)]
-            reward_t1 = reward[:len(task_1)]
-            reward_choice_interaction_t1 = reward_t1*predictor_A_Task_1
-            latent_state_t1 = np.zeros(len(reward_t1))
-            latent_state_t1[predictor_a_good_task_1] = 1
+            predictor_A_Task_1 = predictor_A_Task_1[1:len(task_1)]
+            reward_t1 = reward[1:len(task_1)]
+            
+            reward_previous_task_1 = reward_previous[:(len(task_1)-1)]    
+            previous_trial_task_1 = previous_trial_task_1[:(len(task_1)-1)]    
+            same_outcome_task_1 = same_outcome_task_1[:(len(task_1)-1)]
+            different_outcome_task_1 = different_outcome_task_1[:(len(task_1)-1)]
+            
             
             predictors_task_1 = OrderedDict([
-                                          ('choice_task_1' , predictor_A_Task_1),
-                                          ('reward_t1', reward_t1), 
-                                          ('choice_x_reward',reward_choice_interaction_t1),
-                                          ('latent_state', latent_state_t1)])
+                                          ('A_task_1' , predictor_A_Task_1),
+                                          ('Reward_task_1', reward_t1), 
+                                          ('Previous_reward_task_1', reward_previous_task_1),
+                                          ('Previous_choice_task_1', previous_trial_task_1),
+                                          ('Previous_Same_task_1', same_outcome_task_1),
+                                          ('Previous_Different_task_1', different_outcome_task_1)])
         
            
             X_task_1 = np.vstack(predictors_task_1.values()).T[:len(predictor_A_Task_1),:].astype(float)
             n_predictors = X_task_1.shape[1]
             y_t1 = firing_rate_task_1.reshape([len(firing_rate_task_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols = LinearRegression(copy_X = True,fit_intercept= True)
             ols.fit(X_task_1,y_t1)
             C_task_1.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
     
     C_task_1 = np.concatenate(C_task_1,0)
-    # Finding correlation coefficients from task two 
+    
+    # Finding coefficients from task two 
     for s,session in enumerate(experiment):
         aligned_spikes= session.aligned_rates[:]
         if aligned_spikes.shape[1] > 0:  # sessions with neurons? 
-            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
-            #t_out = session.t_out
-            ##initiate_choice_t = session.target_times #Initiation and Choice Times
-            #ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin() # Find firing rates around choice
-            #ind_after_choice = ind_choice + 7 # 1 sec after choice
-            #spikes_around_choice = aligned_spikes[:,:,ind_choice-2:ind_after_choice] # Find firing rates only around choice      
-            #mean_spikes_around_choice  = np.mean(spikes_around_choice,axis =2)
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape
+           
             predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
             predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
-            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = predictors_pokes(session)     
+            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+            reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+            same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1,\
+            different_outcome_task_2, different_outcome_task_3 = predictors_include_previous_trial(session)     
             
             # Getting out task indicies
             task = session.trial_data['task']
@@ -413,96 +557,102 @@ def regression(experiment):
             task_non_forced = task[non_forced_array]
             task_1 = np.where(task_non_forced == 1)[0]
             task_2 = np.where(task_non_forced == 2)[0]        
-            firing_rate_task_2 =  aligned_spikes[len(task_1):len(task_1)+len(task_2)]
+            firing_rate_task_2 =  aligned_spikes[len(task_1)+1:len(task_1)+len(task_2)]
             
             # For regressions for each task independently 
-            predictor_A_Task_2 = predictor_A_Task_2[len(task_1):len(task_1)+len(task_2)]
-            reward_t2 = reward[len(task_1):len(task_1)+len(task_2)]   
-            reward_choice_interaction_t2 = predictor_A_Task_2*reward_t2
-            latent_state_t2 = np.zeros(len(reward_t2))
-            latent_state_t2[predictor_a_good_task_2] = 1
+            predictor_A_Task_2 = predictor_A_Task_2[len(task_1)+1:len(task_1)+len(task_2)]
+
+            reward_t2 = reward[len(task_1)+1:len(task_1)+len(task_2)]   
+            
+           
+            reward_previous_task_2 = reward_previous[(len(task_1)-1)+1: (len(task_1)-1)+len(task_2)]    
+            previous_trial_task_2 = previous_trial_task_2[(len(task_1)-1)+1 : (len(task_1)-1)+len(task_2)]   
+            same_outcome_task_2 = same_outcome_task_2[(len(task_1)-1)+1 : (len(task_1)-1)+len(task_2)]   
+            different_outcome_task_2 = different_outcome_task_2[1:]
             
             predictors_task_2 = OrderedDict([
-                                          ('choice_task_2' , predictor_A_Task_2),
-                                          ('reward_t2', reward_t2),
-                                          ('choice_x_reward_t2',reward_choice_interaction_t2),
-                                          ('latent_state_t2', latent_state_t2)])
+                                           ('A_task_2' , predictor_A_Task_2),
+                                           ('Reward_task_2', reward_t2), 
+                                           ('Previous_reward_task_2', reward_previous_task_2),
+                                           ('Previous_choice_task_2', previous_trial_task_2),
+                                           ('Previous_Same_task_2', same_outcome_task_2),
+                                           ('Previous_Different_task_2', different_outcome_task_2)])
         
-           
             X_task_2 = np.vstack(predictors_task_2.values()).T[:len(predictor_A_Task_2),:].astype(float)
             n_predictors = X_task_2.shape[1]
             y_t2 = firing_rate_task_2.reshape([len(firing_rate_task_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols = LinearRegression(copy_X = True,fit_intercept= True)
             ols.fit(X_task_2,y_t2)
             C_task_2.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
                 
     C_task_2 = np.concatenate(C_task_2,0)
-    return C_task_1, C_task_2
+    
+    
+#    # Finding coefficients from task three 
+#    for s,session in enumerate(experiment_aligned_HP):
+#        aligned_spikes= session.aligned_rates[:]
+#        if aligned_spikes.shape[1] > 0:  # sessions with neurons? 
+#            n_trials, n_neurons, n_timepoints = aligned_spikes.shape
+#            
+#          
+#            predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+#            predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+#            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+#            reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+#            same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1,\
+#            different_outcome_task_2, different_outcome_task_3 = predictors_include_previous_trial(session)     
+#            
+#            # Getting out task indicies
+#            task = session.trial_data['task']
+#            forced_trials = session.trial_data['forced_trial']
+#
+#            non_forced_array = np.where(forced_trials == 0)[0]
+#            task_non_forced = task[non_forced_array]
+#            task_1 = np.where(task_non_forced == 1)[0]
+#            task_2 = np.where(task_non_forced == 2)[0]        
+#            firing_rate_task_3 =  aligned_spikes[len(task_1)+len(task_2)+1:]
+#            
+#            # For regressions for each task independently 
+#            predictor_A_Task_3 = predictor_A_Task_3[len(task_1)+len(task_2)+1:(len(task_1)+len(task_2)+firing_rate_task_3.shape[0]+1)]
+#
+#            reward_t3 = reward[len(task_1)+len(task_2)+1:(len(task_1)+len(task_2)+firing_rate_task_3.shape[0]+1)]   
+#            
+#            reward_previous_task_3 = reward_previous[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]    
+#            previous_trial_task_3 = previous_trial_task_3[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]  
+#            same_outcome_task_3 = same_outcome_task_3[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]     
+#            different_outcome_task_3 =different_outcome_task_3[1:]
+#            predictors_task_3 = OrderedDict([
+#                                           ('A_task_3' , predictor_A_Task_3),
+#                                           ('Reward_task_3', reward_t3), 
+#                                           ('Previous_reward_task_3', reward_previous_task_3),
+#                                           ('Previous_choice_task_3', previous_trial_task_3),
+#                                           ('Previous_Same_task_3', same_outcome_task_3),
+#                                           ('Previous_Different_task_3', different_outcome_task_3)])
+#        
+#           
+#            X_task_3 = np.vstack(predictors_task_3.values()).T[:len(predictor_A_Task_3),:].astype(float)
+#            n_predictors = X_task_3.shape[1]
+#            y_t3 = firing_rate_task_3.reshape([len(firing_rate_task_3),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+#            ols = LinearRegression(copy_X = True,fit_intercept= False)
+#            ols.fit(X_task_3,y_t3)
+#            C_task_3.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+#                
+#    C_task_3 = np.concatenate(C_task_3,0)
+#    
+    return C_task_1, C_task_2 #, C_task_3
 
 
-def sorting_by_task_1(experiment, region = 'HP'):
+def sorting_by_task_1(experiment):
     C_task_1, C_task_2 = regression(experiment)
    
     # Sort in descending order by choice task 1 
-    choice_args = np.argsort(-C_task_1[:,0])
-    choice_task_1 = C_task_1[:,0]
-    choice_task_2 = C_task_2[:,0]
-    choice = np.corrcoef(choice_task_1,choice_task_2)
-    print(choice)
+    same = C_task_1[:,:,5]
+    different = C_task_2[:,:,4]
     
-    reward_args = np.argsort(-C_task_1[:,1])
-    reward_task_1 = C_task_1[:,1]
-    reward_task_2 = C_task_2[:,1]
-    reward = np.corrcoef(reward_task_1,reward_task_2)
-    print(reward)
+    same_f = same.flatten()
+    different_f = different.flatten()
+
+    argmax_neuron = np.argsort(-same_f)
     
-    reward_choice_int_args = np.argsort(-C_task_1[:,2])
-    reward_x_choice_task_1 = C_task_1[:,2]
-    reward_x_choice_task_2 = C_task_2[:,2]
-    reward_x_choice = np.corrcoef(reward_x_choice_task_1,reward_x_choice_task_2)
-    print(reward_x_choice)
-    
-    latent_state_arg = np.argsort(-C_task_1[:,3])
-    latent_state_task_1 = C_task_1[:,3]
-    latent_state_task_2 = C_task_2[:,3]
-    latent_state = np.corrcoef(latent_state_task_1,latent_state_task_2)
-    print(latent_state)
-    
-    plt.figure()
-    plt.plot(choice_task_1[choice_args],color = 'red')
-    plt.plot(choice_task_2[choice_args], color = 'grey')
-    plt.ylabel('Correlation Coefficient')
-    plt.xlabel('Neuron Sorted by Task 1')
-    if region == 'HP':
-        plt.title('Choice HP')
-    else:
-        plt.title('Choice PFC')
-    plt.figure()
-    plt.plot(reward_task_1[reward_args], color = 'red')
-    plt.plot(reward_task_2[reward_args], color = 'grey')
-    plt.ylabel('Correlation Coefficient')
-    plt.xlabel('Neuron Sorted by Task 1')
-    if region == 'HP':
-        plt.title('Reward HP')
-    else: 
-        plt.title('Reward PFC')
-        
-    plt.figure()
-    plt.plot(reward_x_choice_task_1[reward_choice_int_args],color = 'red')
-    plt.plot(reward_x_choice_task_2[reward_choice_int_args], color = 'grey')
-    plt.ylabel('Correlation Coefficient')
-    plt.xlabel('Neuron Sorted by Task 1')
-    if region == 'HP':
-        plt.title('Reward x Choice HP')
-    else:
-         plt.title('Reward x Choice PFC')
-    
-    plt.figure()
-    plt.plot(latent_state_task_1[latent_state_arg],color = 'red')
-    plt.plot(latent_state_task_2[latent_state_arg],color = 'grey')
-    plt.ylabel('Correlation Coefficient')
-    plt.xlabel('Neuron Sorted by Task 1')
-    if region == 'HP':
-        plt.title('Latent State HP')
-    else:
-        plt.title('Latent State PFC')
+    plt.plot(different_f[argmax_neuron])
+    plt.plot(same_f[argmax_neuron])

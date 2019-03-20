@@ -11,7 +11,7 @@ import matplotlib.pyplot as plot
 import sys 
 sys.path.append('/Users/veronikasamborska/Desktop/2018-12-12-Reversal_learning/code/reversal_learning/')
 import utility as ut
-import seaborn as sns
+#import seaborn as sns
 import pandas as pd
 
 # Reversals Plot -------------------------------------------------------------------------
@@ -103,7 +103,7 @@ def trials_till_reversal_plot(experiment, subject_IDs ='all' , fig_no=1):
     std_err_median= std_threshold_per_task/sample_size
     x_pos = np.arange(len(median_threshold_per_task))
     plt.figure()
-    sns.set()
+    #sns.set()
     plt.errorbar(x = x_pos, y = median_threshold_per_task, yerr = std_err_median, alpha=0.8,  linestyle='None', marker='*', color = 'Black')    
     
     # Delete NaNs for the Trend Line calculation
@@ -122,7 +122,7 @@ def trials_till_reversal_plot(experiment, subject_IDs ='all' , fig_no=1):
     std_proportion=np.nanstd(reversal_to_threshold, axis = 0)
     std_err= std_proportion/sample_size
     plt.figure()
-    sns.set()
+    #sns.set()
     for i in range(tasks - 1): 
          plt.plot(i * reversals + x, mean_threshold[i + 1])
          plt.fill_between(i * reversals + x, mean_threshold[i + 1]-std_err[i + 1], mean_threshold[i + 1]+std_err[i + 1], alpha=0.2)
@@ -456,7 +456,7 @@ def A_B_poke_reversal_plot(experiment,subject_IDs ='all', fig_no = 1):
     std_err_median= std_bad_pokes_med/sample_size
     x_pos = np.arange(len(median_bad_pokes))
     plt.figure()
-    sns.set()
+    #sns.set()
     plt.errorbar(x = x_pos, y = median_bad_pokes, yerr = std_err_median, alpha=0.8,  linestyle='None', marker='*', color = 'Black')    
     x_pos_no_NaNs = np.delete(x_pos, 0)
     median_threshold_per_task_no_NaNs = np.delete(median_bad_pokes, 0)

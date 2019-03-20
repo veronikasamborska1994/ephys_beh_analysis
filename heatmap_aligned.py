@@ -67,7 +67,7 @@ def all_sessions_aligment(experiment, all_experiments):
 def heatplot_aligned(experiment_aligned): 
     all_clusters_task_1 = []
     all_clusters_task_2 = []
-    for session in experiment_aligned_HP:
+    for session in experiment_aligned:
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
         t_out = session.t_out
@@ -111,7 +111,7 @@ def heatplot_aligned(experiment_aligned):
     same_shape_task_2 = np.array(same_shape_task_2)
     peak_inds = np.argmax(same_shape_task_1,1)
     ordering = np.argsort(peak_inds)
-    activity_sorted = same_shape_task_2[ordering,:]
+    activity_sorted = same_shape_task_1[ordering,:]
     
     #not_normed = same_shape_task_1[ordering,:]
     #not_normed += 1
@@ -126,7 +126,7 @@ def heatplot_aligned(experiment_aligned):
     ind_reward = (np.abs(t_out-reward)).argmin()
     
     plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'R'))
-    plt.title('PFC')
+    plt.title('HP')
     plt.colorbar()
     
 

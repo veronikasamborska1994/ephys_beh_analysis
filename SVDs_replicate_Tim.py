@@ -9,6 +9,8 @@ Created on Wed Jan 16 11:09:46 2019
 import SVDs as sv 
 import numpy as np 
 import matplotlib.pyplot as plt
+from scipy import stats
+import svds_u_only as svdu
 
 def replicate_Tim_interleave_trials(session):      
     spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
@@ -86,7 +88,7 @@ def replicate_Tim_interleave_trials(session):
             aligned_rates_task_3_B_Nreward_interleaved_1, aligned_rates_task_3_B_Nreward_interleaved_2 
     
 
-def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = False, only_b = False, split_by_reward = False):       
+def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, split_by_reward = False):       
     all_clusters_task_1_first_half = []
     all_clusters_task_1_second_half = []
     all_clusters_task_2_first_half = []
@@ -98,8 +100,9 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
     for s,session in enumerate(experiment):
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
-        
-        if s != 15 and s !=31:
+        if s == 15 or s ==31:
+            print(session.file_name)
+        elif s != 15 and s !=31:
             aligned_rates_task_1_A_reward_interleaved_1, aligned_rates_task_1_A_reward_interleaved_2,\
             aligned_rates_task_1_B_reward_interleaved_1, aligned_rates_task_1_B_reward_interleaved_2,\
             aligned_rates_task_1_A_Nreward_interleaved_1, aligned_rates_task_1_A_Nreward_interleaved_2,\
@@ -154,7 +157,7 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
                     mean_firing_rate_task_3_second_half_B_Nreward  = np.mean(aligned_rates_task_3_B_Nreward_interleaved_2[:,i,:],0)
                     
                 
-                if only_a == False and only_b == False and split_by_reward == False: 
+                if plot_a == False and plot_b == False and split_by_reward == False: 
                     mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward,\
                                                                          mean_firing_rate_task_1_first_half_B_reward,\
                                                                          mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
@@ -171,19 +174,19 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
                                                                          mean_firing_rate_task_2_second_half_B_reward,\
                                                                          mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)
                     
-                elif only_a == True and only_b == False:
+                elif plot_a == True and plot_b == False:
                     mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward), axis = 0) 
                     mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward), axis = 0)
                     mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward), axis = 0)
                     mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward), axis = 0)
                   
-                elif only_a == False and only_b == True:
+                elif plot_a == False and plot_b == True:
                    mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
                    mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward), axis = 0)           
                    mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward), axis = 0)       
                    mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)          
                 
-                elif only_a == False and only_b == False and split_by_reward == True: 
+                elif plot_a == False and plot_b == False and split_by_reward == True: 
                     mean_firing_rate_task_1_first_half = np.mean([mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward], axis = 0) 
                     mean_firing_rate_task_1_second_half = np.mean([mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward], axis = 0)
                     mean_firing_rate_task_2_first_half = np.mean([mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward], axis = 0)
@@ -195,7 +198,7 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
                     mean_firing_rate_task_2_second_half = np.mean([mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward], axis = 0)          
 
                 if tasks_unchanged == True: 
-                    if only_a == False and only_b == False and split_by_reward == False: 
+                    if plot_a == False and plot_b == False and split_by_reward == False: 
                         mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward,\
                                                                          mean_firing_rate_task_3_first_half_B_reward,\
                                                                          mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
@@ -203,14 +206,14 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
                         mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward,\
                                                                          mean_firing_rate_task_3_second_half_B_reward,\
                                                                          mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
-                    elif only_a == True and only_b == False :
+                    elif plot_a == True and plot_b == False :
                         mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward), axis = 0)
                         mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward), axis = 0)
                     
-                    elif only_a == False and only_b == True:
+                    elif plot_a == False and plot_b == True:
                         mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
                         mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
-                    elif only_a == False and only_b == False and split_by_reward == True: 
+                    elif plot_a == False and plot_b == False and split_by_reward == True: 
                         mean_firing_rate_task_3_first_half = np.mean([mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward], axis = 0) 
                         mean_firing_rate_task_3_second_half = np.mean([mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward], axis = 0)
                        
@@ -222,30 +225,146 @@ def replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = F
                 if tasks_unchanged == True: 
                     all_clusters_task_3_first_half.append(mean_firing_rate_task_3_first_half)
                     all_clusters_task_3_second_half.append(mean_firing_rate_task_3_second_half)
-            
-    return all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
-        all_clusters_task_2_first_half, all_clusters_task_2_second_half,\
-        all_clusters_task_3_first_half,all_clusters_task_3_second_half
+    if tasks_unchanged == True:        
+        return all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
+            all_clusters_task_2_first_half, all_clusters_task_2_second_half,\
+            all_clusters_task_3_first_half,all_clusters_task_3_second_half
+    else:    
+        return all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
+            all_clusters_task_2_first_half, all_clusters_task_2_second_half
         
+
+
+def demean_data_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, split_by_reward = False, diagonal = False):
+    
+    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = replicate_Tim_trial_selection(experiment, tasks_unchanged = True, plot_a = plot_a, plot_b = plot_b, split_by_reward = split_by_reward )
+    
+    flattened_all_clusters_task_1_first_half  = np.asarray(flattened_all_clusters_task_1_first_half)
+    flattened_all_clusters_task_1_second_half = np.asarray(flattened_all_clusters_task_1_second_half)
+    flattened_all_clusters_task_2_first_half = np.asarray(flattened_all_clusters_task_2_first_half)
+    flattened_all_clusters_task_2_second_half = np.asarray(flattened_all_clusters_task_2_second_half)
+    flattened_all_clusters_task_3_first_half = np.asarray(flattened_all_clusters_task_3_first_half)
+    flattened_all_clusters_task_3_second_half = np.asarray(flattened_all_clusters_task_3_second_half)
+    
+  
+    
+    if tasks_unchanged == True:
         
+        all_data = np.concatenate([flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,flattened_all_clusters_task_2_first_half,\
+                                   flattened_all_clusters_task_2_second_half, flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half], axis = 1)
+        all_data_mean = np.mean(all_data, axis = 1)
+    
+        demeaned = np.transpose(all_data)- all_data_mean
+        demeaned = np.transpose(demeaned)
+        
+        demean_all_clusters_task_1_first_half = demeaned[:,:flattened_all_clusters_task_1_first_half.shape[1]]
+        demean_all_clusters_task_1_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]:flattened_all_clusters_task_1_first_half.shape[1]*2]
+        
+        demean_all_clusters_task_2_first_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*2:flattened_all_clusters_task_1_first_half.shape[1]*3]
+        demean_all_clusters_task_2_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*3:flattened_all_clusters_task_1_first_half.shape[1]*4]
+    
+        demean_all_clusters_task_3_first_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*4:flattened_all_clusters_task_1_first_half.shape[1]*5]
+        demean_all_clusters_task_3_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*5:flattened_all_clusters_task_1_first_half.shape[1]*6]
+    else:
+       
+        all_data = np.concatenate([flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,flattened_all_clusters_task_2_first_half,\
+                                   flattened_all_clusters_task_2_second_half], axis = 1)
+        all_data_mean = np.mean(all_data, axis = 1)
+    
+        demeaned = np.transpose(all_data)- all_data_mean
+        demeaned = np.transpose(demeaned)
+        
+        demean_all_clusters_task_1_first_half = demeaned[:,:flattened_all_clusters_task_1_first_half.shape[1]]
+        demean_all_clusters_task_1_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]:flattened_all_clusters_task_1_first_half.shape[1]*2]
+        
+        demean_all_clusters_task_2_first_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*2:flattened_all_clusters_task_1_first_half.shape[1]*3]
+        demean_all_clusters_task_2_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*3:flattened_all_clusters_task_1_first_half.shape[1]*4]
+    if tasks_unchanged == True:
+        return demean_all_clusters_task_1_first_half, demean_all_clusters_task_1_second_half,demean_all_clusters_task_2_first_half,demean_all_clusters_task_2_second_half,demean_all_clusters_task_3_first_half,\
+    demean_all_clusters_task_3_second_half
+    else:
+        return demean_all_clusters_task_1_first_half, demean_all_clusters_task_1_second_half,demean_all_clusters_task_2_first_half,demean_all_clusters_task_2_second_half
+    
+def correlations_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, split_by_reward = False):
+    all_clusters_task_1_first_half, all_clusters_task_1_second_half,all_clusters_task_2_first_half,all_clusters_task_2_second_half,all_clusters_task_3_first_half,\
+    all_clusters_task_3_second_half  = demean_data_tim(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, split_by_reward = split_by_reward )
+    
+    
+    correlation_task_1_1 = np.linalg.multi_dot([all_clusters_task_1_first_half, np.transpose(all_clusters_task_1_first_half)])/all_clusters_task_3_first_half.shape[0]
+    correlation_task_1_2 = np.linalg.multi_dot([all_clusters_task_1_second_half, np.transpose(all_clusters_task_1_second_half)])/all_clusters_task_3_first_half.shape[0]
+
+    correlation_task_2_1 = np.linalg.multi_dot([all_clusters_task_2_first_half, np.transpose(all_clusters_task_2_first_half)])/all_clusters_task_3_first_half.shape[0]
+    correlation_task_2_2 = np.linalg.multi_dot([all_clusters_task_2_second_half, np.transpose(all_clusters_task_2_second_half)])/all_clusters_task_3_first_half.shape[0]
+
+    correlation_task_3_1 = np.linalg.multi_dot([all_clusters_task_3_first_half, np.transpose(all_clusters_task_1_first_half)])/all_clusters_task_3_first_half.shape[0]
+    correlation_task_3_2 = np.linalg.multi_dot([all_clusters_task_3_second_half, np.transpose(all_clusters_task_3_second_half)])/all_clusters_task_3_first_half.shape[0]
+ 
+    correlation_task_1_1 = np.triu(correlation_task_1_1)
+    correlation_task_1_1 = correlation_task_1_1.flatten()
+    
+    correlation_task_1_2= np.triu(correlation_task_1_2)
+    correlation_task_1_2 = correlation_task_1_2.flatten()
+    
+    correlation_task_2_1 = np.triu(correlation_task_2_1)
+    correlation_task_2_1 = correlation_task_2_1.flatten()
+    
+    correlation_task_2_2 = np.triu(correlation_task_2_2)
+    correlation_task_2_2 = correlation_task_2_2.flatten()
+    
+    correlation_task_3_1 = np.triu(correlation_task_3_1)
+    correlation_task_3_1 = correlation_task_3_1.flatten()
+    
+    correlation_task_3_2 = np.triu(correlation_task_3_2)
+    correlation_task_3_2 = correlation_task_3_2.flatten()
+    
+    
+    plt.figure()
+    plt.scatter(correlation_task_1_2,correlation_task_2_1, s =1, color = 'black')
+
+    gradient, intercept, r_value, p_value, std_err = stats.linregress(correlation_task_1_2,correlation_task_2_1)
+
+    mn=np.min(correlation_task_1_2)
+    mx=np.max(correlation_task_1_2)
+    x1=np.linspace(mn,mx,500)
+    y1=gradient*x1+intercept
+    plt.plot(x1,y1,'black')
+    plt.show()
+    plt.xlabel('Task 1')
+    plt.ylabel('Task 2')
+    plt.title('Covariance PFC')
+    plt.savefig('/Users/veronikasamborska/Desktop/HP.pdf')
+    
+    return r_value,p_value
 
 
 
-def svd_plotting_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, split_by_reward = False):
+def svd_plotting_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, split_by_reward = False, diagonal = False):
     #Calculating SVDs for trials split by A and B, reward/no reward (no block information) 
-
-    all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
-    all_clusters_task_2_first_half, all_clusters_task_2_second_half,\
-    all_clusters_task_3_first_half,all_clusters_task_3_second_half = replicate_Tim_trial_selection(experiment, tasks_unchanged = True, only_a = plot_a, only_b = plot_b, split_by_reward = split_by_reward )
+    if tasks_unchanged == True:
+        
+        all_clusters_task_1_first_half, all_clusters_task_1_second_half,all_clusters_task_2_first_half,all_clusters_task_2_second_half,all_clusters_task_3_first_half,\
+        all_clusters_task_3_second_half = replicate_Tim_trial_selection(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a,\
+                          plot_b = plot_b, split_by_reward = split_by_reward)
+       
+        all_clusters_task_1_first_half = np.asarray(all_clusters_task_1_first_halfc)
+        all_clusters_task_1_second_half = np.asarray(all_clusters_task_1_second_half)
+        all_clusters_task_2_first_half = np.asarray(all_clusters_task_2_first_half)
+        all_clusters_task_2_second_half = np.asarray(all_clusters_task_2_second_half)
+        all_clusters_task_3_first_half = np.asarray(all_clusters_task_3_first_half)
+        all_clusters_task_3_second_half = np.asarray(all_clusters_task_3_second_half)
+    else:
+        all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
+        all_clusters_task_2_first_half,all_clusters_task_2_second_half = replicate_Tim_trial_selection(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a,\
+                                                                                         plot_b = plot_b,split_by_reward = split_by_reward)
     
-    all_clusters_task_1_first_half  = np.asarray(all_clusters_task_1_first_half)
-    all_clusters_task_1_second_half = np.asarray(all_clusters_task_1_second_half)
-    all_clusters_task_2_first_half = np.asarray(all_clusters_task_2_first_half)
-    all_clusters_task_2_second_half = np.asarray(all_clusters_task_2_second_half)
-    all_clusters_task_3_first_half = np.asarray(all_clusters_task_3_first_half)
-    all_clusters_task_3_second_half = np.asarray(all_clusters_task_3_second_half)
     
-    
+        all_clusters_task_1_first_half  = np.asarray(all_clusters_task_1_first_half)
+        all_clusters_task_1_second_half = np.asarray(all_clusters_task_1_second_half)
+        all_clusters_task_2_first_half = np.asarray(all_clusters_task_2_first_half)
+        all_clusters_task_2_second_half = np.asarray(all_clusters_task_2_second_half)
+      
   
     #SVDsu.shape, s.shape, vh.shape for task 1 first half
     u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(all_clusters_task_1_first_half, full_matrices = False)
@@ -258,10 +377,11 @@ def svd_plotting_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b 
 
     #SVDsu.shape, s.shape, vh.shape for task 2 second half
     u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(all_clusters_task_2_second_half, full_matrices = False)
-    
-    #SVDsu.shape, s.shape, vh.shape for task 3 first half
-    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(all_clusters_task_3_first_half, full_matrices = False)
+    if tasks_unchanged == True:
 
+        #SVDsu.shape, s.shape, vh.shape for task 3 first half
+        u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(all_clusters_task_3_first_half, full_matrices = False)
+    
 
     #Finding variance explained in second half of task 1 using the Us and Vs from the first half
     t_u = np.transpose(u_t1_1)
@@ -269,73 +389,102 @@ def svd_plotting_tim(experiment, tasks_unchanged = True, plot_a = False, plot_b 
     
     t_u_t_2_1 = np.transpose(u_t2_1)
     t_v_t_2_1 = np.transpose(vh_t2_1)
+    if tasks_unchanged == True:
+
+        t_u_t_3_1 = np.transpose(u_t3_1)
+        t_v_t_3_1 = np.transpose(vh_t3_1)
     
-    t_u_t_3_1 = np.transpose(u_t3_1)
-    t_v_t_3_1 = np.transpose(vh_t3_1)
-    
-    #Compare task 1 Second Half 
-    s_task_1_2 = np.linalg.multi_dot([t_u, all_clusters_task_1_second_half, t_v])
-    s_1_2 = s_task_1_2.diagonal()
-    sum_c_task_1_2 = np.cumsum(s_1_2)/all_clusters_task_1_second_half.shape[0]
-    
+
     #Compare task 2 First Half 
     s_task_2_1 = np.linalg.multi_dot([t_u, all_clusters_task_2_first_half, t_v])
-    s_2_1 = s_task_2_1.diagonal()
-    sum_c_task_2_1 = np.cumsum(s_2_1)/all_clusters_task_2_first_half.shape[0]
+    if diagonal == True:
+        s_2_1 = s_task_2_1.diagonal()
+    else:
+        s_2_1 = np.sum(s_task_2_1**2, axis = 1)
+        #s_2_1 = s_2_1/s_2_1[-1]
+
+    sum_c_task_2_1 = np.cumsum(abs(s_2_1))/all_clusters_task_2_first_half.shape[0]
     
     #Compare task 2 Second Half
     s_task_2_2 = np.linalg.multi_dot([t_u, all_clusters_task_2_second_half, t_v])
-    s_2_2 = s_task_2_2.diagonal()
-    sum_c_task_2_2 = np.cumsum(s_2_2)/all_clusters_task_2_second_half.shape[0]
+    if diagonal == True:
+        s_2_2 = s_task_2_2.diagonal()
+    else:
+        s_2_2 = np.sum(s_task_2_2**2, axis = 1)
+        #s_2_2 = s_2_2/s_2_2[-1]
+        
+    sum_c_task_2_2 = np.cumsum(abs(s_2_2))/all_clusters_task_2_second_half.shape[0]
     
     #Compare task 2 Second Half from first half
     s_task_2_2_from_t_2_1 = np.linalg.multi_dot([t_u_t_2_1, all_clusters_task_2_second_half, t_v_t_2_1])
-    s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
-    sum_c_task_2_2_from_t_2_1 = np.cumsum(s_2_2_from_t_2_1)/all_clusters_task_2_second_half.shape[0]
+    if diagonal == True:
+        s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
+    else:
+        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 1)
+        #s_2_2_from_t_2_1 = s_2_2_from_t_2_1/s_2_2_from_t_2_1[-1]
+    
+    sum_c_task_2_2_from_t_2_1 = np.cumsum(abs(s_2_2_from_t_2_1))/all_clusters_task_2_second_half.shape[0]
     
     
     if tasks_unchanged == True: 
         #Compare task 3 First Half from Task 1
         s_task_3_1 = np.linalg.multi_dot([t_u, all_clusters_task_3_first_half, t_v])
-        s_3_1 = s_task_3_1.diagonal()
-        sum_c_task_3_1 = np.cumsum(s_3_1)/all_clusters_task_3_first_half.shape[0]
+        if diagonal == True:
+            s_3_1 = s_task_3_1.diagonal()
+        else:
+            s_3_1 = np.sum(s_task_3_1**2, axis = 1)
+            #s_3_1 = s_3_1/s_3_1[-1]
+
+        sum_c_task_3_1 = np.cumsum(abs(s_3_1))/all_clusters_task_3_first_half.shape[0]
         
         #Compare task 3 Second Half from Task 1
         s_task_3_2 = np.linalg.multi_dot([t_u, all_clusters_task_3_second_half, t_v])
-        s_3_2 = s_task_3_2.diagonal()
-        sum_c_task_3_2 = np.cumsum(s_3_2)/all_clusters_task_3_second_half.shape[0]
+        if diagonal == True:
+            s_3_2 = s_task_3_2.diagonal()
+        else:
+            s_3_2 = np.sum(s_task_3_2**2, axis = 1)
+            #s_3_2 = s_3_2/s_3_2[-1]
+
+        sum_c_task_3_2 = np.cumsum(abs(s_3_2))/all_clusters_task_3_second_half.shape[0]
         
         #Compare task 3 First Half from Task 3 first Half 
         s_task_3_2_from_t_3_1 = np.linalg.multi_dot([t_u_t_3_1, all_clusters_task_3_second_half, t_v_t_3_1])
-        s_3_2_from_t_3_1 = s_task_3_2_from_t_3_1.diagonal()
-        sum_c_task_3_2_from_t_3_1 = np.cumsum(s_3_2_from_t_3_1)/all_clusters_task_3_second_half.shape[0]
+        if diagonal == True:
+            s_3_2_from_t_3_1 = s_task_3_2_from_t_3_1.diagonal()
+        else:
+            s_3_2_from_t_3_1 = np.sum(s_task_3_2_from_t_3_1**2, axis = 1)
+           # s_3_2_from_t_3_1 = s_3_2_from_t_3_1/s_3_2_from_t_3_1[-1]
+
+        sum_c_task_3_2_from_t_3_1 = np.cumsum(abs(s_3_2_from_t_3_1))/all_clusters_task_3_second_half.shape[0]
     
         
-        
-        task_a_a = np.mean([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
+        task_a_a = np.mean([sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
+        task_a_a = task_a_a/task_a_a[-1]
         
         task_a_b_c = np.mean([sum_c_task_2_1, sum_c_task_2_2,sum_c_task_3_1,sum_c_task_3_2], axis = 0)
+        task_a_b_c = task_a_b_c/task_a_b_c[-1]
+
         
-        #std_within = np.std([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1 ,sum_c_task_3_2_from_t_3_1], axis = 0)
-        #x_within = np.arange(len(task_a_a))
-        #std_between = np.std([sum_c_task_2_1, sum_c_task_2_2,sum_c_task_3_1,sum_c_task_3_2], axis = 0)
-        #x_between = np.arange(len(task_a_b_c))
+    else:
+        task_a_a = sum_c_task_2_2_from_t_2_1
+        task_a_a = task_a_a/task_a_a[-1]
         
+        task_a_b_c = np.mean([sum_c_task_2_1, sum_c_task_2_2], axis = 0)
+        task_a_b_c = task_a_b_c/task_a_b_c[-1]
 
     if HP == True:
+        plt.figure(13)
         plt.plot(task_a_b_c, label = 'Explain Task B/C from A HP', linestyle = '--', color='red')
-        #plt.fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'red', alpha = 0.2)
 
         plt.plot(task_a_a, label = 'Explain Task A from A HP', color = 'red')
-        #plt.fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'red', alpha = 0.2)
 
     if HP == False:
+        plt.figure(13)
+
         plt.plot(task_a_b_c, label = 'Explain Task B/C from A PFC', linestyle = '--', color='blue')
-        #plt.fill_between(x_within,task_a_a+std_within,task_a_a-std_within, color = 'blue', alpha = 0.2)
 
         plt.plot(task_a_a, label = 'Explain Task A from A PFC', color = 'blue')
 
-        #plt.fill_between(x_between,task_a_b_c+std_between, task_a_b_c-std_between, color = 'blue', alpha = 0.2)
 
 
     plt.legend()

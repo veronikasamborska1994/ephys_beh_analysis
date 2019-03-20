@@ -24,6 +24,7 @@ def extract_session_a_b_based_on_block_forced_trials(session, tasks_unchanged = 
     
     task_1 = len(np.where(task_forced == 1)[0])
     task_2 = len(np.where(task_forced == 2)[0])
+    
     #Getting choice indices 
     predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
@@ -139,12 +140,7 @@ def block_firings_rates_selection_forced_split_in_half(experiment):
             (len(state_A_choice_A_t1_2) > 0) & (len(state_A_choice_B_t1_2) > 0) & (len(state_B_choice_A_t1_2) > 0) &\
             (len(state_B_choice_B_t1_2) > 0) & (len(state_A_choice_A_t2_2) > 0) & (len(state_A_choice_B_t2_2) > 0) &\
             (len(state_B_choice_A_t2_2) > 0) & (len(state_B_choice_B_t2_2) > 0) & (len(state_A_choice_A_t3_2) > 0) &\
-            (len(state_A_choice_B_t3_2) > 0) & (len(state_B_choice_A_t3_2) > 0) & (len(state_B_choice_B_t3_2) > 0) &\
-            (session.file_name != 'm479-2018-08-20-112813.txt') & (session.file_name != 'm483-2018-06-22-160006.txt') &\
-            (session.file_name != 'm478-2018-08-09-120322.txt') &  (session.file_name != 'm486-2018-07-28-171910.txt') &\
-            (session.file_name != 'm486-2018-07-16-170101.txt') & (session.file_name != 'm480-2018-08-01-164435.txt') &\
-            (session.file_name != 'm480-2018-08-02-170827.txt') & (session.file_name != 'm480-2018-09-04-150501.txt') &\
-            (session.file_name != 'm480-2018-08-22-111012.txt') & (session.file_name != 'm481-2018-06-28-160517.txt'):
+            (len(state_A_choice_B_t3_2) > 0) & (len(state_B_choice_A_t3_2) > 0) & (len(state_B_choice_B_t3_2) > 0):
                 unique_neurons  = np.unique(spikes[0])  
                 
                 for i in range(len(unique_neurons)):                
@@ -232,15 +228,59 @@ def block_firings_rates_selection_forced_split_in_half(experiment):
     cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2 
 
 
-def plot_blocks_split_intwo(experiment, HP = False):
+
+def demean_data_forced(experiment):
     
-    #Explain A state from A state vs B state within a task  
     cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,\
     cluster_list_task_2_a_good_1, cluster_list_task_2_b_good_1,\
     cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\
     cluster_list_task_1_b_good_2, cluster_list_task_2_a_good_2, cluster_list_task_2_b_good_2,\
     cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2  = block_firings_rates_selection_forced_split_in_half(experiment)
     
+
+        
+    all_data = np.concatenate([cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,cluster_list_task_2_a_good_1,\
+                                   cluster_list_task_2_b_good_1, cluster_list_task_3_a_good_1,cluster_list_task_3_b_good_1,\
+                                   cluster_list_task_1_a_good_2,cluster_list_task_1_b_good_2,cluster_list_task_2_a_good_2,cluster_list_task_2_b_good_2,\
+                                   cluster_list_task_3_a_good_2,cluster_list_task_3_b_good_2], axis = 1)
+    all_data_mean = np.mean(all_data, axis = 1)
+    
+    demeaned = np.transpose(all_data)- all_data_mean
+    demeaned = np.transpose(demeaned)
+        
+    demean_cluster_list_task_1_a_good_1 = demeaned[:,:cluster_list_task_1_a_good_1.shape[1]]
+    demean_cluster_list_task_1_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]:cluster_list_task_1_a_good_1.shape[1]*2]
+        
+    demean_cluster_list_task_2_a_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*2:cluster_list_task_1_a_good_1.shape[1]*3]
+    demean_cluster_list_task_2_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*3:cluster_list_task_1_a_good_1.shape[1]*4]
+    
+    demean_cluster_list_task_3_a_good_1= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*4:cluster_list_task_1_a_good_1.shape[1]*5]
+    demean_cluster_list_task_3_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*5:cluster_list_task_1_a_good_1.shape[1]*6]
+    
+    demean_cluster_list_task_1_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*6:cluster_list_task_1_a_good_1.shape[1]*7]
+    demean_cluster_list_task_1_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*7:cluster_list_task_1_a_good_1.shape[1]*8]
+     
+    demean_cluster_list_task_2_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*8:cluster_list_task_1_a_good_1.shape[1]*9]
+    demean_cluster_list_task_2_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*9:cluster_list_task_1_a_good_1.shape[1]*10]
+    
+    demean_cluster_list_task_3_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*10:cluster_list_task_1_a_good_1.shape[1]*11]
+    demean_cluster_list_task_3_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*11:cluster_list_task_1_a_good_1.shape[1]*12]
+    
+    return demean_cluster_list_task_1_a_good_1, demean_cluster_list_task_1_b_good_1,\
+    demean_cluster_list_task_2_a_good_1, demean_cluster_list_task_2_b_good_1,\
+    demean_cluster_list_task_3_a_good_1, demean_cluster_list_task_3_b_good_1, demean_cluster_list_task_1_a_good_2,\
+    demean_cluster_list_task_1_b_good_2, demean_cluster_list_task_2_a_good_2, demean_cluster_list_task_2_b_good_2,\
+    demean_cluster_list_task_3_a_good_2, demean_cluster_list_task_3_b_good_2
+
+def plot_blocks_split_intwo(experiment, HP = False, diagonal = True):
+    
+    #Explain A state from A state vs B state within a task  
+    cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,\
+    cluster_list_task_2_a_good_1, cluster_list_task_2_b_good_1,\
+    cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\
+    cluster_list_task_1_b_good_2, cluster_list_task_2_a_good_2, cluster_list_task_2_b_good_2,\
+    cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2  = demean_data_forced(experiment)
+    #block_firings_rates_selection_forced_split_in_half
     #A good task 1
     u_t1_a_good_1, s_t1_a_good_1, vh_t1_a_good_1 = np.linalg.svd(cluster_list_task_1_a_good_1, full_matrices = False)
     u_t1_a_good_2, s_t1_a_good_2, vh_t1_a_good_2 = np.linalg.svd(cluster_list_task_1_a_good_2, full_matrices = False)
@@ -286,72 +326,152 @@ def plot_blocks_split_intwo(experiment, HP = False):
    
     #Predict within blocks 
     s1_t1_a_from_a = np.linalg.multi_dot([t_u_t1_a_good_1, cluster_list_task_1_a_good_2, t_vh_t1_a_good_1])
-    d_t1_a_from_a = s1_t1_a_from_a.diagonal()
-    sum_s1_t1_a_from_a = np.cumsum(d_t1_a_from_a)/cluster_list_task_1_a_good_2.shape[0]
+    if diagonal == True:
+        d_t1_a_from_a = s1_t1_a_from_a.diagonal()
+    else:
+        d_t1_a_from_a = np.sum(s1_t1_a_from_a**2, axis = 1)
+    sum_s1_t1_a_from_a = np.cumsum(abs(d_t1_a_from_a))/cluster_list_task_1_a_good_2.shape[0]
     
     s1_t2_a_from_a = np.linalg.multi_dot([t_u_t2_a_good_1, cluster_list_task_2_a_good_2, t_vh_t2_a_good_1])
-    d_t2_a_from_a = s1_t2_a_from_a.diagonal()
-    sum_s1_t2_a_from_a = np.cumsum(d_t2_a_from_a)/cluster_list_task_2_a_good_2.shape[0]
+    if diagonal == True:
+        d_t2_a_from_a = s1_t2_a_from_a.diagonal()
+    else:
+        d_t2_a_from_a = np.sum(s1_t2_a_from_a**2, axis = 1)
+    sum_s1_t2_a_from_a = np.cumsum(abs(d_t2_a_from_a))/cluster_list_task_2_a_good_2.shape[0]
     
     s1_t3_a_from_a = np.linalg.multi_dot([t_u_t3_a_good_1, cluster_list_task_3_a_good_2, t_vh_t3_a_good_1])
-    d_t3_a_from_a = s1_t3_a_from_a.diagonal()
-    sum_s1_t3_a_from_a = np.cumsum(d_t3_a_from_a)/cluster_list_task_3_a_good_2.shape[0]
+    if diagonal == True:
+        d_t3_a_from_a = s1_t3_a_from_a.diagonal()
+    else:
+        d_t3_a_from_a = np.sum(s1_t3_a_from_a**2, axis = 1)
+    sum_s1_t3_a_from_a = np.cumsum(abs(d_t3_a_from_a))/cluster_list_task_3_a_good_2.shape[0]
     
     
     s1_t1_b_from_b = np.linalg.multi_dot([t_u_t1_b_good_1, cluster_list_task_1_b_good_2, t_vh_t1_b_good_1])
-    d_t1_b_from_b = s1_t1_b_from_b.diagonal()
-    sum_s1_t1_b_from_b = np.cumsum(d_t1_b_from_b)/cluster_list_task_1_b_good_2.shape[0]
+    if diagonal == True:
+        d_t1_b_from_b = s1_t1_b_from_b.diagonal()
+    else:
+        d_t1_b_from_b = np.sum(s1_t1_b_from_b**2, axis = 1)
+    sum_s1_t1_b_from_b = np.cumsum(abs(d_t1_b_from_b))/cluster_list_task_1_b_good_2.shape[0]
     
     s1_t2_b_from_b = np.linalg.multi_dot([t_u_t2_b_good_1, cluster_list_task_2_b_good_2, t_vh_t2_b_good_1])
-    d_t2_b_from_b = s1_t2_b_from_b.diagonal()
-    sum_s1_t2_b_from_b = np.cumsum(d_t2_b_from_b)/cluster_list_task_2_b_good_2.shape[0]
+    if diagonal == True:
+        d_t2_b_from_b = s1_t2_b_from_b.diagonal()
+    else:
+        d_t2_b_from_b = np.sum(s1_t2_b_from_b**2, axis = 1)
+    sum_s1_t2_b_from_b = np.cumsum(abs(d_t2_b_from_b))/cluster_list_task_2_b_good_2.shape[0]
     
     s1_t3_a_from_a = np.linalg.multi_dot([t_u_t3_b_good_1, cluster_list_task_3_b_good_2, t_vh_t3_b_good_1])
-    d_t3_b_from_b = s1_t3_a_from_a.diagonal()
-    sum_s1_t3_b_from_b = np.cumsum(d_t3_b_from_b)/cluster_list_task_3_b_good_2.shape[0]
+    if diagonal == True:
+        d_t3_b_from_b = s1_t3_a_from_a.diagonal()
+    else:
+        d_t3_b_from_b = np.sum(s1_t3_a_from_a**2, axis = 1)
+    sum_s1_t3_b_from_b = np.cumsum(abs(d_t3_b_from_b))/cluster_list_task_3_b_good_2.shape[0]
         
     average_within = np.mean([sum_s1_t1_a_from_a,sum_s1_t2_a_from_a,sum_s1_t3_a_from_a, sum_s1_t1_b_from_b,sum_s1_t2_b_from_b, sum_s1_t3_b_from_b], axis = 0)
-    
+    #average_within = average_within/average_within[-1]
+
     #Predict between blocks 
     s1_t1_b_from_a = np.linalg.multi_dot([t_u_t1_a_good_1, cluster_list_task_1_b_good_2, t_vh_t1_a_good_1])
-    d_t1_b_from_a = s1_t1_b_from_a.diagonal()
-    sum_s1_t1_b_from_a = np.cumsum(d_t1_b_from_a)/cluster_list_task_1_b_good_2.shape[0]
+    if diagonal == True:
+        d_t1_b_from_a = s1_t1_b_from_a.diagonal()
+    else:
+        d_t1_b_from_a = np.sum(s1_t1_b_from_a**2, axis = 1)
+    sum_s1_t1_b_from_a = np.cumsum(abs(d_t1_b_from_a))/cluster_list_task_1_b_good_2.shape[0]
     
     s1_t2_b_from_a = np.linalg.multi_dot([t_u_t2_a_good_1, cluster_list_task_2_b_good_2, t_vh_t2_a_good_1])
     d_t2_b_from_a = s1_t2_b_from_a.diagonal()
-    sum_s1_t2_b_from_a = np.cumsum(d_t2_b_from_a)/cluster_list_task_2_b_good_2.shape[0]
+    if diagonal == True:
+        d_t2_b_from_a = s1_t2_b_from_a.diagonal()
+    else:
+        d_t2_b_from_a = np.sum(s1_t2_b_from_a**2, axis = 1)
+    sum_s1_t2_b_from_a = np.cumsum(abs(d_t2_b_from_a))/cluster_list_task_2_b_good_2.shape[0]
     
     s1_t3_b_from_a = np.linalg.multi_dot([t_u_t3_a_good_1, cluster_list_task_3_b_good_2, t_vh_t3_a_good_1])
-    d_t3_b_from_a = s1_t3_b_from_a.diagonal()
-    sum_s1_t3_b_from_a = np.cumsum(d_t3_b_from_a)/cluster_list_task_3_b_good_2.shape[0]
+    if diagonal == True:
+        d_t3_b_from_a = s1_t3_b_from_a.diagonal()
+    else:
+        d_t3_b_from_a = np.sum(s1_t3_b_from_a**2, axis = 1)
+    sum_s1_t3_b_from_a = np.cumsum(abs(d_t3_b_from_a))/cluster_list_task_3_b_good_2.shape[0]
     
     
     s1_t1_a_from_b = np.linalg.multi_dot([t_u_t1_b_good_1, cluster_list_task_1_a_good_2, t_vh_t1_b_good_1])
-    d_t1_a_from_b = s1_t1_a_from_b.diagonal()
-    sum_s1_t1_a_from_b = np.cumsum(d_t1_a_from_b)/cluster_list_task_1_a_good_2.shape[0]
+    if diagonal == True:
+        d_t1_a_from_b = s1_t1_a_from_b.diagonal()
+    else:
+        d_t1_a_from_b = np.sum(s1_t1_a_from_b**2, axis = 1)
+    sum_s1_t1_a_from_b = np.cumsum(abs(d_t1_a_from_b))/cluster_list_task_1_a_good_2.shape[0]
     
     s1_t2_a_from_b = np.linalg.multi_dot([t_u_t2_b_good_1, cluster_list_task_2_a_good_2, t_vh_t2_b_good_1])
-    d_t2_a_from_b = s1_t2_a_from_b.diagonal()
-    sum_s1_t2_a_from_b = np.cumsum(d_t2_a_from_b)/cluster_list_task_2_a_good_2.shape[0]
+    if diagonal == True:
+        d_t2_a_from_b = s1_t2_a_from_b.diagonal()
+    else:
+        d_t2_a_from_b = np.sum(s1_t2_a_from_b**2, axis = 1)
+    sum_s1_t2_a_from_b = np.cumsum(abs(d_t2_a_from_b))/cluster_list_task_2_a_good_2.shape[0]
     
     s1_t3_a_from_b = np.linalg.multi_dot([t_u_t3_b_good_1, cluster_list_task_3_a_good_2, t_vh_t3_b_good_1])
-    d_t3_a_from_b = s1_t3_a_from_b.diagonal()
-    sum_s1_t3_a_from_b = np.cumsum(d_t3_a_from_b)/cluster_list_task_3_a_good_2.shape[0]
+    if diagonal == True:
+        d_t3_a_from_b = s1_t3_a_from_b.diagonal()
+    else:
+        d_t3_a_from_b = np.sum(s1_t3_a_from_b**2, axis = 1)
+    sum_s1_t3_a_from_b = np.cumsum(abs(d_t3_a_from_b))/cluster_list_task_3_a_good_2.shape[0]
    
     
     average_between = np.mean([sum_s1_t1_b_from_a,sum_s1_t2_b_from_a,sum_s1_t3_b_from_a, sum_s1_t1_a_from_b,sum_s1_t2_a_from_b,sum_s1_t3_a_from_b], axis = 0)
-    
+    #average_between = average_between/average_between[-1]
     if HP == True :
-        plt.plot(average_within, label = 'A from A HP Within Tasks', color = 'black')
-        plt.plot(average_between, label = 'A from B HP Between Tasks', linestyle = '--', color='black')
+        plt.plot(average_within, label = 'A from A HP', color = 'black')
+        plt.plot(average_between, label = 'A from B HP', linestyle = '--', color='black')
           
     elif HP == False:
-        plt.plot(average_within, label = 'A from A PFC Within Tasks', color = 'red')
-        plt.plot(average_between, label = 'A from B PFC Between Tasks', linestyle = '--', color='red')
+        plt.plot(average_within, label = 'A from A PFC', color = 'red')
+        plt.plot(average_between, label = 'A from B PFC', linestyle = '--', color='red')
         
     plt.legend()
             
+def demean_data_forced_a_only(experiment):
+    
+    cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,\
+    cluster_list_task_2_a_good_1, cluster_list_task_2_b_good_1,\
+    cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\
+    cluster_list_task_1_b_good_2, cluster_list_task_2_a_good_2, cluster_list_task_2_b_good_2,\
+    cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2   = block_firings_rates_selection_forced_split_in_half_only_a(experiment)
+    
 
+        
+    all_data = np.concatenate([cluster_list_task_1_a_good_1, cluster_list_task_1_b_good_1,cluster_list_task_2_a_good_1,\
+                                   cluster_list_task_2_b_good_1, cluster_list_task_3_a_good_1,cluster_list_task_3_b_good_1,\
+                                   cluster_list_task_1_a_good_2,cluster_list_task_1_b_good_2,cluster_list_task_2_a_good_2,cluster_list_task_2_b_good_2,\
+                                   cluster_list_task_3_a_good_2,cluster_list_task_3_b_good_2], axis = 1)
+    all_data_mean = np.mean(all_data, axis = 1)
+    
+    demeaned = np.transpose(all_data)- all_data_mean
+    demeaned = np.transpose(demeaned)
+        
+    demean_cluster_list_task_1_a_good_1 = demeaned[:,:cluster_list_task_1_a_good_1.shape[1]]
+    demean_cluster_list_task_1_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]:cluster_list_task_1_a_good_1.shape[1]*2]
+        
+    demean_cluster_list_task_2_a_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*2:cluster_list_task_1_a_good_1.shape[1]*3]
+    demean_cluster_list_task_2_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*3:cluster_list_task_1_a_good_1.shape[1]*4]
+    
+    demean_cluster_list_task_3_a_good_1= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*4:cluster_list_task_1_a_good_1.shape[1]*5]
+    demean_cluster_list_task_3_b_good_1 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*5:cluster_list_task_1_a_good_1.shape[1]*6]
+    
+    demean_cluster_list_task_1_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*6:cluster_list_task_1_a_good_1.shape[1]*7]
+    demean_cluster_list_task_1_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*7:cluster_list_task_1_a_good_1.shape[1]*8]
+     
+    demean_cluster_list_task_2_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*8:cluster_list_task_1_a_good_1.shape[1]*9]
+    demean_cluster_list_task_2_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*9:cluster_list_task_1_a_good_1.shape[1]*10]
+    
+    demean_cluster_list_task_3_a_good_2= demeaned[:,cluster_list_task_1_a_good_1.shape[1]*10:cluster_list_task_1_a_good_1.shape[1]*11]
+    demean_cluster_list_task_3_b_good_2 = demeaned[:,cluster_list_task_1_a_good_1.shape[1]*11:cluster_list_task_1_a_good_1.shape[1]*12]
+    
+    return demean_cluster_list_task_1_a_good_1, demean_cluster_list_task_1_b_good_1,\
+    demean_cluster_list_task_2_a_good_1, demean_cluster_list_task_2_b_good_1,\
+    demean_cluster_list_task_3_a_good_1, demean_cluster_list_task_3_b_good_1, demean_cluster_list_task_1_a_good_2,\
+    demean_cluster_list_task_1_b_good_2, demean_cluster_list_task_2_a_good_2, demean_cluster_list_task_2_b_good_2,\
+    demean_cluster_list_task_3_a_good_2, demean_cluster_list_task_3_b_good_2
+    
 def block_firings_rates_selection_forced_split_in_half_only_a(experiment):   
     cluster_list_task_1_a_good_1 = []
     cluster_list_task_1_b_good_1 = []   
@@ -452,7 +572,7 @@ def block_firings_rates_selection_forced_split_in_half_only_a(experiment):
     cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2 
     
     
-def plot_blocks_split_intwo_between_blocks(experiment, HP = False):
+def plot_blocks_split_intwo_between_blocks(experiment, HP = False, diagonal = True):
     
     #Explain A state from A state vs B state within a task 
     
@@ -460,7 +580,7 @@ def plot_blocks_split_intwo_between_blocks(experiment, HP = False):
     cluster_list_task_2_a_good_1, cluster_list_task_2_b_good_1,\
     cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\
     cluster_list_task_1_b_good_2, cluster_list_task_2_a_good_2, cluster_list_task_2_b_good_2,\
-    cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2  = block_firings_rates_selection_forced_split_in_half_only_a(experiment)
+    cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2  = demean_data_forced_a_only(experiment)
     
        
      #A good task 1
@@ -516,99 +636,150 @@ def plot_blocks_split_intwo_between_blocks(experiment, HP = False):
     #Predict within blocks between tasks A good   
     # Predict one half of a good in task 2 from a good in task 1
     s1_t2_a_from_a_t1 = np.linalg.multi_dot([t_u_t1_a_good_2, cluster_list_task_2_a_good_1, t_vh_t1_a_good_2])
-    d_t2_a_from_a_t1 = s1_t2_a_from_a_t1.diagonal()
-    sum_s1_t2_a_from_a_t1 = np.cumsum(d_t2_a_from_a_t1)/cluster_list_task_2_a_good_1.shape[0]
+    if diagonal == True:
+        d_t2_a_from_a_t1 = s1_t2_a_from_a_t1.diagonal()
+    else:
+        d_t2_a_from_a_t1 = np.sum(s1_t2_a_from_a_t1**2, axis = 1)
+
+    sum_s1_t2_a_from_a_t1 = np.cumsum(abs(d_t2_a_from_a_t1))/cluster_list_task_2_a_good_1.shape[0]
     
     #Predict one half of a good in task 3 from a good in task 2
     s1_t3_a_from_a_t2 = np.linalg.multi_dot([t_u_t2_a_good_2, cluster_list_task_3_a_good_1, t_vh_t2_a_good_2])
-    d_t3_a_from_a_t2 = s1_t3_a_from_a_t2.diagonal()
-    sum_s1_t3_a_from_a_t2 = np.cumsum(d_t3_a_from_a_t2)/cluster_list_task_3_a_good_1.shape[0]
+    if diagonal == True:
+        d_t3_a_from_a_t2 = s1_t3_a_from_a_t2.diagonal()
+    else:
+        d_t3_a_from_a_t2 = np.sum(s1_t3_a_from_a_t2**2, axis = 1)
+    sum_s1_t3_a_from_a_t2 = np.cumsum(abs(d_t3_a_from_a_t2))/cluster_list_task_3_a_good_1.shape[0]
     
     # Predict second half of a good in task 2 from a good in task 1
     s2_t2_a_from_a_t1 = np.linalg.multi_dot([t_u_t1_a_good_1, cluster_list_task_2_a_good_2, t_vh_t1_a_good_1])
-    d2_t2_a_from_a_t1 = s2_t2_a_from_a_t1.diagonal()
-    sum_s2_t2_a_from_a_t1 = np.cumsum(d2_t2_a_from_a_t1)/cluster_list_task_2_a_good_2.shape[0]
+    if diagonal == True:
+        d2_t2_a_from_a_t1 = s2_t2_a_from_a_t1.diagonal()
+    else:
+        d2_t2_a_from_a_t1 = np.sum(s2_t2_a_from_a_t1**2, axis = 1)
+    sum_s2_t2_a_from_a_t1 = np.cumsum(abs(d2_t2_a_from_a_t1))/cluster_list_task_2_a_good_2.shape[0]
     
     #Predict second half of a good in task 3 from a good in task 2
     s2_t3_a_from_a_t2 = np.linalg.multi_dot([t_u_t2_a_good_1, cluster_list_task_3_a_good_2, t_vh_t2_a_good_1])
-    d2_t3_a_from_a_t2 = s2_t3_a_from_a_t2.diagonal()
-    sum_s2_t3_a_from_a_t2 = np.cumsum(d2_t3_a_from_a_t2)/cluster_list_task_3_a_good_2.shape[0]
+    if diagonal == True:
+        d2_t3_a_from_a_t2 = s2_t3_a_from_a_t2.diagonal()
+    else:
+        d2_t3_a_from_a_t2 = np.sum(s2_t3_a_from_a_t2**2, axis = 1)
+    sum_s2_t3_a_from_a_t2 = np.cumsum(abs(d2_t3_a_from_a_t2))/cluster_list_task_3_a_good_2.shape[0]
     
     #Predict within blocks between tasks B good   
 
     # Predict one half of a good in task 2 from a good in task 1
     s1_t2_b_from_b_t1 = np.linalg.multi_dot([t_u_t1_b_good_2, cluster_list_task_2_b_good_1, t_vh_t1_b_good_2])
-    d_t2_b_from_b_t1 = s1_t2_b_from_b_t1.diagonal()
-    sum_s1_t2_b_from_b_t1 = np.cumsum(d_t2_b_from_b_t1)/cluster_list_task_2_b_good_1.shape[0]
+    if diagonal == True:
+        d_t2_b_from_b_t1 = s1_t2_b_from_b_t1.diagonal()
+    else:
+        d_t2_b_from_b_t1 = np.sum(s1_t2_b_from_b_t1**2, axis = 1)
+    sum_s1_t2_b_from_b_t1 = np.cumsum(abs(d_t2_b_from_b_t1))/cluster_list_task_2_b_good_1.shape[0]
     
     #Predict one half of a good in task 3 from a good in task 2
     s1_t3_b_from_b_t2 = np.linalg.multi_dot([t_u_t2_b_good_2, cluster_list_task_3_b_good_1, t_vh_t2_b_good_2])
-    d_t3_b_from_b_t2 = s1_t3_b_from_b_t2.diagonal()
-    sum_s1_t3_b_from_b_t2 = np.cumsum(d_t3_b_from_b_t2)/cluster_list_task_3_b_good_1.shape[0]
+    if diagonal == True:
+        d_t3_b_from_b_t2 = s1_t3_b_from_b_t2.diagonal()
+    else:
+        d_t3_b_from_b_t2 = np.sum(s1_t3_b_from_b_t2**2, axis = 1)
+    sum_s1_t3_b_from_b_t2 = np.cumsum(abs(d_t3_b_from_b_t2))/cluster_list_task_3_b_good_1.shape[0]
     
     # Predict second half of a good in task 2 from a good in task 1
     s2_t2_b_from_b_t1 = np.linalg.multi_dot([t_u_t1_b_good_1, cluster_list_task_2_b_good_2, t_vh_t1_b_good_1])
-    d2_t2_b_from_b_t1 = s2_t2_b_from_b_t1.diagonal()
-    sum_s2_t2_b_from_b_t1 = np.cumsum(d2_t2_b_from_b_t1)/cluster_list_task_2_b_good_2.shape[0]
+    if diagonal == True:
+        d2_t2_b_from_b_t1 = s2_t2_b_from_b_t1.diagonal()
+    else:
+        d2_t2_b_from_b_t1 = np.sum(s2_t2_b_from_b_t1**2, axis = 1)
+    sum_s2_t2_b_from_b_t1 = np.cumsum(abs(d2_t2_b_from_b_t1))/cluster_list_task_2_b_good_2.shape[0]
     
     #Predict second half of a good in task 3 from a good in task 2
     s2_t3_b_from_b_t2 = np.linalg.multi_dot([t_u_t2_b_good_1, cluster_list_task_3_b_good_2, t_vh_t2_b_good_1])
-    d2_t3_b_from_b_t2 = s2_t3_b_from_b_t2.diagonal()
-    sum_s2_t3_b_from_b_t2 = np.cumsum(d2_t3_b_from_b_t2)/cluster_list_task_3_b_good_2.shape[0]
+    if diagonal == True:
+        d2_t3_b_from_b_t2 = s2_t3_b_from_b_t2.diagonal()
+    else:
+        d2_t3_b_from_b_t2 = np.sum(s2_t3_b_from_b_t2**2, axis = 1)
+    sum_s2_t3_b_from_b_t2 = np.cumsum(abs(d2_t3_b_from_b_t2))/cluster_list_task_3_b_good_2.shape[0]
     
     average_within_block_between_task = np.mean([sum_s1_t2_a_from_a_t1,sum_s1_t3_a_from_a_t2,\
                                                  sum_s2_t2_a_from_a_t1,sum_s2_t3_a_from_a_t2,\
                                                  sum_s1_t2_b_from_b_t1,sum_s1_t3_b_from_b_t2,\
                                                  sum_s2_t2_b_from_b_t1,sum_s2_t3_b_from_b_t2], axis = 0 )
-    
+    #average_within_block_between_task =average_within_block_between_task/average_within_block_between_task[-1]
     #Predict between blocks between tasks A good  from B good  
     # Predict one half of a good in task 2 from b good in task 1
     s1_t2_a_from_b_t1 = np.linalg.multi_dot([t_u_t1_b_good_2, cluster_list_task_2_a_good_1, t_vh_t1_b_good_2])
-    d_t2_a_from_b_t1 = s1_t2_a_from_b_t1.diagonal()
-    sum_s1_t2_a_from_b_t1 = np.cumsum(d_t2_a_from_b_t1)/cluster_list_task_2_a_good_1.shape[0]
+    if diagonal == True:
+        d_t2_a_from_b_t1 = s1_t2_a_from_b_t1.diagonal()
+    else:
+        d_t2_a_from_b_t1 = np.sum(s1_t2_a_from_b_t1**2, axis = 1)
+    sum_s1_t2_a_from_b_t1 = np.cumsum(abs(d_t2_a_from_b_t1))/cluster_list_task_2_a_good_1.shape[0]
     
     #Predict one half of a good in task 3 from b good in task 2
     s1_t3_a_from_b_t2 = np.linalg.multi_dot([t_u_t2_b_good_2, cluster_list_task_3_a_good_1, t_vh_t2_b_good_2])
-    d_t3_a_from_b_t2 = s1_t3_a_from_b_t2.diagonal()
-    sum_s1_t3_a_from_b_t2 = np.cumsum(d_t3_a_from_b_t2)/cluster_list_task_3_a_good_1.shape[0]
+    if diagonal == True:
+        d_t3_a_from_b_t2 = s1_t3_a_from_b_t2.diagonal()
+    else:
+        d_t3_a_from_b_t2 = np.sum(s1_t3_a_from_b_t2**2, axis = 1)
+    sum_s1_t3_a_from_b_t2 = np.cumsum(abs(d_t3_a_from_b_t2))/cluster_list_task_3_a_good_1.shape[0]
     
     # Predict second half of a good in task 2 from b good in task 1
     s2_t2_a_from_b_t1 = np.linalg.multi_dot([t_u_t1_b_good_1, cluster_list_task_2_a_good_2, t_vh_t1_b_good_1])
-    d2_t2_a_from_b_t1 = s2_t2_a_from_b_t1.diagonal()
-    sum_s2_t2_a_from_b_t1 = np.cumsum(d2_t2_a_from_b_t1)/cluster_list_task_2_a_good_2.shape[0]
+    if diagonal == True:
+        d2_t2_a_from_b_t1 = s2_t2_a_from_b_t1.diagonal()
+    else:
+        d2_t2_a_from_b_t1 = np.sum(s2_t2_a_from_b_t1**2, axis = 1)
+    sum_s2_t2_a_from_b_t1 = np.cumsum(abs(d2_t2_a_from_b_t1))/cluster_list_task_2_a_good_2.shape[0]
     
     #Predict second half of a good in task 3 from b good in task 2
-    s2_t3_a_from_b_t2 = np.linalg.multi_dot([t_u_t2_b_good_1, cluster_list_task_3_a_good_2, t_vh_t2_b_good_1])
-    d2_t3_a_from_b_t2 = s2_t3_a_from_b_t2.diagonal()
-    sum_s2_t3_a_from_b_t2 = np.cumsum(d2_t3_a_from_b_t2)/cluster_list_task_3_a_good_2.shape[0]
+    s2_t3_a_from_b_t2 = np.linalg.multi_dot([t_u_t2_b_good_1, cluster_list_task_3_a_good_2, t_vh_t2_b_good_1])    
+    if diagonal == True:
+        d2_t3_a_from_b_t2 = s2_t3_a_from_b_t2.diagonal()
+    else:
+        d2_t3_a_from_b_t2 = np.sum(s2_t3_a_from_b_t2**2, axis = 1)
+        
+    sum_s2_t3_a_from_b_t2 = np.cumsum(abs(d2_t3_a_from_b_t2))/cluster_list_task_3_a_good_2.shape[0]
     
     #Predict between blocks between tasks B good from A good   
 
     # Predict one half of b good in task 2 from a good in task 1
     s1_t2_b_from_a_t1 = np.linalg.multi_dot([t_u_t1_a_good_2, cluster_list_task_2_b_good_1, t_vh_t1_a_good_2])
-    d_t2_b_from_a_t1 = s1_t2_b_from_a_t1.diagonal()
-    sum_s1_t2_b_from_a_t1 = np.cumsum(d_t2_b_from_a_t1)/cluster_list_task_2_b_good_1.shape[0]
+    if diagonal == True:
+        d_t2_b_from_a_t1 = s1_t2_b_from_a_t1.diagonal()
+    else:
+        d_t2_b_from_a_t1 = np.sum(s1_t2_b_from_a_t1**2, axis = 1)
+    sum_s1_t2_b_from_a_t1 = np.cumsum(abs(d_t2_b_from_a_t1))/cluster_list_task_2_b_good_1.shape[0]
     
     #Predict one half of b good in task 3 from a good in task 2
     s1_t3_b_from_a_t2 = np.linalg.multi_dot([t_u_t2_a_good_2, cluster_list_task_3_b_good_1, t_vh_t2_a_good_2])
-    d_t3_b_from_a_t2 = s1_t3_b_from_a_t2.diagonal()
-    sum_s1_t3_b_from_a_t2 = np.cumsum(d_t3_b_from_a_t2)/cluster_list_task_3_b_good_1.shape[0]
+    if diagonal == True:
+        d_t3_b_from_a_t2 = s1_t3_b_from_a_t2.diagonal()
+    else:
+        d_t3_b_from_a_t2 = np.sum(s1_t3_b_from_a_t2**2, axis = 1)
+    sum_s1_t3_b_from_a_t2 = np.cumsum(abs(d_t3_b_from_a_t2))/cluster_list_task_3_b_good_1.shape[0]
     
     # Predict second half of b good in task 2 from a good in task 1
     s2_t2_b_from_a_t1 = np.linalg.multi_dot([t_u_t1_a_good_1, cluster_list_task_2_b_good_2, t_vh_t1_a_good_1])
-    d2_t2_b_from_a_t1 = s2_t2_b_from_a_t1.diagonal()
-    sum_s2_t2_b_from_a_t1 = np.cumsum(d2_t2_b_from_a_t1)/cluster_list_task_2_b_good_2.shape[0]
+    if diagonal == True:
+        d2_t2_b_from_a_t1 = s2_t2_b_from_a_t1.diagonal()
+    else:
+        d2_t2_b_from_a_t1 = np.sum(s2_t2_b_from_a_t1**2, axis = 1)
+    sum_s2_t2_b_from_a_t1 = np.cumsum(abs(d2_t2_b_from_a_t1))/cluster_list_task_2_b_good_2.shape[0]
     
     #Predict second half of b good in task 3 from a good in task 2
     s2_t3_b_from_a_t2 = np.linalg.multi_dot([t_u_t2_a_good_1, cluster_list_task_3_b_good_2, t_vh_t2_a_good_1])
-    d2_t3_b_from_a_t2 = s2_t3_b_from_a_t2.diagonal()
-    sum_s2_t3_b_from_a_t2 = np.cumsum(d2_t3_b_from_a_t2)/cluster_list_task_3_b_good_2.shape[0]
+    if diagonal == True:
+        d2_t3_b_from_a_t2 = s2_t3_b_from_a_t2.diagonal()
+    else:
+        d2_t3_b_from_a_t2 = np.sum(s2_t3_b_from_a_t2**2, axis = 1)
+    sum_s2_t3_b_from_a_t2 = np.cumsum(abs(d2_t3_b_from_a_t2))/cluster_list_task_3_b_good_2.shape[0]
     
     average_between_block_between_task = np.mean([sum_s1_t2_a_from_b_t1,sum_s1_t3_a_from_b_t2,\
                                                  sum_s2_t2_a_from_b_t1,sum_s2_t3_a_from_b_t2,\
                                                  sum_s1_t2_b_from_a_t1,sum_s1_t3_b_from_a_t2,\
                                                  sum_s2_t2_b_from_a_t1,sum_s2_t3_b_from_a_t2], axis = 0)
-    
+    #average_between_block_between_task =average_between_block_between_task/average_between_block_between_task[-1]
+
     if HP == True :
         plt.plot(average_within_block_between_task, label = 'A from A HP Within Tasks', color = 'grey')
         plt.plot(average_between_block_between_task, label = 'A from B HP Between Tasks', linestyle = '--', color='grey')

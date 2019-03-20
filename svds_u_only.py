@@ -10,22 +10,33 @@ import SVDs as sv
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+import SVDs_replicate_Tim as svd_tim
 
-def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True):
+def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True, z_score = False):
     
     
-    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
-    
+    if  tasks_unchanged == True:
+        flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+    else:
+        flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+
     if  demean_all_tasks == True:
         if tasks_unchanged == True:
             all_data = np.concatenate([flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,flattened_all_clusters_task_2_first_half,\
                                        flattened_all_clusters_task_2_second_half, flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half], axis = 1)
             all_data_mean = np.mean(all_data, axis = 1)
         
-            demeaned = np.transpose(all_data)- all_data_mean
-            demeaned = np.transpose(demeaned)
+            if z_score == True:
+                all_data_std = np.std(all_data, axis = 1)
+                z_scored = np.transpose(all_data)- all_data_mean/all_data_std
+                demeaned = np.transpose(z_scored)
+            else:
+            
+                demeaned = np.transpose(all_data)- all_data_mean
+                demeaned = np.transpose(demeaned)            
             
             demean_all_clusters_task_1_first_half = demeaned[:,:flattened_all_clusters_task_1_first_half.shape[1]]
             demean_all_clusters_task_1_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]:flattened_all_clusters_task_1_first_half.shape[1]*2]
@@ -35,6 +46,7 @@ def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fal
         
             demean_all_clusters_task_3_first_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*4:flattened_all_clusters_task_1_first_half.shape[1]*5]
             demean_all_clusters_task_3_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*5:flattened_all_clusters_task_1_first_half.shape[1]*6]
+                            
         else:
             all_data = np.concatenate([flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,flattened_all_clusters_task_2_first_half,\
                                        flattened_all_clusters_task_2_second_half], axis = 1)
@@ -43,6 +55,15 @@ def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fal
             demeaned = np.transpose(all_data)- all_data_mean
             demeaned = np.transpose(demeaned)
             
+            if z_score == True:
+                all_data_std = np.std(all_data, axis = 1)
+                z_scored = np.transpose(all_data)- all_data_mean/all_data_std
+                demeaned = np.transpose(z_scored)
+            else:
+            
+                demeaned = np.transpose(all_data)- all_data_mean
+                demeaned = np.transpose(demeaned)
+            
             demean_all_clusters_task_1_first_half = demeaned[:,:flattened_all_clusters_task_1_first_half.shape[1]]
             demean_all_clusters_task_1_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]:flattened_all_clusters_task_1_first_half.shape[1]*2]
             
@@ -50,7 +71,7 @@ def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fal
             demean_all_clusters_task_2_second_half = demeaned[:,flattened_all_clusters_task_1_first_half.shape[1]*3:flattened_all_clusters_task_1_first_half.shape[1]*4]
            
     else:
-        if tasks_unchanged == True:
+        if tasks_unchanged == True:               
             mean_all_clusters_task_1_first_half = np.mean(flattened_all_clusters_task_1_first_half, axis = 1)
             demean_all_clusters_task_1_first_half = np.transpose(flattened_all_clusters_task_1_first_half)- mean_all_clusters_task_1_first_half 
             demean_all_clusters_task_1_first_half = np.transpose(demean_all_clusters_task_1_first_half)
@@ -90,7 +111,7 @@ def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fal
             mean_all_clusters_task_2_second_half = np.mean(flattened_all_clusters_task_2_second_half, axis = 1)
             demean_all_clusters_task_2_second_half =  np.transpose(flattened_all_clusters_task_2_second_half) - mean_all_clusters_task_2_second_half
             demean_all_clusters_task_2_second_half = np.transpose(demean_all_clusters_task_2_second_half)
-            
+        
     if tasks_unchanged == True:
         return demean_all_clusters_task_1_first_half,demean_all_clusters_task_1_second_half, demean_all_clusters_task_2_first_half,\
         demean_all_clusters_task_2_second_half, demean_all_clusters_task_3_first_half, demean_all_clusters_task_3_second_half
@@ -99,16 +120,16 @@ def demean_data(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fal
         demean_all_clusters_task_2_second_half
 
 
-def correlation_analysis(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True, n_perm=1000):
+def correlation_analysis(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True, z_score = False):
     
     
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks, z_score = False)
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks)
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks, z_score = False)
    
         
     correlation_task_1 = np.linalg.multi_dot([flattened_all_clusters_task_1_first_half, np.transpose(flattened_all_clusters_task_1_first_half)])
@@ -135,10 +156,7 @@ def correlation_analysis(experiment, tasks_unchanged = True, plot_a = False, plo
     correlation_task_3 = correlation_task_3.flatten()/flattened_all_clusters_task_1_first_half.shape[0]
 
     mean_correlation_t1_t2 = np.corrcoef(correlation_task_1_2, correlation_task_2_1)
-    
-    for i in range(n_perm):
-        np.random.shuffle(correlation_task_1_2) 
-        
+  
     plt.scatter(correlation_task_1_2,correlation_task_2_1, s =1, color = 'red')
 
     gradient, intercept, r_value, p_value, std_err = stats.linregress(correlation_task_2_2,correlation_task_3)
@@ -153,16 +171,15 @@ def correlation_analysis(experiment, tasks_unchanged = True, plot_a = False, plo
     
     return mean_correlation_t1_t2, p_value
 
-def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True):
-    
+def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = True, z_score = False):
     
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, z_score = False)
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks)
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks, z_score = False)
    
     task_1_len = flattened_all_clusters_task_1_first_half.shape[1]/4
     session =experiment[0]
@@ -345,6 +362,8 @@ def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, p
      
 
     plt.figure(9)
+    plt.legend()
+    plt.figure(10)
     plt.legend()
     plt.title('Left only')
     
@@ -741,7 +760,7 @@ def use_hp_vs_pfc(HP_experiment,PFC_experiment, tasks_unchanged = True, plot_a =
 # =============================================================================
     flattened_all_clusters_task_1_first_half_HP, flattened_all_clusters_task_1_second_half_HP,\
     flattened_all_clusters_task_2_first_half_HP, flattened_all_clusters_task_2_second_half_HP,\
-    flattened_all_clusters_task_2_second_half_HP, flattened_all_clusters_task_3_first_half_HP,flattened_all_clusters_task_3_second_half_HP = sv.flatten(HP_experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+    flattened_all_clusters_task_3_first_half_HP,flattened_all_clusters_task_3_second_half_HP = demean_data(HP_experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
     
     #SVDsu.shape, s.shape, vh.shape for task 1 first half
     u_t1_1_hp, s_t1_1_hp, vh_t1_1_hp = np.linalg.svd(flattened_all_clusters_task_1_first_half_HP, full_matrices = True)
@@ -780,7 +799,7 @@ def use_hp_vs_pfc(HP_experiment,PFC_experiment, tasks_unchanged = True, plot_a =
     
     flattened_all_clusters_task_1_first_half_PFC, flattened_all_clusters_task_1_second_half_PFC,\
     flattened_all_clusters_task_2_first_half_PFC, flattened_all_clusters_task_2_second_half_PFC,\
-    flattened_all_clusters_task_2_second_half_PFC, flattened_all_clusters_task_3_first_half_PFC,flattened_all_clusters_task_3_second_half_PFC = sv.flatten(PFC, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+    flattened_all_clusters_task_3_first_half_PFC,flattened_all_clusters_task_3_second_half_PFC = demean_data(PFC_experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
     
     #SVDsu.shape, s.shape, vh.shape for task 1 first half
     u_t1_1_pfc, s_t1_1_pfc, vh_t1_1_pfc = np.linalg.svd(flattened_all_clusters_task_1_first_half_PFC, full_matrices = True)
@@ -888,9 +907,16 @@ def use_hp_vs_pfc(HP_experiment,PFC_experiment, tasks_unchanged = True, plot_a =
     #cum_task_3_hp_from_hp = (cum_task_3_hp_from_hp-min(cum_task_3_hp_from_hp))/(max(cum_task_3_hp_from_hp)-min(cum_task_3_hp_from_hp))
     
     mean_pfc_from_hp = np.mean([cum_task_1_pfc_from_hp,cum_task_2_pfc_from_hp, cum_task_3_pfc_from_hp],axis = 0)
+    mean_pfc_from_hp = mean_pfc_from_hp/mean_pfc_from_hp[-1]
     mean_pfc_from_pfc = np.mean([cum_task_1_pfc_from_pfc,cum_task_2_pfc_from_pfc, cum_task_3_pfc_from_pfc], axis = 0)
+    mean_pfc_from_pfc = mean_pfc_from_pfc/mean_pfc_from_pfc[-1]
+
     mean_hp_from_pfc = np.mean([cum_task_1_hp_from_pfc,cum_task_2_hp_from_pfc, cum_task_3_hp_from_pfc], axis = 0)
+    mean_hp_from_pfc = mean_hp_from_pfc/mean_hp_from_pfc[-1]
+
     mean_hp_from_hp = np.mean([cum_task_1_hp_from_hp,cum_task_2_hp_from_hp, cum_task_3_hp_from_hp], axis = 0)
+    mean_hp_from_hp = mean_hp_from_hp/mean_hp_from_hp[-1]
+    
     
     plt.plot(mean_pfc_from_hp, color = 'blue', label = 'PFC from HP Within Task')
     plt.plot(mean_pfc_from_pfc, linestyle = '--',color = 'blue', label = 'PFC from PFC Within Task')

@@ -11,18 +11,28 @@ import matplotlib.pyplot as plt
 A = [[1, 4, 5], 
     [2, 8, 9],
     [3, 6, 10],
-    [4,15,18]]
+    [8,1,1]]
     
 
-B = [[2, 4, 5], 
-    [-7, 4, 9],
-    [8, 3, 9],
-    [5, 11, 9]]
+#B = [[1, 0, 0], 
+#    [0, 2, 0],
+#    [0, 0, 3],
+#    [0,0,0]]
+
+
+C = [[1,34, 5], 
+    [2, 88, 9],
+    [3, 6, 10],
+    [48,15,18]]
+    
+
+
 
 A = np.asarray(A)
-B = np.asarray(B)
+#B = np.asarray(B)
 
-u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(A, full_matrices = True)
+u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(A, full_matrices = False)
+u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(C, full_matrices = False)
 
 t_u = np.transpose(u_t1_1)  
 t_v = np.transpose(vh_t1_1)
