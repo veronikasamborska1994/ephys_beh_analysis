@@ -16,6 +16,7 @@ import heatmap_aligned as ha
 import forced_trials_extract_data as ft
 import svds_u_only as svdu
 
+#
 #ephys_path = '/Users/veronikasamborska/Desktop/neurons'
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
@@ -106,8 +107,8 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         
         aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 ))]
         aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 ))]
-        aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_second_half == 1 ))]
-        aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_first_half == 0 ) & (reward_Task_1_second_half == 0 ))]
+        aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0) & (reward_Task_1_second_half == 1 ))]
+        aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0 ) & (reward_Task_1_second_half == 0 ))]
         
         aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 1 ))]
         aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 ))]
@@ -116,8 +117,8 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         
         aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 ))]
         aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 ))]
-        aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_second_half == 1 ))]
-        aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_first_half == 0 ) & (reward_Task_2_second_half == 0 ))]
+        aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 ))]
+        aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 ))]
 
     else:
           aligned_rates_task_1 = aligned_rates[:task_1]
@@ -215,16 +216,17 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
     
   
     for s,session in enumerate(experiment):
-        if s != 15 and s !=31:
+        if s != 15 and s !=31 and s!= 29:
             
             #Empty lists to hold append mean firing rates to 
+           
             cluster_list_task_1_first_half = []
             cluster_list_task_1_second_half = []
             cluster_list_task_2_first_half = []
             cluster_list_task_2_second_half = []
             cluster_list_task_3_first_half = []
             cluster_list_task_3_second_half = []
-            
+
             spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
             aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
             aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
@@ -417,6 +419,7 @@ def flatten(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, 
     all_clusters_task_2_first_half, all_clusters_task_2_second_half,\
     all_clusters_task_3_first_half,all_clusters_task_3_second_half = svd_trial_selection(experiment, just_a = plot_a, just_b = plot_b, average_reward = average_reward)
    
+   
     all_clusters_task_1_first_half  = np.asarray(all_clusters_task_1_first_half)
     all_clusters_task_1_second_half = np.asarray(all_clusters_task_1_second_half)
     
@@ -486,8 +489,7 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
-     
-    
+  
      #SVDsu.shape, s.shape, vh.shape for task 1 first half
     u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = True)
         
@@ -509,7 +511,6 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
         #SVDsu.shape, s.shape, vh.shape for task 3 first half
         u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = True)
     
-    #Finding variance explained in second half of task 1 using the Us and Vs from the first half
     #Finding variance explained in second half of task 1 using the Us and Vs from the first half
     t_u = np.transpose(u_t1_1)  
     t_v = np.transpose(vh_t1_1)  
@@ -615,4 +616,3 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
     plt.title('Full SVD')
     plt.legend()
     
-    return average_within, average_between

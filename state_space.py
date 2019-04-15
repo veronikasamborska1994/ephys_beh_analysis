@@ -18,30 +18,30 @@ indices_empty = [4,9,14,19,24,29,34,39]
 ones[indices_empty] = 0 
 np.fill_diagonal(DD[:,1:], ones)
 
-com=0 #change of mind - if zero the probability of startining in initiation state 1 and moving to choice state 2 is zero
-rewprob=0.75  #prob of moving to rewarded state
-Stay_rew=0.8
-Stay_nr=0.4
+com = 0 #change of mind - if zero the probability of startining in initiation state 1 and moving to choice state 2 is zero
+rewprob = 0.75  #prob of moving to rewarded state
+Stay_rew = 0.8
+Stay_nr = 0.4
  
 
 DD[states-1,2*states] = 1-com
-DD[2*states-1,3*states]=1-com
+DD[2*states-1,3*states] = 1-com
 
-DD[3*states-1,4*states]=rewprob
-DD[3*states-1,5*states]=1-rewprob
-DD[4*states-1,6*states]=rewprob
-DD[4*states-1,7*states]=1-rewprob;
+DD[3*states-1,4*states] = rewprob
+DD[3*states-1,5*states] = 1-rewprob
+DD[4*states-1,6*states] = rewprob
+DD[4*states-1,7*states] = 1-rewprob;
  
-DD[5*states-1,0]=Stay_rew
-DD[5*states-1,states]=1-Stay_rew
+DD[5*states-1,0] = Stay_rew
+DD[5*states-1,states] = 1-Stay_rew
 
-DD[6*states-1,0]=Stay_nr
-DD[6*states-1,states]=1-Stay_nr;
+DD[6*states-1,0] = Stay_nr
+DD[6*states-1,states] = 1-Stay_nr;
  
-DD[7*states-1,0]=1-Stay_rew
-DD[7*states-1,states]=Stay_rew
-DD[8*states-1,0]=1-Stay_nr
-DD[8*states-1,states]=Stay_nr
+DD[7*states-1,0] = 1-Stay_rew
+DD[7*states-1,states] = Stay_rew
+DD[8*states-1,0] = 1-Stay_nr
+DD[8*states-1,states] = Stay_nr
 
 
 Areward_ind = np.concatenate([np.arange(0,states) ,np.arange(2*states,3*states),np.arange(4*states,5*states)], axis =0)
@@ -71,7 +71,7 @@ plt.imshow(v.real[Breward_ind,:])
 plt.subplot(2,2,4)
 plt.imshow(v.real[Bnoreward_ind,:])
 
-
+v.conjugate
 
 plt.figure(5)
 for i in np.arange(1,40):  

@@ -17,12 +17,6 @@ import ephys_beh_import as ep
 import math 
 import matplotlib.pyplot as plt
 
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-#experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
-#experiment_aligned_HP = ha.all_sessions_aligment(HP)
 
 
 # Function for finding the dot product of two vectors 
@@ -137,10 +131,7 @@ def correlation_trials(experiment):
         b1_b3_all_neurons.append(b3_b1_median)
         
     return a1_a2_all_neurons, a2_a3_all_neurons, a1_a3_all_neurons, b1_b2_all_neurons, b2_b3_all_neurons, b1_b3_all_neurons
-                
-                        
-            
-     
+   
      
 def _CPD(X,y):
     '''Evaluate coefficient of partial determination for each predictor in X'''
@@ -161,10 +152,10 @@ def angle_between_vectors(experiment):
     angle_between = angle(C_task_1[:,0], C_task_2[:,0])
     return angle_between
 
-def predictors_pokes(session):
-    pyControl_choice = [event.time for event in session.events if event.name in ['choice_state']]
 
-    n_trials = len(pyControl_choice)
+def predictors_pokes(session):
+    #pyControl_choice = [event.time for event in session.events if event.name in ['choice_state']]
+
     choices = session.trial_data['choices']
     forced_trials = session.trial_data['forced_trial']
     non_forced_array = np.where(forced_trials == 0)[0]
@@ -179,7 +170,8 @@ def predictors_pokes(session):
     poke_A = session.trial_data['poke_A']
     poke_B = session.trial_data['poke_B']
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = ep.extract_choice_pokes(session)
-    
+    n_trials = len(choice_non_forced)
+
     #Task 1 
     choices_a = np.where(choice_non_forced == 1)
     choices_b = np.where(choice_non_forced == 0)
@@ -480,7 +472,8 @@ def predictors_include_previous_trial(session):
     predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
     reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
     same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3 
-    
+
+   
 def regression(experiment):
     C_task_1= []     # To strore predictor loadings for each session in task 1.
     C_task_2 = []    # To strore predictor loadings for each session in task 2.
@@ -642,17 +635,4 @@ def regression(experiment):
     return C_task_1, C_task_2 #, C_task_3
 
 
-def sorting_by_task_1(experiment):
-    C_task_1, C_task_2 = regression(experiment)
-   
-    # Sort in descending order by choice task 1 
-    same = C_task_1[:,:,5]
-    different = C_task_2[:,:,4]
-    
-    same_f = same.flatten()
-    different_f = different.flatten()
 
-    argmax_neuron = np.argsort(-same_f)
-    
-    plt.plot(different_f[argmax_neuron])
-    plt.plot(same_f[argmax_neuron])
