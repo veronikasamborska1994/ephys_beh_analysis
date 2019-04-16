@@ -22,9 +22,13 @@ import svds_u_only as svdu
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
 #experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
 #experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
-#
-#PFC_forced = ft.all_sessions_aligment_forced(PFC)
-#HP_forced = ft.all_sessions_aligment_forced(HP)
+#experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
+
+
+#PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
+#HP_forced = HP_forced[1:]
+#HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
+
 
 
 def extract_session_predictors_rates(session, tasks_unchanged = True):

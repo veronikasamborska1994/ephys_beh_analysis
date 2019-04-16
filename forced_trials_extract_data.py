@@ -16,37 +16,8 @@ import align_activity as aa
 
 
 ## Target times for aligned rates of forced trials 
-def target_times_forced(experiment_forced):
-    # Trial times is array of reference point times for each trial. Shape: [n_trials, n_ref_points]
-    # Here we are using [init-1000, init, choice, choice+1000]    
-    # target_times is the reference times to warp all trials to. Shape: [n_ref_points]
-    # Here we are finding the median timings for a whole experiment 
-    trial_times_all_trials  = []
-    for session in experiment_forced:
-        init_times = np.concatenate((session.times['b_forced_state'], session.times['a_forced_state']), axis = 0)
-        init_times = sorted(init_times)
-        init_times = np.asarray(init_times)
-        inits_and_choices = [ev for ev in session.events if ev.name in 
-                        ['a_forced_state','b_forced_state', 'sound_a_reward', 'sound_b_reward',
-                         'sound_a_no_reward','sound_b_no_reward']]
-        
-        choice_times = np.array([ev.time for i, ev in enumerate(inits_and_choices) if 
-                             i>0 and inits_and_choices[i-1].name == 'a_forced_state' or inits_and_choices[i-1].name == 'b_forced_state'])
-        
-        if len(choice_times) != len(init_times):
-            init_times  =(init_times[:len(choice_times)])
-            
-        trial_times = np.array([init_times-1000, init_times, choice_times, choice_times+1000]).T
-        trial_times_all_trials.append(trial_times)
-
-    trial_times_all_trials  =np.asarray(trial_times_all_trials)
-    target_times_forced = np.hstack(([0], np.cumsum(np.median(np.diff(trial_times_all_trials[0],1),0))))    
-        
-    return target_times_forced
-
-## Target times for aligned rates of forced trials 
-def all_sessions_aligment_forced(experiment_forced):
-    target_times_forced_trials  = ha.target_times_f(experiment_forced)
+def all_sessions_aligment_forced(experiment_forced,all_experiments):
+    target_times_forced_trials  = ha.target_times_f(all_experiments)
     experiment_aligned_forced = []
     for session in experiment_forced:
         spikes = session.ephys

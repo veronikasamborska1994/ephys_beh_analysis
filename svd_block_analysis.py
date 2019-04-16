@@ -273,8 +273,11 @@ def block_firings_rates_selection(experiment):
 def svd_plotting_block_analysis(experiment, tasks_unchanged = False, plot_HP = True, plot_a = False):
     
     #Calculating SVDs for trials split by blocks
-    cluster_list_task_1_a_good, cluster_list_task_1_b_good, cluster_list_task_2_a_good,\
-    cluster_list_task_2_b_good, cluster_list_task_3_a_good, cluster_list_task_3_b_good = block_firings_rates_selection(experiment)
+    cluster_list_task_1_a_good_1_nf, cluster_list_task_1_b_good_1_nf,\
+    cluster_list_task_2_a_good_1_nf, cluster_list_task_2_b_good_1_nf,\
+    cluster_list_task_3_a_good_1_nf, cluster_list_task_3_b_good_1_nf, cluster_list_task_1_a_good_2_nf,\
+    cluster_list_task_1_b_good_2_nf, cluster_list_task_2_a_good_2_nf, cluster_list_task_2_b_good_2_nf,\
+    cluster_list_task_3_a_good_2_nf, cluster_list_task_3_b_good_2_nf  = block_firings_rates_selection(experiment)
     
     
     #SVDsu.shape, s.shape, vh.shape for task 1

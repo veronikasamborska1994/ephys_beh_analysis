@@ -158,7 +158,6 @@ def extract_poke_times_include_a(session):
                     poke_identity.append(poke_B_task_3)
                     initation_choice.append(1)
                     choice_state = False
-
                             
             if poke_A_task_3 in event:
                 if choice_state == True:
@@ -166,6 +165,7 @@ def extract_poke_times_include_a(session):
                     poke_identity.append(poke_A_task_3)
                     initation_choice.append(1)
                     choice_state = False      
+                    
     init_times = session.times['choice_state']
     inits_and_choices = [ev for ev in session.events if ev.name in 
                         ['choice_state', 'sound_a_reward', 'sound_b_reward',
@@ -194,11 +194,14 @@ def predictors_around_pokes_include_a(session):
     
     poke_A = predictor_A_Task_1+predictor_A_Task_2+predictor_A_Task_3
     
-    poke_1_id = unique_pokes[0]
-    poke_2_id = unique_pokes[1]
-    poke_3_id = unique_pokes[2]
-    poke_4_id = unique_pokes[3]
-    poke_5_id = unique_pokes[4]
+    i = np.where(unique_pokes == constant_poke_a)
+    unique_pokes = np.delete(unique_pokes,i)
+
+    poke_1_id = constant_poke_a
+    poke_2_id = unique_pokes[0]
+    poke_3_id = unique_pokes[1]
+    poke_4_id = unique_pokes[2]
+    poke_5_id = unique_pokes[3]
         
     poke_1 = np.zeros(len(poke_identity))
     poke_2 = np.zeros(len(poke_identity))
@@ -211,22 +214,32 @@ def predictors_around_pokes_include_a(session):
     for o,outcome in enumerate(outcomes_non_forced):
         outcomes.append(0)
         if outcome == 1:
-            outcomes.append(0.5)
+            outcomes.append(1)
         elif outcome == 0:
-            outcomes.append(-0.5)
+            outcomes.append(0)
     outcomes = np.asarray(outcomes)  
     
     choices = []
     for c,choice in enumerate(poke_A):
         choices.append(0)
         if choice == 1:
-            #choices.append(0.5)
-            choices.append(0)
+            #choices.append(0)
+            choices.append(0.5)
         elif choice == 0:
-            #choices.append(-0.5)
-            choices.append(1)
-
+            #choices.append(0)
+            choices.append(-0.5)
+    
     choices = np.asarray(choices) 
+
+    init_choices_a_b = []
+    for c,choice in enumerate(poke_A):
+        if choice == 1:
+            init_choices_a_b.append(0)
+            init_choices_a_b.append(0)
+        elif choice == 0:
+            init_choices_a_b.append(1)
+            init_choices_a_b.append(1)
+    init_choices_a_b   = np.asarray(init_choices_a_b)  
 
     choices_initiation = []
     for c,choice in enumerate(poke_A):
@@ -249,6 +262,7 @@ def predictors_around_pokes_include_a(session):
             poke_4[p] = 1
         elif poke == poke_5_id:
             poke_5[p] = 1
+            
 
 #    for p,poke in enumerate(poke_identity):
 #            if poke == poke_1_id:
@@ -267,7 +281,7 @@ def predictors_around_pokes_include_a(session):
 #                poke_5[p] = -1
     
 
-    return poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation
+    return poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation,init_choices_a_b
 
 def histogram_include_a(session):
     
@@ -557,6 +571,7 @@ def plotting_coeff(C_task_1,C_task_2,C_task_3):
     plt.scatter(y,task_1,s = 2,color = 'black', label = 'Task 1 sorted')
 
     #plt.plot(y,task_1,color = 'black', label = 'Task 1 sorted')
+    
     plt.legend()
     plt.title('PFC')
 
@@ -685,15 +700,17 @@ def regression_pokes_aligned_warped_simple(experiment,all_sessions):
      
         
         
-def plotting(cpd,predictors):
+def plotting(experiment,all_sessions):
+    X,cpd, predictors = regression_pokes_aligned_warped_trials(experiment, all_sessions)
+    
     colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
     c = [*colors]
-    c =  ['violet', 'black', 'red','chocolate', 'green', 'blue', 'turquoise', 'grey']
+    c =  ['violet', 'black', 'red','chocolate', 'green', 'blue', 'turquoise', 'grey', 'yellow', 'pink']
     p = [*predictors]
     plt.figure(2)
     for i in np.arange(cpd.shape[1]):
         plt.plot(cpd[:,i], label =p[i], color = c[i])
-        plt.title('PFC')
+        #plt.title('PFC')
    # plt.vlines(32,ymin = 0, ymax = 0.15,linestyles= '--', color = 'grey', label = 'Poke')
     plt.legend()
     plt.ylabel('Coefficient of Partial Determination')
@@ -707,18 +724,15 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
     cpd =[]
     
     # Finding correlation coefficients for task 1  
-    for s,session in enumerate(experiment):
-        all_neurons_all_spikes_raster_plot_task = all_sessions[s]
+    for s,session in enumerate(experiment_aligned_HP):
+        session =experiment_aligned_HP[1]
+        all_neurons_all_spikes_raster_plot_task = all_sessions_HP[1]
         all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
         if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
-            poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation = predictors_around_pokes_include_a(session)
+            poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation,init_choices_a_b = predictors_around_pokes_include_a(session)
             
             predictor_B_Task_1_initiation,predictor_B_Task_2_initiation,predictor_B_Task_1_choice,predictor_B_Task_2_choice   = task_specific_regressors(session)
           
-            for p,poke in enumerate(unique_pokes):
-                if poke == constant_poke_a:
-                    print('A poke is ' + 'poke_' + str(p))
-            
             n_trials,n_neurons, n_timepoints = all_neurons_all_spikes_raster_plot_task.shape 
             initation_choice =initation_choice[:len(poke_1)]
             initation_choice = np.asarray(initation_choice)
@@ -727,44 +741,51 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
             choices_initiation = choices_initiation[:len(poke_1)]
             outcomes = outcomes[:len(poke_1)]
             outcomes_choices_interaction = outcomes*choices
+            outcomes_choices_init_interaction = outcomes*init_choices_a_b
             all_neurons_all_spikes_raster_plot_task = all_neurons_all_spikes_raster_plot_task[:len(poke_1),:,:]
             
-           # predictor_B_Task_1_initiation = predictor_B_Task_1_initiation - np.mean(predictor_B_Task_1_initiation)
-           # predictor_B_Task_2_initiation = predictor_B_Task_2_initiation - np.mean(predictor_B_Task_2_initiation)
+            #predictor_B_Task_1_initiation = predictor_B_Task_1_initiation - np.mean(predictor_B_Task_1_initiation)
+            predictor_B_Task_2_initiation = predictor_B_Task_2_initiation - np.mean(predictor_B_Task_2_initiation)
             
-           # predictor_B_Task_1_choice = predictor_B_Task_1_choice - np.mean(predictor_B_Task_1_choice)
-           # predictor_B_Task_2_choice = predictor_B_Task_2_choice - np.mean(predictor_B_Task_2_choice)
+            predictor_B_Task_1_choice = predictor_B_Task_1_choice - np.mean(predictor_B_Task_1_choice)
+            predictor_B_Task_2_choice = predictor_B_Task_2_choice - np.mean(predictor_B_Task_2_choice)
 
-           # outcome_choice_task_1 = predictor_B_Task_1_choice*outcomes
-           # outcome_choice_task_2 = predictor_B_Task_2_choice*outcomes
-          
+            outcome_choice_task_1 = predictor_B_Task_1_choice*outcomes
+            outcome_choice_task_2 = predictor_B_Task_2_choice*outcomes
+            ones = np.ones(len(choices))
+
             predictors = OrderedDict([
                                           ('poke_1', poke_1),
                                           ('poke_2', poke_2), 
                                           ('poke_3', poke_3),
                                           ('poke_4', poke_4),
-                                          ('choices_initiation', choices_initiation),
-                                          ('choices',choices),
+                                          ('poke_5', poke_5),
+                                          ('choice_vs_initiation', choices_initiation),
+                                          #('choice_a_b_at_choice',choices),
+                                          ('choice_a_b_at_initiation',init_choices_a_b),
                                           ('outcomes', outcomes),
-                                          ('outcomes_choices_interaction',outcomes_choices_interaction)])
-                                          # ('Task_1_initiation_choice', predictor_B_Task_1_initiation),
-                                          # ('Task_2_initiation_choice',predictor_B_Task_2_initiation),
-                                          # ('Task_1_choice', predictor_B_Task_1_choice),
-                                          # ('Task_2_choice',predictor_B_Task_2_choice),
-                                          # ('outcome_choice_task_1',outcome_choice_task_1),
-                                          # ('outcome_choice_task_2',outcome_choice_task_2)])
+                                          ('ones', ones),
+                                          #('outcomes_interaction_at_initiation',outcomes_choices_init_interaction),
+                                          ('outcomes_interaction_at_choice',outcomes_choices_interaction)])
+                                          #('Task_1_initiation_choice', predictor_B_Task_1_initiation),
+                                          #('Task_2_initiation_choice',predictor_B_Task_2_initiation),
+                                          #('Task_1_choice', predictor_B_Task_1_choice),
+                                          #('Task_2_choice',predictor_B_Task_2_choice),
+                                          #('outcome_choice_task_1',outcome_choice_task_1),
+                                          #('outcome_choice_task_2',outcome_choice_task_2)])
         
-            X= np.vstack(predictors.values()).T[:len(initation_choice),:].astype(float)
-            ones = np.ones(X.shape[0]).reshape(X.shape[0],1)
+            X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
             
-            X_check_rank = np.hstack([X,ones])
-            X_check_rank = X
-            print(X_check_rank.shape[1])
-            rank = matrix_rank(X_check_rank)
+            #X_check_rank = np.hstack([X,ones])
+            
+    
+            print(X.shape[1])  
+            rank = matrix_rank(X) 
             print(rank)
             n_predictors = X.shape[1]
+            
             y = all_neurons_all_spikes_raster_plot_task.reshape([all_neurons_all_spikes_raster_plot_task.shape[0],-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-            ols = LinearRegression(copy_X = True,fit_intercept= True)
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
             ols.fit(X,y)
   
             C.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
@@ -773,5 +794,8 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
     C = np.concatenate(C,0)
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
    
-    return X_check_rank,cpd, predictors
+    return X,cpd, predictors
 
+scipy.io.savemat('/Users/veronikasamborska/Desktop/data.mat', mdict={'data': all_neurons_all_spikes_raster_plot_task})
+
+scipy.io.savemat('/Users/veronikasamborska/Desktop/design_m.mat', mdict={'Design_matrix': X})

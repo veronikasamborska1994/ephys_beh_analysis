@@ -132,15 +132,20 @@ def block_firings_rates_selection_forced_split_in_half(experiment):
             state_A_choice_B_t3_2 = state_A_choice_B_t3[int(len(state_A_choice_B_t3)/2):]
             state_B_choice_A_t3_2 = state_B_choice_A_t3[int(len(state_B_choice_A_t3)/2):]
             state_B_choice_B_t3_2 = state_B_choice_B_t3[int(len(state_B_choice_B_t3)/2):]
-                
-            if (len(state_A_choice_A_t1_1) > 0) & (len(state_A_choice_B_t1_1) > 0) & (len(state_B_choice_A_t1_1) > 0) &\
-            (len(state_B_choice_B_t1_1) > 0) & (len(state_A_choice_A_t2_1) > 0) & (len(state_A_choice_B_t2_1) > 0) &\
-            (len(state_B_choice_A_t2_1) > 0) & (len(state_B_choice_B_t2_1) > 0) & (len(state_A_choice_A_t3_1) > 0) &\
-            (len(state_A_choice_B_t3_1) > 0) & (len(state_B_choice_A_t3_1) > 0) & (len(state_B_choice_B_t3_1) > 0) &\
-            (len(state_A_choice_A_t1_2) > 0) & (len(state_A_choice_B_t1_2) > 0) & (len(state_B_choice_A_t1_2) > 0) &\
-            (len(state_B_choice_B_t1_2) > 0) & (len(state_A_choice_A_t2_2) > 0) & (len(state_A_choice_B_t2_2) > 0) &\
-            (len(state_B_choice_A_t2_2) > 0) & (len(state_B_choice_B_t2_2) > 0) & (len(state_A_choice_A_t3_2) > 0) &\
-            (len(state_A_choice_B_t3_2) > 0) & (len(state_B_choice_A_t3_2) > 0) & (len(state_B_choice_B_t3_2) > 0):
+              
+            if session.file_name not in ['m478-2018-08-09-120322.txt','m486-2018-07-28-171910.txt',\
+                                         'm486-2018-07-16-170101.txt','m480-2018-08-01-164435.txt',\
+                                         'm480-2018-08-02-170827.txt','m480-2018-09-04-150501.txt',\
+                                         'm480-2018-08-22-111012.txt','m481-2018-06-28-160517.txt',\
+                                         'm479-2018-08-20-112813.txt','m483-2018-06-22-160006.txt']:
+#            if (len(state_A_choice_A_t1_1) > 0) & (len(state_A_choice_B_t1_1) > 0) & (len(state_B_choice_A_t1_1) > 0) &\
+#            (len(state_B_choice_B_t1_1) > 0) & (len(state_A_choice_A_t2_1) > 0) & (len(state_A_choice_B_t2_1) > 0) &\
+#            (len(state_B_choice_A_t2_1) > 0) & (len(state_B_choice_B_t2_1) > 0) & (len(state_A_choice_A_t3_1) > 0) &\
+#            (len(state_A_choice_B_t3_1) > 0) & (len(state_B_choice_A_t3_1) > 0) & (len(state_B_choice_B_t3_1) > 0) &\
+#            (len(state_A_choice_A_t1_2) > 0) & (len(state_A_choice_B_t1_2) > 0) & (len(state_B_choice_A_t1_2) > 0) &\
+#            (len(state_B_choice_B_t1_2) > 0) & (len(state_A_choice_A_t2_2) > 0) & (len(state_A_choice_B_t2_2) > 0) &\
+#            (len(state_B_choice_A_t2_2) > 0) & (len(state_B_choice_B_t2_2) > 0) & (len(state_A_choice_A_t3_2) > 0) &\
+#            (len(state_A_choice_B_t3_2) > 0) & (len(state_B_choice_A_t3_2) > 0) & (len(state_B_choice_B_t3_2) > 0):
                 unique_neurons  = np.unique(spikes[0])  
                 
                 for i in range(len(unique_neurons)):                
@@ -280,6 +285,7 @@ def plot_blocks_split_intwo(experiment, HP = False, diagonal = True):
     cluster_list_task_3_a_good_1, cluster_list_task_3_b_good_1, cluster_list_task_1_a_good_2,\
     cluster_list_task_1_b_good_2, cluster_list_task_2_a_good_2, cluster_list_task_2_b_good_2,\
     cluster_list_task_3_a_good_2, cluster_list_task_3_b_good_2  = demean_data_forced(experiment)
+    
     #block_firings_rates_selection_forced_split_in_half
     #A good task 1
     u_t1_a_good_1, s_t1_a_good_1, vh_t1_a_good_1 = np.linalg.svd(cluster_list_task_1_a_good_1, full_matrices = False)
