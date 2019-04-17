@@ -15,7 +15,6 @@ import itertools
 from scipy.stats import pearsonr
 import ephys_beh_import as ep
 import math 
-import matplotlib.pyplot as plt
 
 
 
@@ -580,59 +579,8 @@ def regression(experiment):
                 
     C_task_2 = np.concatenate(C_task_2,0)
     
-    
-#    # Finding coefficients from task three 
-#    for s,session in enumerate(experiment_aligned_HP):
-#        aligned_spikes= session.aligned_rates[:]
-#        if aligned_spikes.shape[1] > 0:  # sessions with neurons? 
-#            n_trials, n_neurons, n_timepoints = aligned_spikes.shape
-#            
-#          
-#            predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
-#            predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
-#            predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
-#            reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
-#            same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1,\
-#            different_outcome_task_2, different_outcome_task_3 = predictors_include_previous_trial(session)     
-#            
-#            # Getting out task indicies
-#            task = session.trial_data['task']
-#            forced_trials = session.trial_data['forced_trial']
-#
-#            non_forced_array = np.where(forced_trials == 0)[0]
-#            task_non_forced = task[non_forced_array]
-#            task_1 = np.where(task_non_forced == 1)[0]
-#            task_2 = np.where(task_non_forced == 2)[0]        
-#            firing_rate_task_3 =  aligned_spikes[len(task_1)+len(task_2)+1:]
-#            
-#            # For regressions for each task independently 
-#            predictor_A_Task_3 = predictor_A_Task_3[len(task_1)+len(task_2)+1:(len(task_1)+len(task_2)+firing_rate_task_3.shape[0]+1)]
-#
-#            reward_t3 = reward[len(task_1)+len(task_2)+1:(len(task_1)+len(task_2)+firing_rate_task_3.shape[0]+1)]   
-#            
-#            reward_previous_task_3 = reward_previous[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]    
-#            previous_trial_task_3 = previous_trial_task_3[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]  
-#            same_outcome_task_3 = same_outcome_task_3[(len(task_1)-1)+len(task_2)+1:(len(task_1)-1)+len(task_2)+firing_rate_task_3.shape[0]+1]     
-#            different_outcome_task_3 =different_outcome_task_3[1:]
-#            predictors_task_3 = OrderedDict([
-#                                           ('A_task_3' , predictor_A_Task_3),
-#                                           ('Reward_task_3', reward_t3), 
-#                                           ('Previous_reward_task_3', reward_previous_task_3),
-#                                           ('Previous_choice_task_3', previous_trial_task_3),
-#                                           ('Previous_Same_task_3', same_outcome_task_3),
-#                                           ('Previous_Different_task_3', different_outcome_task_3)])
-#        
-#           
-#            X_task_3 = np.vstack(predictors_task_3.values()).T[:len(predictor_A_Task_3),:].astype(float)
-#            n_predictors = X_task_3.shape[1]
-#            y_t3 = firing_rate_task_3.reshape([len(firing_rate_task_3),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
-#            ols = LinearRegression(copy_X = True,fit_intercept= False)
-#            ols.fit(X_task_3,y_t3)
-#            C_task_3.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
-#                
-#    C_task_3 = np.concatenate(C_task_3,0)
-#    
-    return C_task_1, C_task_2 #, C_task_3
+
+    return C_task_1, C_task_2 
 
 
 

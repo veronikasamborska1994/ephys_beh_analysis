@@ -60,4 +60,3 @@ for file in files:
             op.pack_2(ephys_folder,filename =ephys_folder +'/'+'m480'+'.dat', channels =channels_m486_m482_m480_m478_second_box, chprefix ='CH', dref = 'ave')
 
 
-m481_2018-06-28_16-05-17

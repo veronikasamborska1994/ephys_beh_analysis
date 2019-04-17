@@ -16,7 +16,9 @@ from scipy import stats
 mat_place_cells = scipy.io.loadmat('/Users/veronikasamborska/Desktop/grid_and_place_cells/smthRm_place_all_animals.mat')
 
 #smthRm_grid_all_animals.mat
+
 place_cells = mat_place_cells['smthRm_place_all_animals']
+
 #place_cells = place_cells[:41]
 
 #smthRm_place_all_animals.mat
@@ -169,7 +171,6 @@ cum_var_y_task_2_from_task_1 = cum_var_y_task_2_from_task_1/cum_var_y_task_2_fro
 
 
 #Compare task 1 Second Half 
-#Compare task 1 Second Half 
 full_between =  np.linalg.multi_dot([t_u, place_cells_trial_5_vector, t_v])
 full_diagonal_between = np.diagonal(full_between)
 cum_sum_within = np.cumsum(full_diagonal_between)/place_cells_trial_5_vector.shape[0]
@@ -199,8 +200,6 @@ plt.plot(cum_sum, label = 'Full Between HP', color = 'green',linestyle = '--')
 plt.legend()
 
 
-
-  
 place_cells_trial_1_vector = np.asarray(place_cells_trial_1_vector)
 place_cells_trial_2_vector = np.asarray(place_cells_trial_2_vector)
 place_cells_trial_3_vector = np.asarray(place_cells_trial_3_vector)

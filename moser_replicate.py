@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter1d
 from scipy.stats import zscore
 
+# Checking if Moser's results from Cosyne 2019 are true in our data 
+
 
 def extract_rest_periods(session):
     index_start_rest = []

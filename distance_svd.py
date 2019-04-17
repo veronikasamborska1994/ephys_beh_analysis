@@ -10,6 +10,9 @@ import numpy as np
 from scipy.stats import zscore
 import matplotlib.pyplot as plt
 
+
+# Calculating Distance based on James W idea
+
 def svd_plotting(experiment, tasks_unchanged = True, HP = False, plot_a = False, plot_b = False, average_reward = False):    
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
@@ -91,24 +94,12 @@ def svd_plotting(experiment, tasks_unchanged = True, HP = False, plot_a = False,
     
     var_t_2_on_t_1 =  (np.linalg.multi_dot([np.transpose(vect_t2_1), u_t1_2]))**2
     var_t_2_on_t_1 =  np.linalg.multi_dot([eig_t2_1,np.transpose(var_t_2_on_t_1)])
-#
+
     var_t_2_on_t_2 =  (np.linalg.multi_dot([np.transpose(vect_t2_1), u_t2_2]))**2
     var_t_2_on_t_2 =  np.linalg.multi_dot([eig_t2_1, np.transpose(var_t_2_on_t_2)])
-#    
+    
     var_t_3_on_t_2 =  (np.linalg.multi_dot([np.transpose(vect_t3_1), u_t2_2]))**2
     var_t_3_on_t_2 =  np.linalg.multi_dot([eig_t3_1, np.transpose(var_t_3_on_t_2)])
-
-#    var_t_1_on_t_1 =  (np.linalg.multi_dot([t_u, vect_t1_2]))**2
-#    var_t_1_on_t_1 = np.linalg.multi_dot([eig_t1_2, np.transpose(var_t_1_on_t_1)])  
-#    
-#    var_t_2_on_t_1 =  (np.linalg.multi_dot([t_u_t_2_1, vect_t1_2]))**2
-#    var_t_2_on_t_1 =  np.linalg.multi_dot([eig_t1_2,np.transpose(var_t_2_on_t_1)])
-#
-#    var_t_2_on_t_2 =  (np.linalg.multi_dot([t_u_t_2_1, vect_t2_2]))**2
-#    var_t_2_on_t_2 =  np.linalg.multi_dot([eig_t2_2, np.transpose(var_t_2_on_t_2)])
-#    
-#    var_t_3_on_t_2 =  (np.linalg.multi_dot([t_u_t_3_1, vect_t2_2]))**2
-#    var_t_3_on_t_2 =  np.linalg.multi_dot([eig_t2_2, np.transpose(var_t_3_on_t_2)])
 
     sum_var_t_2_on_t_1 = np.cumsum(var_t_2_on_t_1, axis = 0)/flattened_all_clusters_task_1_second_half.shape[0]
     

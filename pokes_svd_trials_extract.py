@@ -11,13 +11,15 @@ import ephys_beh_import as ep
 import regressions as re
 import matplotlib.pyplot as plt
 
+
+# SVDs based on poke aligned data ratcher than choices 
+
 def extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True):
     #Extracts firing rates for A and B rewarded and unrewarded trials with each task split into first and second half
     spikes = session.ephys
     spikes = spikes[:,~np.isnan(spikes[1,:])] 
     aligned_rates =  regp.histogram_include_a(session)
     aligned_rates = np.asarray(aligned_rates)
-    #aligned_rates = session.aligned_rates
     
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = ep.extract_choice_pokes(session)
     trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3, ITI_task_1, ITI_task_2,ITI_task_3 = ep.initiation_and_trial_end_timestamps(session)

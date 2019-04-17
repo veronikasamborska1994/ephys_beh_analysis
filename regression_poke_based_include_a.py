@@ -25,6 +25,7 @@ from numpy.linalg import matrix_rank
 from matplotlib import colors as mcolors
 
 
+# Regressions for poke aligned data (didn't work)
 
 def extract_poke_times_include_a(session):       
     forced_trials = session.trial_data['forced_trial']
@@ -262,24 +263,6 @@ def predictors_around_pokes_include_a(session):
             poke_4[p] = 1
         elif poke == poke_5_id:
             poke_5[p] = 1
-            
-
-#    for p,poke in enumerate(poke_identity):
-#            if poke == poke_1_id:
-#                poke_1[p] = 1
-#            if poke == poke_2_id:
-#                poke_2[p] = 1
-#            elif poke == poke_3_id:
-#                poke_3[p] = 1
-#            elif poke == poke_4_id:
-#                poke_4[p] = 1
-#            elif poke == poke_5_id:
-#                poke_1[p] = -1
-#                poke_2[p] = -1
-#                poke_3[p] = -1
-#                poke_4[p] = -1
-#                poke_5[p] = -1
-    
 
     return poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation,init_choices_a_b
 
@@ -761,24 +744,13 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
                                           ('poke_4', poke_4),
                                           ('poke_5', poke_5),
                                           ('choice_vs_initiation', choices_initiation),
-                                          #('choice_a_b_at_choice',choices),
                                           ('choice_a_b_at_initiation',init_choices_a_b),
                                           ('outcomes', outcomes),
                                           ('ones', ones),
-                                          #('outcomes_interaction_at_initiation',outcomes_choices_init_interaction),
                                           ('outcomes_interaction_at_choice',outcomes_choices_interaction)])
-                                          #('Task_1_initiation_choice', predictor_B_Task_1_initiation),
-                                          #('Task_2_initiation_choice',predictor_B_Task_2_initiation),
-                                          #('Task_1_choice', predictor_B_Task_1_choice),
-                                          #('Task_2_choice',predictor_B_Task_2_choice),
-                                          #('outcome_choice_task_1',outcome_choice_task_1),
-                                          #('outcome_choice_task_2',outcome_choice_task_2)])
-        
+
             X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
-            
-            #X_check_rank = np.hstack([X,ones])
-            
-    
+                        
             print(X.shape[1])  
             rank = matrix_rank(X) 
             print(rank)
@@ -796,6 +768,6 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
    
     return X,cpd, predictors
 
-scipy.io.savemat('/Users/veronikasamborska/Desktop/data.mat', mdict={'data': all_neurons_all_spikes_raster_plot_task})
+#scipy.io.savemat('/Users/veronikasamborska/Desktop/data.mat', mdict={'data': all_neurons_all_spikes_raster_plot_task})
 
-scipy.io.savemat('/Users/veronikasamborska/Desktop/design_m.mat', mdict={'Design_matrix': X})
+#scipy.io.savemat('/Users/veronikasamborska/Desktop/design_m.mat', mdict={'Design_matrix': X})

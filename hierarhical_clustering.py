@@ -11,6 +11,7 @@ import SVDs as sv
 from scipy.stats import zscore
 import matplotlib.pyplot as plt
 
+# Hiearachical clustering (doesn't work reliably with our data)
 
 flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
 flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\

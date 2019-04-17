@@ -143,59 +143,6 @@ color = ['Black', 'Grey', 'Black', 'Grey'])
     
               
                     
-#for neuron in range(n_neurons):   
-#            trials_firing = mean_spikes_around_choice[:,neuron]  # Firing rate of each neuron 
-#            mean_all_choices = np.mean(trials_firing, axis = 0)
-#            if mean_all_choices > 1:
-#                a1_pokes = trials_firing[a_1]
-#                not_a1_pokes = trials_firing[not_a_a1]
-#                a1_pokes_mean = np.mean(a1_pokes, axis = 0)
-#                not_a1_std = np.std(not_a1_pokes, axis = 0)
-#                not_a1_pokes_mean = np.mean(not_a1_pokes, axis = 0)
-#                    
-#                if a1_pokes_mean > not_a1_pokes_mean * 3*not_a1_std:
-#                    neuron_list_a1.append(neuron)                    
-#                a2_pokes = trials_firing[a_2]
-#                not_a2_pokes = trials_firing[not_a_a2[0]]
-#                a2_pokes_mean = np.mean(a2_pokes, axis = 0)
-#                not_a2_std = np.std(not_a2_pokes, axis = 0)
-#                not_a2_pokes_mean = np.mean(not_a2_pokes, axis = 0)
-#                
-#                if a2_pokes_mean > not_a2_pokes_mean * 3*not_a2_std: 
-#                    neuron_list_a2.append(neuron)
-#                
-#                a3_pokes = trials_firing[a_3]
-#                not_a3_pokes = trials_firing[not_a_a3[0]]
-#                a3_pokes_mean = np.mean(a3_pokes, axis = 0)
-#                not_a3_std = np.std(not_a3_pokes, axis = 0)
-#                not_a3_pokes_mean = np.mean(not_a3_pokes, axis = 0)
-#                
-#                if a3_pokes_mean > not_a3_pokes_mean * 3*not_a3_std:   
-#                    neuron_list_a3.append(neuron)
-#                            
-#        neuron_a1_not_a2 = [neuron for neuron in neuron_list_a1 if not neuron in neuron_list_a2]
-#        neuron_a2_not_a1 = [neuron for neuron in neuron_list_a2 if not neuron in neuron_list_a1]
-#        neuron_a1_not_a3 = [neuron for neuron in neuron_list_a1 if not neuron in neuron_list_a3]
-#        neuron_a3_not_a1 = [neuron for neuron in neuron_list_a3 if not neuron in neuron_list_a1]
-#        neuron_a2_not_a3 = [neuron for neuron in neuron_list_a2 if not neuron in neuron_list_a3]
-#        neuron_a3_not_a2 = [neuron for neuron in neuron_list_a3 if not neuron in neuron_list_a2]   
-#        neurons_change_a = neuron_a1_not_a2 + neuron_a2_not_a1 + neuron_a1_not_a3+neuron_a3_not_a1+ neuron_a2_not_a3+neuron_a3_not_a2
-#        neurons_change_a = np.array(neurons_change_a)
-#        unique_remapping = np.unique(neurons_change_a)
-#        remapped_neurons = len(unique_remapping)
-#         
-#        neuron_a1_a2 = [neuron for neuron in neuron_list_a1 if neuron in neuron_list_a2]
-#        neuron_a1_a3 = [neuron for neuron in neuron_list_a1 if neuron in neuron_list_a3]
-#        neurons_stable = [neuron for neuron in neuron_a1_a2 if neuron in neuron_a1_a3]
-#        not_remapped_neurons = len(neurons_stable) 
-#               
-#        session_remapped.append(remapped_neurons)
-#        session_not_remapped.append(not_remapped_neurons)
-#    sum_remapped = sum(session_remapped)
-#    sum_nonremapped = sum(session_not_remapped)
-#                    
-#                    
-
 
    
        

@@ -42,8 +42,6 @@ laplacian_m = degree_m - a
 w,v = np.linalg.eig(laplacian_m)
 
 
-
-
 #Adjacency matrix
 c = np.ones((8,8))
 c.fill(0.0)
