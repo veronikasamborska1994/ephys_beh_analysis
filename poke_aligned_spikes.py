@@ -6,18 +6,12 @@ Created on Wed Apr 17 15:43:25 2019
 @author: veronikasamborska
 """
 import regression_poke_based_include_a as re
-from sklearn.linear_model import LinearRegression
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
 
 
-def histogram_include_a(session,time_window = 1):
+def histogram_include_a(session,time_window_start = 50, time_window_end = 110):
     
-    # time window 1 == all_sessions_1s_500ms
-    # time window 2 == all_sessions_500ms_0
-    # time window 3 ==  all_sessions_0_500ms
-    # time window 4 == all_sessions_500ms_1_sec
-    # time window 5  == all_sessions_1_sec_500ms
     poke_identity,outcomes_non_forced,initation_choice,initiation_time_stamps,poke_list_A, poke_list_B,all_events,constant_poke_a,choices, trial_times  = re.extract_poke_times_include_a(session)
     
     neurons = np.unique(session.ephys[0])
@@ -29,7 +23,7 @@ def histogram_include_a(session,time_window = 1):
    
     bin_edges_trial = np.arange(-4050,window_to_plot, bin_width_ms)
     # 10 for 0.5 second  
-    trial_length = 10
+    trial_length = 60
     aligned_rates = np.zeros([len(all_events), len(neurons), trial_length]) # Array to store trial aligned firing rates. 
 
     for i,neuron in enumerate(neurons):  
@@ -46,17 +40,7 @@ def histogram_include_a(session,time_window = 1):
             normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms)
             normalised_task = normalised_task*20
             if len(normalised_task) > 0:
-
-                if time_window == 1:
-                    normalised_task = normalised_task[60:70]
-                elif time_window == 2:
-                    normalised_task = normalised_task[70:80]
-                elif time_window == 3:
-                    normalised_task = normalised_task[80:90]
-                elif time_window == 4:
-                    normalised_task = normalised_task[90:100]
-                elif time_window == 5:
-                    normalised_task = normalised_task[100:110]
+                normalised_task = normalised_task[time_window_start:time_window_end]
                 
             aligned_rates[e,i,:]  = normalised_task
 
@@ -64,11 +48,11 @@ def histogram_include_a(session,time_window = 1):
 
 
         
-def raster_plot_save(experiment,time_window = 1):
+def raster_plot_save(experiment,time_window_start = 50, time_window_end = 110):
     all_sessions = []
     for s,session in enumerate(experiment):
         
-        aligned_rates = histogram_include_a(session,time_window = time_window)
+        aligned_rates = histogram_include_a(session,time_window_start = time_window_start,time_window_end = time_window_end)
         aligned_rates = np.asarray(aligned_rates)
         all_sessions.append(aligned_rates)
         

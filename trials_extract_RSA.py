@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import poke_aligned_spikes as pos
 import matplotlib.animation as animation
 from matplotlib.animation import FFMpegWriter
+from matplotlib.widgets import Slider, Button, RadioButtons
 
 font = {'family' : 'normal',
         'weight' : 'normal',
@@ -30,9 +31,12 @@ plt.rc('font', **font)
 # Scipt for extracting data for RSAs 
 
 def make_pokes_consistent(session):
-    
-    # A/B choices in the original behavioual files do not correspond to As being the same port in all three tasks
-    # The function below finds which ones are A choices 
+# =============================================================================
+#     
+#      A/B choices in the original behavioual files do not correspond to As being the same port in all three tasks
+#      The function below finds which ones are A choices 
+#     
+# =============================================================================
     poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3,poke_B1_B2_A3 = ep.poke_A_B_make_consistent(session)
     
     poke_A = 'poke_'+str(session.trial_data['poke_A'][0])
@@ -138,7 +142,18 @@ def make_pokes_consistent(session):
 
 
 def seperate_a_into_tasks(session):  
-    
+# =============================================================================
+#   This function identifies which Initiation pokes are in the same physical position in 3 tasks to extract them consistently across sessions. Also makes sure Initiation 
+#   port that also acts as a B poke is extracted consistently and separates A pokes into 3 tasks. 
+# =============================================================================    
+#   Outputs are:  
+#   A pokes in 3 tasks : poke_a_task_x, poke_a_task_y,poke_a_task_z
+#   Rewards: outcomes,
+#   Initiation Pokes that only ever initiation pokes: poke_initiation_task_x,poke_initiation_task_y
+#   Initiation Poke that can be an initiation poke or a B poke: poke_initiation_b_task_z,poke_choice_b_task_x
+#   B Choices: poke_4,poke_5
+#
+# =============================================================================
     poke_1,poke_2,poke_3,poke_4,poke_5, outcomes =  make_pokes_consistent(session)
     poke_I1_I2,poke_I1_I3, poke_I2_I3 = ep.poke_Is_make_consistent(session)
 
@@ -241,8 +256,22 @@ def seperate_a_into_tasks(session):
 
 
 
-def extract_trials(experiment, all_sessions): 
-   
+def extract_trials(experiment, all_sessions, time_window = 1): 
+# =============================================================================
+#   This function separates pokes and finds firing rates of each neuron around the pokes.
+#   Inputs are:
+#        experiment_aligned_HP orexperiment_aligned_PFC,  all_sessions - made in poke_aligned_spikes script
+#   whcih contains firing rates around every port entry. 
+#       time_window - specifying which time window to use (default is of a width of 1 which is 50ms).
+#       For the purposed of animation a different function --> matrices_for_plots(experiment,all_sessions) includes a loop
+#       that goes through the full length of the poke aligned histogram (-1.5 to 1.5 sec);
+#       this can be changed in poke_aligned_spikes.py script if necessary
+#   Outputs are:
+#       A in three tasks rewarded, unrewarded;
+#       Initiation in three tasks x,y - same physical port, z - different port and also acts as B choice in x task
+#       B choices in tasks y and z. These are combined into a big matrix which is the output of the function. 
+# =============================================================================    
+
    session_list_poke_a_task_x_r_spikes = []
    session_list_poke_a_task_x_nr_spikes = []
 
@@ -272,20 +301,20 @@ def extract_trials(experiment, all_sessions):
         session = experiment[s]
         all_neurons_all_spikes_raster_plot_task = all_sessions[s]
         all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
-        
+        average_time_spikes = all_neurons_all_spikes_raster_plot_task[:,:,time_window]
         if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
             
             poke_a_task_x,poke_a_task_y,poke_a_task_z,outcomes,poke_initiation_task_x,poke_initiation_task_y,poke_initiation_b_task_z,\
             poke_choice_b_task_x,poke_4,poke_5 = seperate_a_into_tasks(session) 
             
             # Get rid off the time dimension        
-            average_time_spikes = np.mean(all_neurons_all_spikes_raster_plot_task, axis = 2)
+            #average_time_spikes = np.mean(all_neurons_all_spikes_raster_plot_task, axis = 2)
             n_trials, n_neurons = average_time_spikes.shape   
             average_time_spikes = zscore(average_time_spikes,axis = 0)
 
             # The z-scores of input "a", with any columns including non-finite
             # numbers replaced by all zeros.
-            #    zscore[:, np.logical_not(np.all(np.isfinite(zscore), axis=0))] = 0
+            average_time_spikes[:, np.logical_not(np.all(np.isfinite(average_time_spikes), axis=0))] = 0
 
            
             # Extract spikes for A in three tasks (rewarded and non-rewarded)
@@ -399,17 +428,10 @@ def extract_trials(experiment, all_sessions):
   
 
 def regression_RSA(matrix_for_correlations):
-    
-    C = []
-    indicies_for_nans = []
-    
-    if np.isnan(np.mean(matrix_for_correlations)) == True:
-        for i in range(matrix_for_correlations.shape[1]):
-            if np.isnan(matrix_for_correlations[0,i]) == True:
-               indicies_for_nans.append(i)
-    
-    matrix_for_correlations = np.delete(matrix_for_correlations,indicies_for_nans, axis = 1)
-
+# =============================================================================
+#     Regression of RSA predictors on the actual data matrix
+# =============================================================================
+    C = [] 
     correlation_m = np.corrcoef(matrix_for_correlations)
     correlation_m_f = correlation_m.flatten()
     physical_rsa = rsa.RSA_physical_rdm()
@@ -440,32 +462,39 @@ def regression_RSA(matrix_for_correlations):
     y = correlation_m_f
     ols = LinearRegression(copy_X = True,fit_intercept= False)
     ols.fit(X,y)
-    C.append(ols.coef_) # Predictor loadings
+    C.append(ols.coef_) 
     
-    return C,correlation_m
+    return C,correlation_m,predictors
 
-def matrices_for_different_times():
-    all_sessions_1s_500ms = pos.raster_plot_save(experiment_aligned_HP, time_window = 1)
-    all_sessions_500ms_0 = pos.raster_plot_save(experiment_aligned_HP, time_window = 2)
+def matrices_for_plots(experiment,all_sessions):
+    #all_sessions_HP = pos.raster_plot_save(experiment_aligned_HP,time_window_start = 50, time_window_end = 110)
+    #all_sessions_PFC = pos.raster_plot_save(experiment_aligned_PFC,time_window_start = 50, time_window_end = 110)
+# =============================================================================
+#   This is functionthat goes through the full length of the poke aligned histogram (-1.5 to 1.5 sec)
+#   and finds the data matrix and computes regression coefficient for each data point around the poke
+
+#   Default time window is 60 from -1500 to 1500 around poke
+# =============================================================================
     
-    all_sessions_0_500ms = pos.raster_plot_save(experiment_aligned_HP, time_window = 3)
-    all_sessions_500ms_1_sec = pos.raster_plot_save(experiment_aligned_HP, time_window = 4)
-    all_sessions_1_sec_500ms  = pos.raster_plot_save(experiment_aligned_HP, time_window = 5)
+    C_list =  []
+    correlation_m_list = []
     
-    matrix_for_correlations_trials_min_1_500 = extract_trials(experiment_aligned_HP, all_sessions_1s_500ms) 
-    matrix_for_correlations_trials_min_500_0 = extract_trials(experiment_aligned_HP, all_sessions_500ms_0) 
-    matrix_for_correlations_trials_0_plus_500 = extract_trials(experiment_aligned_HP, all_sessions_0_500ms) 
-    matrix_for_correlations_trials__500_1sec = extract_trials(experiment_aligned_HP, all_sessions_500ms_1_sec) 
-    matrix_for_correlations_trials__1sec_500ms = extract_trials(experiment_aligned_HP, all_sessions_1_sec_500ms) 
+    for i in range(60):
+        matrix_for_correlations = extract_trials(experiment, all_sessions, time_window = i)
+        C,correlation_m, predictors = regression_RSA(matrix_for_correlations)
+        C_list.append(C)
+        correlation_m_list.append(correlation_m)
+    C_list = np.concatenate(C_list,0)
     
-    C_matrix_for_correlations_trials_min_1_500, correlation_m_1_50 = regression_RSA(matrix_for_correlations_trials_min_1_500)
-    C_matrix_for_correlations_trials_min_500_0, correlation_m_500_0= regression_RSA(matrix_for_correlations_trials_min_500_0)
+    return C_list,correlation_m_list
 
-    C_matrix_for_correlations_trials_0_plus_500, correlation_m_0_plus_500= regression_RSA(matrix_for_correlations_trials_0_plus_500)
-    C_matrix_for_correlations_trials_500_1sec,correlation_m_500_1sec = regression_RSA(matrix_for_correlations_trials__500_1sec)
-
-    C_matrix_for_correlations_trials_1sec_500ms, correlation_m_1sec_500ms = regression_RSA(matrix_for_correlations_trials__1sec_500ms)
-
+  
+def matrices_for_different_times(C_list,correlation_m_list, HP = True):
+# =============================================================================
+#    This function plots predictor RSA matrices; and creates animations of 
+#   the actual correlation matrix of the data at each data point between -1.5 to 1.5 seconds around the poke entry
+# =============================================================================
+    ### Predictor RSA Matrices 
     physical_rsa = rsa.RSA_physical_rdm()
     choice_ab_rsa = rsa.RSA_a_b_initiation_rdm()
     reward_no_reward = rsa.reward_rdm() 
@@ -518,8 +547,20 @@ def matrices_for_different_times():
                '2 I T2', '3 I T3', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
     plt.title('Choice vs Initiation')
-
-    trial_corr_plot = fig.add_subplot(grid[ 5:9, 1:3])
+    
+    
+    len_C = range(C_list.shape[1])
+    bar_plot = fig.add_subplot(grid[0:3, 1:3])
+    plt.ylabel('Regression Coefficient')
+    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'Constant'), rotation = 'vertical')
+    
+    # Coordinates of the slider # 50 ms window 
+    
+    slider_plot  = fig.add_subplot(grid[9:10, 1:3])
+    plt.yticks([])
+    plt.xticks([0,10,20,30,40,50,60],['- 1500 ms','- 1000 ms', '- 500 sec', 'Poke Entry', '+ 500 ms', '1000 ms', '+ 1500 ms'])  
+    
+    trial_corr_plot = fig.add_subplot(grid[ 4:8, 1:3])
     plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
                '1 A T3 R','1 A T3 NR', ' 2 I T1',\
                '2 I T2', '3 I T3', '3 B T1 R',\
@@ -530,32 +571,28 @@ def matrices_for_different_times():
                '2 I T2', '3 I T3', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
     
-
-   
-    len_C = range(len(C_matrix_for_correlations_trials_min_1_500[0]))
-    bar_plot = fig.add_subplot(grid[0:3, 1:3])
-    plt.ylabel('Regression Coefficient')
-    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'Constant'), rotation = 'vertical')
     
     camera = Camera(fig)
-    list_correlation = correlation_m_1_50 + correlation_m_500_0, correlation_m_0_plus_500,correlation_m_500_1sec,correlation_m_1sec_500ms
-    list_bars_coef = C_matrix_for_correlations_trials_min_1_500 + C_matrix_for_correlations_trials_min_500_0\
-    + C_matrix_for_correlations_trials_0_plus_500+C_matrix_for_correlations_trials_500_1sec+C_matrix_for_correlations_trials_1sec_500ms
-    #title = ['-1000 to - 500 ms', '- 500ms to poke entry', 'poke entry to + 500ms', '+500ms to 1000ms']
-    for i in range(len(list_correlation)):
-        #plt.title(title[i])
-        trial_corr_plot.imshow(list_correlation[i], aspect = 1)
-        plt.colorbar()
-        bar_plot.bar(len_C,list_bars_coef[i])
+    for i in range(C_list.shape[0]):
+        slider_plot.vlines(30, ymin= 0, ymax = 1, color = 'red')
+        slider_plot.vlines(i, ymin = 0 , ymax = 1,linewidth = 4)
+        sh = trial_corr_plot.imshow(correlation_m_list[i], aspect = 1)
+        bar_plot.bar(len_C,C_list[i])
         space_plt.imshow(physical_rsa,aspect = 'auto')
         choice_plt.imshow(choice_ab_rsa,aspect = 'auto')
         reward_no_reward_plt.imshow(reward_no_reward,aspect = 'auto')
         reward_at_choices_plt.imshow(reward_at_choices,aspect = 'auto')
         choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto')
         camera.snap()
-    animation = camera.animate(interval=2000)
-    FFwriter = FFMpegWriter(fps=1, bitrate=2000)
-    animation.save('/Users/veronikasamborska/Desktop/celluloid_minimal.mp4',writer=FFwriter)
+        
+    plt.colorbar(sh)
+
+    animation = camera.animate(interval = 200)
+    FFwriter = FFMpegWriter(fps = 1, bitrate=2000) 
+    if HP == True:
+        animation.save('/Users/veronikasamborska/Desktop/HP_rsa.mp4', writer=FFwriter)
+    elif HP == False:
+        animation.save('/Users/veronikasamborska/Desktop/PFC_rsa.mp4', writer=FFwriter)
    
 
     
