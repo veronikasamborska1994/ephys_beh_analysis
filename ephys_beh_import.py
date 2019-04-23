@@ -504,10 +504,9 @@ def initiation_state_task_3(session):
 
 
 def poke_A_B_make_consistent(session):
-    #
+
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = extract_choice_pokes(session)
-    # Task 2
-    # If Poke A in task 2 is the same as in task 1 keep it    
+
     poke_A1_A2_A3 = False
     poke_A1_B2_B3 = False
     poke_A1_B2_A3 = False
@@ -534,3 +533,24 @@ def poke_A_B_make_consistent(session):
     elif poke_B == poke_B_task_2 and poke_B == poke_A_task_3:
         poke_B1_B2_A3 = True
     return  poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3, poke_B1_B2_A3 
+
+
+def poke_Is_make_consistent(session):
+    poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3  = extract_choice_pokes(session)
+    
+    # Make Is consistent for future RSA analysis
+
+    poke_I1_I2 = False
+    poke_I2_I3 = False
+    poke_I1_I3 = False
+   
+    if poke_I == poke_I_task_2:
+        poke_I1_I2 = True
+    elif poke_I == poke_I_task_3:
+        poke_I1_I3 = True
+    elif poke_I_task_2 == poke_I_task_3:
+        poke_I2_I3 = True
+        
+    return poke_I1_I2,poke_I1_I3, poke_I2_I3
+        
+        

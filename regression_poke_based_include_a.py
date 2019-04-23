@@ -25,6 +25,9 @@ from numpy.linalg import matrix_rank
 from matplotlib import colors as mcolors
 
 
+
+# all_sessions objects need to be generated from poke_aligned_spikes 
+
 # Regressions for poke aligned data (didn't work)
 
 def extract_poke_times_include_a(session):       
@@ -58,7 +61,6 @@ def extract_poke_times_include_a(session):
     #print(poke_B, poke_B_task_2, poke_B_task_3)
     i_pokes = np.unique(configuration)
     #print('These are I pokes')
-    configuration = session.trial_data['configuration_i']
     i_poke_task_1 = configuration[0]
     i_poke_task_2 = configuration[task_2_change[0]]
     i_poke_task_3 = configuration[task_3_change[0]]
@@ -266,55 +268,7 @@ def predictors_around_pokes_include_a(session):
 
     return poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation,init_choices_a_b
 
-def histogram_include_a(session):
-    
-    poke_identity,outcomes_non_forced,initation_choice,initiation_time_stamps,poke_list_A, poke_list_B,all_events,constant_poke_a,choices, trial_times  = extract_poke_times_include_a(session)
-    
-    neurons = np.unique(session.ephys[0])
-    spikes = session.ephys[1]
-    window_to_plot = 4000
-    #all_neurons_all_spikes_raster_plot_task = []
-    smooth_sd_ms = 1
-    bin_width_ms = 50
-   
-    bin_edges_trial = np.arange(-4050,window_to_plot, bin_width_ms)
-    trial_length = 60
-    aligned_rates = np.zeros([len(all_events), len(neurons), trial_length]) # Array to store trial aligned firing rates. 
 
-    for i,neuron in enumerate(neurons):  
-        spikes_ind = np.where(session.ephys[0] == neuron)
-        spikes_n = spikes[spikes_ind]
-
-        for e,event in enumerate(all_events):
-            period_min = event - window_to_plot
-            period_max = event + window_to_plot
-            spikes_ind = spikes_n[(spikes_n >= period_min) & (spikes_n<= period_max)]
-
-            spikes_to_save = (spikes_ind - event)   
-            hist_task,edges_task = np.histogram(spikes_to_save, bins= bin_edges_trial)
-            normalised_task = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms)
-            normalised_task = normalised_task*20
-            if len(normalised_task) > 0:
-                normalised_task = normalised_task[50:110]
-                
-            aligned_rates[e,i,:]  = normalised_task
-
-    return aligned_rates
-
-
-        
-def raster_plot_save(experiment):
-    all_sessions = []
-    for s,session in enumerate(experiment):
-        
-        aligned_rates = histogram_include_a(session)
-        aligned_rates = np.asarray(aligned_rates)
-        all_sessions.append(aligned_rates)
-        
-    return all_sessions
-
-
-        
 def _CPD(X,y):
     
     '''Evaluate coefficient of partial determination for each predictor in X'''   
@@ -707,9 +661,9 @@ def regression_pokes_aligned_warped_trials(experiment, all_sessions):
     cpd =[]
     
     # Finding correlation coefficients for task 1  
-    for s,session in enumerate(experiment_aligned_HP):
-        session =experiment_aligned_HP[1]
-        all_neurons_all_spikes_raster_plot_task = all_sessions_HP[1]
+    for s,session in enumerate(experiment):
+        session =experiment[1]
+        all_neurons_all_spikes_raster_plot_task = all_sessions[1]
         all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
         if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
             poke_1,poke_2,poke_3,poke_4,poke_5,outcomes,initation_choice,unique_pokes,constant_poke_a,choices,choices_initiation,init_choices_a_b = predictors_around_pokes_include_a(session)

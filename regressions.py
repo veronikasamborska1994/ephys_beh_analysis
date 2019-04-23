@@ -153,7 +153,6 @@ def angle_between_vectors(experiment):
 
 
 def predictors_pokes(session):
-    #pyControl_choice = [event.time for event in session.events if event.name in ['choice_state']]
 
     choices = session.trial_data['choices']
     forced_trials = session.trial_data['forced_trial']
@@ -181,11 +180,9 @@ def predictors_pokes(session):
     predictor_b[0][choices_b[0]] = 1
     if len(reward)!= len(predictor_a[0]):
         reward = np.append(reward,0)
-        
+     
     poke_A1_A2_A3, poke_A1_B2_B3, poke_A1_B2_A3, poke_A1_A2_B3, poke_B1_B2_B3, poke_B1_A2_A3, poke_B1_A2_B3,poke_B1_B2_A3 = ep.poke_A_B_make_consistent(session)
     
-    # Task 2
-    # If Poke A in task 2 is the same as in task 1 keep it 
     
     predictor_a_1 = copy.copy(predictor_a)
     predictor_a_1[0][len(task_1):] = 0
