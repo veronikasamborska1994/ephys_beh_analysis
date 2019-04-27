@@ -63,61 +63,6 @@ def RSA_physical_rdm():
 
     return physical_rsa
 
-def RSA_physical_rdm_across_time():
-
-    # RSA Physical Space coding
-    port_a_choice_task_1_r = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_1_r[0:6*30] = True
-    
-    port_a_choice_task_1_nr = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_1_nr[0:6*30] = True
-    
-    port_a_choice_task_2_r = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_2_r[0:6*30] = True
-    
-    port_a_choice_task_2_nr = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_2_nr[0:6*30] = True
-    
-    port_a_choice_task_3_r = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_3_r[0:6*30] = True
-    
-    port_a_choice_task_3_nr = np.array([bool(i & 0) for i in range(450)])
-    port_a_choice_task_3_nr[0:6*30] = True
-    
-    port_2_initiation_task_1 = np.array([bool(i & 0) for i in range(450)])
-    port_2_initiation_task_1[6*30:8*30] = True
-    
-    port_2_initiation_task_2 = np.array([bool(i & 0) for i in range(450)])
-    port_2_initiation_task_2[6*30:8*30] = True
-    
-    port_3_initiation_task_3 = np.array([bool(i & 0) for i in range(450)])
-    port_3_initiation_task_3[8*30:11*30] = True
-    
-    port_3_choice_task_2_r = np.array([bool(i & 0) for i in range(450)])
-    port_3_choice_task_2_r[8*30:11*30] =  True
-    
-    port_3_choice_task_2_nr = np.array([bool(i & 0) for i in range(450)])
-    port_3_choice_task_2_nr[8*30:11*30] =  True
-    
-    port_4_choice_task_1_r = np.array([bool(i & 0) for i in range(450)])
-    port_4_choice_task_1_r[11*30:13*30] = True
-    
-    port_4_choice_task_1_nr = np.array([bool(i & 0) for i in range(450)])
-    port_4_choice_task_1_nr[11*30:13*30] = True
-    
-    port_5_choice_task_3_r = np.array([bool(i & 0) for i in range(450)])
-    port_5_choice_task_3_r[13*30:15*30] =  True
-    
-    port_5_choice_task_3_nr = np.array([bool(i & 0) for i in range(450)])
-    port_5_choice_task_3_nr[13*30:15*30] =  True
-    
-    
-    physical_rsa = np.vstack([port_a_choice_task_1_r,port_a_choice_task_1_nr,port_a_choice_task_2_r,port_a_choice_task_2_nr,\
-                              port_a_choice_task_3_r,port_a_choice_task_3_nr,port_2_initiation_task_1,port_2_initiation_task_2,\
-                              port_3_initiation_task_3,port_3_choice_task_2_r,port_3_choice_task_2_nr,port_4_choice_task_1_r,\
-                              port_4_choice_task_1_nr,port_5_choice_task_3_r,port_5_choice_task_3_nr])
-
-    return physical_rsa
 
 def RSA_a_b_initiation_rdm():
 
