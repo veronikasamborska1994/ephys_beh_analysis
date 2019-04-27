@@ -16,8 +16,7 @@ def histogram_include_a(session,time_window_start = 50, time_window_end = 110):
     
     neurons = np.unique(session.ephys[0])
     spikes = session.ephys[1]
-    window_to_plot = 4000
-    #all_neurons_all_spikes_raster_plot_task = []
+    window_to_plot = 4000 #Ω 4 second window around poke
     smooth_sd_ms = 1
     bin_width_ms = 50
    
@@ -50,8 +49,8 @@ def histogram_include_a(session,time_window_start = 50, time_window_end = 110):
         
 def raster_plot_save(experiment,time_window_start = 50, time_window_end = 110):
     all_sessions = []
+    
     for s,session in enumerate(experiment):
-        
         aligned_rates = histogram_include_a(session,time_window_start = time_window_start,time_window_end = time_window_end)
         aligned_rates = np.asarray(aligned_rates)
         all_sessions.append(aligned_rates)

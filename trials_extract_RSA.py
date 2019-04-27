@@ -256,6 +256,628 @@ def seperate_a_into_tasks(session):
 
 
 
+def extract_trials_all_time_points(experiment,all_sessions):
+    
+   session_list_poke_a_task_x_r_spikes = []
+   session_list_poke_a_task_x_nr_spikes = []
+
+   session_list_poke_a_task_y_r_spikes = []
+   session_list_poke_a_task_y_nr_spikes = []
+
+   session_list_poke_a_task_z_r_spikes = []
+   session_list_poke_a_task_z_nr_spikes = []
+
+   session_list_poke_initiation_task_x_spikes = []
+   session_list_poke_initiation_task_y_spikes = []
+   
+   session_list_poke_initiation_b_task_z_spikes = []
+   
+   session_list_poke_choice_b_task_x_spikes_r = []
+   session_list_poke_choice_b_task_x_spikes_nr = []
+   
+   session_list_poke_b_task_y_spikes_r = []
+   session_list_poke_b_task_y_spikes_nr = []
+   
+   session_list_poke_b_task_z_spikes_r = []
+   session_list_poke_b_task_z_spikes_nr = []
+   
+
+   for s,session in enumerate(experiment):
+        
+        session = experiment[s]
+        all_neurons_all_spikes_raster_plot_task = all_sessions[s]
+        all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
+        all_neurons_all_spikes_raster_plot_task = all_neurons_all_spikes_raster_plot_task[:,:,30:60]
+        if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
+            
+            poke_a_task_x,poke_a_task_y,poke_a_task_z,outcomes,poke_initiation_task_x,poke_initiation_task_y,poke_initiation_b_task_z,\
+            poke_choice_b_task_x,poke_4,poke_5 = seperate_a_into_tasks(session) 
+            
+            # Get rid off the time dimension        
+            #average_time_spikes = np.mean(all_neurons_all_spikes_raster_plot_task, axis = 2)
+            n_trials, n_neurons, n_timepoints = all_neurons_all_spikes_raster_plot_task.shape   
+            average_time_spikes = zscore(all_neurons_all_spikes_raster_plot_task,axis = 0)
+
+            # The z-scores of input "a", with any columns including non-finite
+            # numbers replaced by all zeros.
+            average_time_spikes[:, np.logical_not(np.all(np.isfinite(average_time_spikes), axis=0))] = 0
+
+           
+            # Extract spikes for A in three tasks (rewarded and non-rewarded)
+            poke_a_task_x_r_spikes = average_time_spikes[np.where((poke_a_task_x == 1) & (outcomes == 1)), :,:]
+            poke_a_task_x_nr_spikes  = average_time_spikes[np.where((poke_a_task_x == 1) & (outcomes == 0)),:,:]
+           
+            poke_a_task_y_r_spikes = average_time_spikes[np.where((poke_a_task_y == 1) & (outcomes == 1)),:,:]
+            poke_a_task_y_nr_spikes  = average_time_spikes[np.where((poke_a_task_y == 1) & (outcomes == 0)),:,:]
+           
+            poke_a_task_z_r_spikes = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 1)),:,:]
+            poke_a_task_z_nr_spikes  = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 0)),:,:]
+           
+            # Extract spikes for A in three tasks (rewarded and non-rewarded)
+            poke_initiation_task_x_spikes = average_time_spikes[np.where(poke_initiation_task_x == 1),:,:]
+            
+            poke_initiation_task_y_spikes = average_time_spikes[np.where(poke_initiation_task_y == 1),:,:]
+
+            poke_initiation_b_task_z_spikes = average_time_spikes[np.where(poke_initiation_b_task_z ==1),:,:]
+            
+            poke_choice_b_task_x_spikes_r = average_time_spikes[np.where((poke_choice_b_task_x ==1) & (outcomes == 1)),:,:]
+            poke_choice_b_task_x_spikes_nr = average_time_spikes[np.where((poke_choice_b_task_x ==1) & (outcomes == 0)),:,:]
+
+            poke_b_task_y_spikes_r = average_time_spikes[np.where((poke_4 ==1) & (outcomes == 1)),:,:]
+            poke_b_task_y_spikes_nr = average_time_spikes[np.where((poke_4 ==1) & (outcomes == 0)),:,:]
+            
+            poke_b_task_z_spikes_r = average_time_spikes[np.where((poke_5 ==1) & (outcomes == 1)),:,:]
+            poke_b_task_z_spikes_nr = average_time_spikes[np.where((poke_5 ==1) & (outcomes == 0)),:,:]
+            
+            #Find mean firing rates for each neuron on each type of trial
+            
+            mean_poke_a_task_x_r_spikes = np.mean(poke_a_task_x_r_spikes[0,:,:], axis = 0)
+            mean_poke_a_task_x_nr_spikes = np.mean(poke_a_task_x_nr_spikes[0,:,:], axis = 0)
+            
+            mean_poke_a_task_y_r_spikes = np.mean(poke_a_task_y_r_spikes[0,:,:], axis = 0)
+            mean_poke_a_task_y_nr_spikes = np.mean(poke_a_task_y_nr_spikes[0,:,:], axis = 0)
+
+            mean_poke_a_task_z_r_spikes = np.mean(poke_a_task_z_r_spikes[0,:,:], axis = 0)
+            mean_poke_a_task_z_nr_spikes = np.mean(poke_a_task_z_nr_spikes[0,:,:], axis = 0)
+
+            mean_poke_initiation_task_x_spikes = np.mean(poke_initiation_task_x_spikes[0,:,:], axis = 0)
+            mean_poke_initiation_task_y_spikes = np.mean(poke_initiation_task_y_spikes[0,:,:], axis = 0)
+            
+            mean_poke_initiation_b_task_z_spikes = np.mean(poke_initiation_b_task_z_spikes[0,:,:],axis = 0)
+        
+            mean_poke_choice_b_task_x_spikes_r = np.mean(poke_choice_b_task_x_spikes_r[0,:,:], axis = 0)
+            mean_poke_choice_b_task_x_spikes_nr = np.mean(poke_choice_b_task_x_spikes_nr[0,:,:], axis = 0)
+            
+            mean_poke_b_task_y_spikes_r = np.mean(poke_b_task_y_spikes_r[0,:,:], axis = 0)
+            mean_poke_b_task_y_spikes_nr = np.mean(poke_b_task_y_spikes_nr[0,:,:], axis = 0)
+
+            mean_poke_b_task_z_spikes_r = np.mean(poke_b_task_z_spikes_r[0,:,:], axis = 0)
+            mean_poke_b_task_z_spikes_nr = np.mean(poke_b_task_z_spikes_nr[0,:,:], axis = 0)
+
+            
+            session_list_poke_a_task_x_r_spikes.append(mean_poke_a_task_x_r_spikes)
+            session_list_poke_a_task_x_nr_spikes.append(mean_poke_a_task_x_nr_spikes)
+        
+            session_list_poke_a_task_y_r_spikes.append(mean_poke_a_task_y_r_spikes)
+            session_list_poke_a_task_y_nr_spikes.append(mean_poke_a_task_y_nr_spikes)
+         
+            session_list_poke_a_task_z_r_spikes.append(mean_poke_a_task_z_r_spikes)
+            session_list_poke_a_task_z_nr_spikes.append(mean_poke_a_task_z_nr_spikes)
+        
+            session_list_poke_initiation_task_x_spikes.append(mean_poke_initiation_task_x_spikes)
+            session_list_poke_initiation_task_y_spikes.append(mean_poke_initiation_task_y_spikes)
+           
+            session_list_poke_initiation_b_task_z_spikes.append(mean_poke_initiation_b_task_z_spikes)
+            
+            session_list_poke_choice_b_task_x_spikes_r.append(mean_poke_choice_b_task_x_spikes_r)
+            session_list_poke_choice_b_task_x_spikes_nr.append(mean_poke_choice_b_task_x_spikes_nr)
+           
+            session_list_poke_b_task_y_spikes_r.append(mean_poke_b_task_y_spikes_r)
+            session_list_poke_b_task_y_spikes_nr.append(mean_poke_b_task_y_spikes_nr)
+            
+            session_list_poke_b_task_z_spikes_r.append(mean_poke_b_task_z_spikes_r)
+            session_list_poke_b_task_z_spikes_nr.append(mean_poke_b_task_z_spikes_nr)
+            
+  
+   session_list_poke_a_task_x_r_spikes = np.concatenate(session_list_poke_a_task_x_r_spikes,0)
+   session_list_poke_a_task_x_nr_spikes = np.concatenate(session_list_poke_a_task_x_nr_spikes,0)
+    
+   session_list_poke_a_task_y_r_spikes = np.concatenate(session_list_poke_a_task_y_r_spikes,0)
+   session_list_poke_a_task_y_nr_spikes = np.concatenate(session_list_poke_a_task_y_nr_spikes,0)
+     
+   session_list_poke_a_task_z_r_spikes = np.concatenate(session_list_poke_a_task_z_r_spikes,0)
+   session_list_poke_a_task_z_nr_spikes = np.concatenate(session_list_poke_a_task_z_nr_spikes,0)
+    
+   session_list_poke_initiation_task_x_spikes = np.concatenate(session_list_poke_initiation_task_x_spikes,0)
+   session_list_poke_initiation_task_y_spikes = np.concatenate(session_list_poke_initiation_task_y_spikes,0)
+    
+       
+   session_list_poke_initiation_b_task_z_spikes = np.concatenate(session_list_poke_initiation_b_task_z_spikes,0)
+       
+   session_list_poke_choice_b_task_x_spikes_r = np.concatenate(session_list_poke_choice_b_task_x_spikes_r,0)
+   session_list_poke_choice_b_task_x_spikes_nr = np.concatenate(session_list_poke_choice_b_task_x_spikes_nr,0)
+    
+   session_list_poke_b_task_y_spikes_r = np.concatenate(session_list_poke_b_task_y_spikes_r,0)
+   session_list_poke_b_task_y_spikes_nr = np.concatenate(session_list_poke_b_task_y_spikes_nr,0)
+    
+   session_list_poke_b_task_z_spikes_r = np.concatenate(session_list_poke_b_task_z_spikes_r,0)
+   session_list_poke_b_task_z_spikes_nr  = np.concatenate(session_list_poke_b_task_z_spikes_nr,0)
+   
+   matrix_for_correlations = np.concatenate([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
+                                       session_list_poke_a_task_y_nr_spikes,session_list_poke_a_task_z_r_spikes,session_list_poke_a_task_z_nr_spikes,\
+                                       session_list_poke_initiation_task_x_spikes,session_list_poke_initiation_task_y_spikes,\
+                                       session_list_poke_initiation_b_task_z_spikes,session_list_poke_choice_b_task_x_spikes_r,\
+                                       session_list_poke_choice_b_task_x_spikes_nr,session_list_poke_b_task_y_spikes_r,\
+                                       session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr],axis = 1)
+   
+
+   return matrix_for_correlations
+
+
+def arrange_x_y_z_tasks(session): 
+    
+    forced_trials = session.trial_data['forced_trial']
+    non_forced_array = np.where(forced_trials == 0)[0]
+    task = session.trial_data['task']
+    task_non_forced = task[non_forced_array]
+ 
+    task_2_change = np.where(task_non_forced ==2)[0]
+    task_3_change = np.where(task_non_forced ==3)[0]
+
+    start_task_2_index_for_pokes = task_2_change[0]*2
+    start_task_3_index_for_pokes = task_3_change[0]*2
+    
+    poke_a_task_x,poke_a_task_y,poke_a_task_z,outcomes,poke_initiation_task_x,poke_initiation_task_y,poke_initiation_b_task_z,\
+    poke_choice_b_task_x,poke_4,poke_5 = seperate_a_into_tasks(session) 
+    
+    # Check in which task it was initiation port 
+    if sum(poke_initiation_task_x[:start_task_2_index_for_pokes]) > 0:
+        poke_initiation_task_1 = poke_initiation_task_x
+    elif sum(poke_initiation_task_x[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_initiation_task_2 = poke_initiation_task_x
+    elif sum(poke_initiation_task_x[start_task_3_index_for_pokes:]) > 0:
+        poke_initiation_task_3 = poke_initiation_task_x
+
+   #Check in which task it was initiation port 
+    if sum(poke_initiation_task_y[:start_task_2_index_for_pokes]) > 0:
+        poke_initiation_task_1 = poke_initiation_task_y
+    elif sum(poke_initiation_task_y[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_initiation_task_2 = poke_initiation_task_y
+    elif sum(poke_initiation_task_y[start_task_3_index_for_pokes:]) > 0:
+        poke_initiation_task_3 = poke_initiation_task_y
+
+    #Check in which task it was initiation port 
+    if sum(poke_initiation_b_task_z[:start_task_2_index_for_pokes]) > 0:
+        poke_initiation_task_1 = poke_initiation_b_task_z
+    elif sum(poke_initiation_b_task_z[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_initiation_task_2 = poke_initiation_b_task_z
+    elif sum(poke_initiation_b_task_z[start_task_3_index_for_pokes:]) > 0:
+        poke_initiation_task_3 = poke_initiation_b_task_z
+
+
+  # Check in which task it was B port 
+    if sum(poke_choice_b_task_x[:start_task_2_index_for_pokes]) > 0:
+        poke_b_task_1 = poke_choice_b_task_x
+    elif sum(poke_choice_b_task_x[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_b_task_2 = poke_choice_b_task_x
+    elif sum(poke_choice_b_task_x[start_task_3_index_for_pokes:]) > 0:
+        poke_b_task_3 = poke_choice_b_task_x
+
+  # Check in which task it was B port 
+    if sum(poke_4[:start_task_2_index_for_pokes]) > 0:
+        poke_b_task_1 = poke_4
+    elif sum(poke_4[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_b_task_2 = poke_4
+    elif sum(poke_4[start_task_3_index_for_pokes:]) > 0:
+        poke_b_task_3 = poke_4
+
+  # Check in which task it was B port 
+    if sum(poke_5[:start_task_2_index_for_pokes]) > 0:
+        poke_b_task_1 = poke_5
+    elif sum(poke_5[start_task_2_index_for_pokes:start_task_3_index_for_pokes]) > 0:
+        poke_b_task_2 = poke_5
+    elif sum(poke_5[start_task_3_index_for_pokes:]) > 0:
+        poke_b_task_3 = poke_5
+        
+        
+    return poke_a_task_x,poke_a_task_y,poke_a_task_z,poke_initiation_task_1,poke_initiation_task_2,poke_initiation_task_3,poke_b_task_1,poke_b_task_2,poke_b_task_3, outcomes
+
+def extract_trials_pokes_task_arranged(experiment, all_sessions):
+    session_list_poke_a_task_x_r_spikes_1 = []
+    session_list_poke_a_task_x_nr_spikes_1 = []
+    
+    session_list_poke_a_task_y_r_spikes_1 = []
+    session_list_poke_a_task_y_nr_spikes_1 = []
+
+    session_list_poke_a_task_z_r_spikes_1 = []
+    session_list_poke_a_task_z_nr_spikes_1 = []
+
+    session_list_poke_initiation_task_x_spikes_1 = []
+    session_list_poke_initiation_task_y_spikes_1 = []
+   
+    session_list_poke_initiation_b_task_z_spikes_1 = []
+   
+    session_list_poke_choice_b_task_x_spikes_r_1 = []
+    session_list_poke_choice_b_task_x_spikes_nr_1 = []
+   
+    session_list_poke_b_task_y_spikes_r_1 = []
+    session_list_poke_b_task_y_spikes_nr_1 = []
+   
+    session_list_poke_b_task_z_spikes_r_1 = []
+    session_list_poke_b_task_z_spikes_nr_1 = []
+    
+    
+    #########
+    
+    session_list_poke_a_task_x_r_spikes_2 = []
+    session_list_poke_a_task_x_nr_spikes_2 = []
+    
+    session_list_poke_a_task_y_r_spikes_2 = []
+    session_list_poke_a_task_y_nr_spikes_2 = []
+
+    session_list_poke_a_task_z_r_spikes_2 = []
+    session_list_poke_a_task_z_nr_spikes_2 = []
+
+    session_list_poke_initiation_task_x_spikes_2 = []
+    session_list_poke_initiation_task_y_spikes_2 = []
+   
+    session_list_poke_initiation_b_task_z_spikes_2 = []
+   
+    session_list_poke_choice_b_task_x_spikes_r_2 = []
+    session_list_poke_choice_b_task_x_spikes_nr_2 = []
+   
+    session_list_poke_b_task_y_spikes_r_2 = []
+    session_list_poke_b_task_y_spikes_nr_2 = []
+   
+    session_list_poke_b_task_z_spikes_r_2 = []
+    session_list_poke_b_task_z_spikes_nr_2 = []
+    
+    for s,session in enumerate(experiment):
+        session = experiment[s]
+        all_neurons_all_spikes_raster_plot_task = all_sessions[s]
+        all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
+        all_neurons_all_spikes_raster_plot_task = all_neurons_all_spikes_raster_plot_task[:,:,30:60]
+        if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
+            poke_a_task_x,poke_a_task_y,poke_a_task_z,poke_initiation_task_1,poke_initiation_task_2,poke_initiation_task_3,poke_b_task_1,poke_b_task_2,poke_b_task_3, outcomes = arrange_x_y_z_tasks(session)
+
+         # Get rid off the time dimension        
+            #average_time_spikes = np.mean(all_neurons_all_spikes_raster_plot_task, axis = 2)
+            n_trials, n_neurons, n_timepoints = all_neurons_all_spikes_raster_plot_task.shape   
+            #average_time_spikes = zscore(all_neurons_all_spikes_raster_plot_task,axis = 0)
+            average_time_spikes = all_neurons_all_spikes_raster_plot_task
+
+            # The z-scores of input "a", with any columns including non-finite
+            # numbers replaced by all zeros.
+            #average_time_spikes[:, np.logical_not(np.all(np.isfinite(average_time_spikes), axis=0))] = 0
+
+           
+            # Extract spikes for A in three tasks (rewarded and non-rewarded)
+            poke_a_task_x_r_spikes = average_time_spikes[np.where((poke_a_task_x == 1) & (outcomes == 1)), :,:]
+            poke_a_task_x_nr_spikes  = average_time_spikes[np.where((poke_a_task_x == 1) & (outcomes == 0)),:,:]
+           
+            poke_a_task_y_r_spikes = average_time_spikes[np.where((poke_a_task_y == 1) & (outcomes == 1)),:,:]
+            poke_a_task_y_nr_spikes  = average_time_spikes[np.where((poke_a_task_y == 1) & (outcomes == 0)),:,:]
+           
+            poke_a_task_z_r_spikes = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 1)),:,:]
+            poke_a_task_z_nr_spikes  = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 0)),:,:]
+           
+            # Extract spikes for A in three tasks (rewarded and non-rewarded)
+            poke_initiation_task_x_spikes = average_time_spikes[np.where(poke_initiation_task_1 == 1),:,:]
+            
+            poke_initiation_task_y_spikes = average_time_spikes[np.where(poke_initiation_task_2 == 1),:,:]
+
+            poke_initiation_b_task_z_spikes = average_time_spikes[np.where(poke_initiation_task_3 ==1),:,:]
+            
+            poke_choice_b_task_x_spikes_r = average_time_spikes[np.where((poke_b_task_1 == 1) & (outcomes == 1)),:,:]
+            poke_choice_b_task_x_spikes_nr = average_time_spikes[np.where((poke_b_task_1 == 1) & (outcomes == 0)),:,:]
+
+            poke_b_task_y_spikes_r = average_time_spikes[np.where((poke_b_task_2 ==1) & (outcomes == 1)),:,:]
+            poke_b_task_y_spikes_nr = average_time_spikes[np.where((poke_b_task_2 ==1) & (outcomes == 0)),:,:]
+            
+            poke_b_task_z_spikes_r = average_time_spikes[np.where((poke_b_task_3 ==1) & (outcomes == 1)),:,:]
+            poke_b_task_z_spikes_nr = average_time_spikes[np.where((poke_b_task_3 ==1) & (outcomes == 0)),:,:]
+            
+            #Find mean firing rates for each neuron on each type of trial split
+           
+         
+            mean_poke_a_task_x_r_spikes_1 = np.mean(poke_a_task_x_r_spikes[0,:int(poke_a_task_x_r_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_x_r_spikes_2 = np.mean(poke_a_task_x_r_spikes[0,int(poke_a_task_x_r_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_a_task_x_nr_spikes_1 = np.mean(poke_a_task_x_nr_spikes[0,:int(poke_a_task_x_nr_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_x_nr_spikes_2 = np.mean(poke_a_task_x_nr_spikes[0,int(poke_a_task_x_nr_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_a_task_y_r_spikes_1 = np.mean(poke_a_task_y_r_spikes[0,:int(poke_a_task_y_r_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_y_r_spikes_2 = np.mean(poke_a_task_y_r_spikes[0,int(poke_a_task_y_r_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_a_task_y_nr_spikes_1 = np.mean(poke_a_task_y_nr_spikes[0,:int(poke_a_task_y_nr_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_y_nr_spikes_2 = np.mean(poke_a_task_y_nr_spikes[0,int(poke_a_task_y_nr_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_a_task_z_r_spikes_1 = np.mean(poke_a_task_z_r_spikes[0,:int(poke_a_task_z_r_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_z_r_spikes_2 = np.mean(poke_a_task_z_r_spikes[0,int(poke_a_task_z_r_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_a_task_z_nr_spikes_1 = np.mean(poke_a_task_z_nr_spikes[0,:int(poke_a_task_z_nr_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_a_task_z_nr_spikes_2 = np.mean(poke_a_task_z_nr_spikes[0,int(poke_a_task_z_nr_spikes.shape[1]/2):,:], axis = 0)
+
+          
+            mean_poke_initiation_task_x_spikes_1 = np.mean(poke_initiation_task_x_spikes[0,:int(poke_initiation_task_x_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_initiation_task_x_spikes_2 = np.mean(poke_initiation_task_x_spikes[0,int(poke_initiation_task_x_spikes.shape[1]/2):,:], axis = 0)
+            
+            mean_poke_initiation_task_y_spikes_1 = np.mean(poke_initiation_task_y_spikes[0,:int(poke_initiation_task_y_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_initiation_task_y_spikes_2 = np.mean(poke_initiation_task_y_spikes[0,int(poke_initiation_task_y_spikes.shape[1]/2):,:], axis = 0)
+
+            mean_poke_initiation_b_task_z_spikes_1 = np.mean(poke_initiation_b_task_z_spikes[0,:int(poke_initiation_b_task_z_spikes.shape[1]/2),:], axis = 0)
+            mean_poke_initiation_b_task_z_spikes_2 = np.mean(poke_initiation_b_task_z_spikes[0,int(poke_initiation_b_task_z_spikes.shape[1]/2):,:], axis = 0)
+
+           
+            mean_poke_choice_b_task_x_spikes_r_1 = np.mean(poke_choice_b_task_x_spikes_r[0,:int(poke_choice_b_task_x_spikes_r.shape[1]/2),:], axis = 0)
+            mean_poke_choice_b_task_x_spikes_r_2 = np.mean(poke_choice_b_task_x_spikes_r[0,:int(poke_choice_b_task_x_spikes_r.shape[1]/2),:], axis = 0)
+
+            mean_poke_choice_b_task_x_spikes_nr_1 = np.mean(poke_choice_b_task_x_spikes_nr[0,:int(poke_choice_b_task_x_spikes_nr.shape[1]/2),:], axis = 0)
+            mean_poke_choice_b_task_x_spikes_nr_2 = np.mean(poke_choice_b_task_x_spikes_nr[0,:int(poke_choice_b_task_x_spikes_nr.shape[1]/2),:], axis = 0)
+
+            mean_poke_b_task_y_spikes_r_1 = np.mean(poke_b_task_y_spikes_r[0,:int(poke_b_task_y_spikes_r.shape[1]/2),:], axis = 0)
+            mean_poke_b_task_y_spikes_r_2 = np.mean(poke_b_task_y_spikes_r[0,:int(poke_b_task_y_spikes_r.shape[1]/2),:], axis = 0)
+
+            mean_poke_b_task_y_spikes_nr_1 = np.mean(poke_b_task_y_spikes_nr[0,:int(poke_b_task_y_spikes_nr.shape[1]/2),:], axis = 0)
+            mean_poke_b_task_y_spikes_nr_2 = np.mean(poke_b_task_y_spikes_nr[0,:int(poke_b_task_y_spikes_nr.shape[1]/2),:], axis = 0)
+
+            mean_poke_b_task_z_spikes_r_1 = np.mean(poke_b_task_z_spikes_r[0,:int(poke_b_task_z_spikes_r.shape[1]/2),:], axis = 0)
+            mean_poke_b_task_z_spikes_r_2 = np.mean(poke_b_task_z_spikes_r[0,:int(poke_b_task_z_spikes_r.shape[1]/2),:], axis = 0)
+
+            mean_poke_b_task_z_spikes_nr_1 = np.mean(poke_b_task_z_spikes_nr[0,:int(poke_b_task_z_spikes_nr.shape[1]/2),:], axis = 0)
+            mean_poke_b_task_z_spikes_nr_2 = np.mean(poke_b_task_z_spikes_nr[0,:int(poke_b_task_z_spikes_nr.shape[1]/2),:], axis = 0)
+
+                        
+            # First Half
+
+            session_list_poke_a_task_x_r_spikes_1.append(mean_poke_a_task_x_r_spikes_1)
+            session_list_poke_a_task_x_nr_spikes_1.append(mean_poke_a_task_x_nr_spikes_1)
+        
+            session_list_poke_a_task_y_r_spikes_1.append(mean_poke_a_task_y_r_spikes_1)
+            session_list_poke_a_task_y_nr_spikes_1.append(mean_poke_a_task_y_nr_spikes_1)
+         
+            session_list_poke_a_task_z_r_spikes_1.append(mean_poke_a_task_z_r_spikes_1)
+            session_list_poke_a_task_z_nr_spikes_1.append(mean_poke_a_task_z_nr_spikes_1)
+        
+            session_list_poke_initiation_task_x_spikes_1.append(mean_poke_initiation_task_x_spikes_1)
+            session_list_poke_initiation_task_y_spikes_1.append(mean_poke_initiation_task_y_spikes_1)
+           
+            session_list_poke_initiation_b_task_z_spikes_1.append(mean_poke_initiation_b_task_z_spikes_1)
+            
+            session_list_poke_choice_b_task_x_spikes_r_1.append(mean_poke_choice_b_task_x_spikes_r_1)
+            session_list_poke_choice_b_task_x_spikes_nr_1.append(mean_poke_choice_b_task_x_spikes_nr_1)
+           
+            session_list_poke_b_task_y_spikes_r_1.append(mean_poke_b_task_y_spikes_r_1)
+            session_list_poke_b_task_y_spikes_nr_1.append(mean_poke_b_task_y_spikes_nr_1)
+            
+            session_list_poke_b_task_z_spikes_r_1.append(mean_poke_b_task_z_spikes_r_1)
+            session_list_poke_b_task_z_spikes_nr_1.append(mean_poke_b_task_z_spikes_nr_1)
+            
+            # Second Half
+            
+            session_list_poke_a_task_x_r_spikes_2.append(mean_poke_a_task_x_r_spikes_2)
+            session_list_poke_a_task_x_nr_spikes_2.append(mean_poke_a_task_x_nr_spikes_2)
+        
+            session_list_poke_a_task_y_r_spikes_2.append(mean_poke_a_task_y_r_spikes_2)
+            session_list_poke_a_task_y_nr_spikes_2.append(mean_poke_a_task_y_nr_spikes_2)
+         
+            session_list_poke_a_task_z_r_spikes_2.append(mean_poke_a_task_z_r_spikes_2)
+            session_list_poke_a_task_z_nr_spikes_2.append(mean_poke_a_task_z_nr_spikes_2)
+        
+            session_list_poke_initiation_task_x_spikes_2.append(mean_poke_initiation_task_x_spikes_2)
+            session_list_poke_initiation_task_y_spikes_2.append(mean_poke_initiation_task_y_spikes_2)
+           
+            session_list_poke_initiation_b_task_z_spikes_2.append(mean_poke_initiation_b_task_z_spikes_2)
+            
+            session_list_poke_choice_b_task_x_spikes_r_2.append(mean_poke_choice_b_task_x_spikes_r_2)
+            session_list_poke_choice_b_task_x_spikes_nr_2.append(mean_poke_choice_b_task_x_spikes_nr_2)
+           
+            session_list_poke_b_task_y_spikes_r_2.append(mean_poke_b_task_y_spikes_r_2)
+            session_list_poke_b_task_y_spikes_nr_2.append(mean_poke_b_task_y_spikes_nr_2)
+            
+            session_list_poke_b_task_z_spikes_r_2.append(mean_poke_b_task_z_spikes_r_2)
+            session_list_poke_b_task_z_spikes_nr_2.append(mean_poke_b_task_z_spikes_nr_2)
+            
+                      
+    #################### First Half          
+    session_list_poke_a_task_x_r_spikes_1 = np.concatenate(session_list_poke_a_task_x_r_spikes_1,0)
+    session_list_poke_a_task_x_nr_spikes_1 = np.concatenate(session_list_poke_a_task_x_nr_spikes_1,0)
+        
+    session_list_poke_a_task_y_r_spikes_1 = np.concatenate(session_list_poke_a_task_y_r_spikes_1,0)
+    session_list_poke_a_task_y_nr_spikes_1 = np.concatenate(session_list_poke_a_task_y_nr_spikes_1,0)
+     
+    session_list_poke_a_task_z_r_spikes_1 = np.concatenate(session_list_poke_a_task_z_r_spikes_1,0)
+    session_list_poke_a_task_z_nr_spikes_1 = np.concatenate(session_list_poke_a_task_z_nr_spikes_1,0)
+    
+    session_list_poke_initiation_task_x_spikes_1 = np.concatenate(session_list_poke_initiation_task_x_spikes_1,0)
+    session_list_poke_initiation_task_y_spikes_1 = np.concatenate(session_list_poke_initiation_task_y_spikes_1,0) 
+       
+    session_list_poke_initiation_b_task_z_spikes_1 = np.concatenate(session_list_poke_initiation_b_task_z_spikes_1,0)
+       
+    session_list_poke_choice_b_task_x_spikes_r_1 = np.concatenate(session_list_poke_choice_b_task_x_spikes_r_1,0)
+    session_list_poke_choice_b_task_x_spikes_nr_1 = np.concatenate(session_list_poke_choice_b_task_x_spikes_nr_1,0)
+    
+    session_list_poke_b_task_y_spikes_r_1 = np.concatenate(session_list_poke_b_task_y_spikes_r_1,0)
+    session_list_poke_b_task_y_spikes_nr_1 = np.concatenate(session_list_poke_b_task_y_spikes_nr_1,0)
+    
+    session_list_poke_b_task_z_spikes_r_1 = np.concatenate(session_list_poke_b_task_z_spikes_r_1,0)
+    session_list_poke_b_task_z_spikes_nr_1  = np.concatenate(session_list_poke_b_task_z_spikes_nr_1,0)
+   
+    matrix_for_correlations_task_1_1 = np.concatenate([session_list_poke_a_task_x_r_spikes_1,session_list_poke_a_task_x_nr_spikes_1,\
+                                                     session_list_poke_initiation_task_x_spikes_1,session_list_poke_choice_b_task_x_spikes_r_1,\
+                                                     session_list_poke_choice_b_task_x_spikes_nr_1],axis = 1)
+    matrix_for_correlations_task_2_1 = np.concatenate([session_list_poke_a_task_y_r_spikes_1,session_list_poke_a_task_y_nr_spikes_1,\
+                                                     session_list_poke_initiation_task_y_spikes_1,
+                                                     session_list_poke_b_task_y_spikes_r_1,\
+                                                     session_list_poke_b_task_y_spikes_nr_1],axis = 1)
+    matrix_for_correlations_task_3_1 = np.concatenate([session_list_poke_a_task_z_r_spikes_1,session_list_poke_a_task_z_nr_spikes_1,\
+                                                     session_list_poke_initiation_b_task_z_spikes_1,
+                                                     session_list_poke_b_task_z_spikes_r_1,\
+                                                     session_list_poke_b_task_z_spikes_nr_1],axis = 1)
+   #################### Second Half 
+    session_list_poke_a_task_x_r_spikes_2 = np.concatenate(session_list_poke_a_task_x_r_spikes_2,0)
+    session_list_poke_a_task_x_nr_spikes_2 = np.concatenate(session_list_poke_a_task_x_nr_spikes_2,0)
+        
+    session_list_poke_a_task_y_r_spikes_2 = np.concatenate(session_list_poke_a_task_y_r_spikes_2,0)
+    session_list_poke_a_task_y_nr_spikes_2 = np.concatenate(session_list_poke_a_task_y_nr_spikes_2,0)
+     
+    session_list_poke_a_task_z_r_spikes_2 = np.concatenate(session_list_poke_a_task_z_r_spikes_2,0)
+    session_list_poke_a_task_z_nr_spikes_2 = np.concatenate(session_list_poke_a_task_z_nr_spikes_2,0)
+    
+    session_list_poke_initiation_task_x_spikes_2 = np.concatenate(session_list_poke_initiation_task_x_spikes_2,0)
+    session_list_poke_initiation_task_y_spikes_2 = np.concatenate(session_list_poke_initiation_task_y_spikes_2,0) 
+       
+    session_list_poke_initiation_b_task_z_spikes_2 = np.concatenate(session_list_poke_initiation_b_task_z_spikes_2,0)
+       
+    session_list_poke_choice_b_task_x_spikes_r_2 = np.concatenate(session_list_poke_choice_b_task_x_spikes_r_2,0)
+    session_list_poke_choice_b_task_x_spikes_nr_2 = np.concatenate(session_list_poke_choice_b_task_x_spikes_nr_2,0)
+    
+    session_list_poke_b_task_y_spikes_r_2 = np.concatenate(session_list_poke_b_task_y_spikes_r_2,0)
+    session_list_poke_b_task_y_spikes_nr_2 = np.concatenate(session_list_poke_b_task_y_spikes_nr_2,0)
+    
+    session_list_poke_b_task_z_spikes_r_2 = np.concatenate(session_list_poke_b_task_z_spikes_r_2,0)
+    session_list_poke_b_task_z_spikes_nr_2  = np.concatenate(session_list_poke_b_task_z_spikes_nr_2,0)
+   
+    matrix_for_correlations_task_1_2 = np.concatenate([session_list_poke_a_task_x_r_spikes_2,session_list_poke_a_task_x_nr_spikes_2,\
+                                                     session_list_poke_initiation_task_x_spikes_2,
+                                                     session_list_poke_choice_b_task_x_spikes_r_2,\
+                                                     session_list_poke_choice_b_task_x_spikes_nr_2],axis = 1)
+    matrix_for_correlations_task_2_2 = np.concatenate([session_list_poke_a_task_y_r_spikes_2,session_list_poke_a_task_y_nr_spikes_2,\
+                                                     session_list_poke_initiation_task_y_spikes_2,
+                                                     session_list_poke_b_task_y_spikes_r_2,\
+                                                     session_list_poke_b_task_y_spikes_nr_2],axis = 1)
+    matrix_for_correlations_task_3_2 = np.concatenate([session_list_poke_a_task_z_r_spikes_2,session_list_poke_a_task_z_nr_spikes_2,\
+                                                     session_list_poke_initiation_b_task_z_spikes_2,
+                                                     session_list_poke_b_task_z_spikes_r_2,\
+                                                     session_list_poke_b_task_z_spikes_nr_2],axis = 1)
+   
+    return matrix_for_correlations_task_1_1,matrix_for_correlations_task_2_1,matrix_for_correlations_task_3_1,\
+    matrix_for_correlations_task_1_2,matrix_for_correlations_task_2_2,matrix_for_correlations_task_3_2
+
+
+
+def svd(experiment, all_sessions, diagonal = False, HP = False):
+    
+    flattened_all_clusters_task_1_first_half,flattened_all_clusters_task_2_first_half,flattened_all_clusters_task_3_first_half,\
+    flattened_all_clusters_task_1_second_half,flattened_all_clusters_task_2_second_half,flattened_all_clusters_task_3_second_half\
+    = extract_trials_pokes_task_arranged(experiment, all_sessions)
+    
+    #SVDsu.shape, s.shape, vh.shape for task 1 first half
+    
+    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = True)
+        
+    #SVDsu.shape, s.shape, vh.shape for task 1 second half
+    u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = True)
+    
+    #SVDsu.shape, s.shape, vh.shape for task 2 first half
+    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_first_half, full_matrices = True)
+    
+    #SVDsu.shape, s.shape, vh.shape for task 2 second half
+    u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = True)
+ 
+    #SVDsu.shape, s.shape, vh.shape for task 3 first half
+    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_first_half, full_matrices = True)
+
+    #SVDsu.shape, s.shape, vh.shape for task 3 first half
+    u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = True)
+
+    #Finding variance explained in second half of task 1 using the Us and Vs from the first half
+
+    t_u_t_1_2 = np.transpose(u_t1_2)   
+    t_v_t_1_2 = np.transpose(vh_t1_2)  
+
+    t_u_t_2_2 = np.transpose(u_t2_2)  
+    t_v_t_2_2 = np.transpose(vh_t2_2)  
+
+    t_u_t_3_2 = np.transpose(u_t3_2)
+    t_v_t_3_2 = np.transpose(vh_t3_2)  
+
+  
+    #Compare task 2 First Half from task 1 Last Half 
+    s_task_2_1_from_t_1_2 = np.linalg.multi_dot([t_u_t_1_2, flattened_all_clusters_task_2_first_half, t_v_t_1_2])
+    if diagonal == False:
+        s_2_1_from_t_1_2 = s_task_2_1_from_t_1_2.diagonal()
+    else:
+        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 1)
+    sum_c_task_2_1_from_t_1_2 = np.cumsum(abs(s_2_1_from_t_1_2))/flattened_all_clusters_task_2_first_half.shape[0]
+
+     #Compare task 2 Firs Half from second half
+    s_task_2_1_from_t_2_2 = np.linalg.multi_dot([t_u_t_2_2, flattened_all_clusters_task_2_first_half, t_v_t_2_2])    
+    if diagonal == False:
+        s_2_1_from_t_2_2 = s_task_2_1_from_t_2_2.diagonal()
+    else:
+        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 1)
+    sum_c_task_2_1_from_t_2_2 = np.cumsum(abs(s_2_1_from_t_2_2))/flattened_all_clusters_task_2_first_half.shape[0]
+
+
+    
+        
+    #Compare task 3 First Half from Task 2 Last Half 
+    s_task_3_1_from_t_2_2 = np.linalg.multi_dot([t_u_t_2_2, flattened_all_clusters_task_3_first_half, t_v_t_2_2])
+    if diagonal == False:
+        s_3_1_from_t_2_2 = s_task_3_1_from_t_2_2.diagonal()
+    else:
+        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 1)
+    sum_c_task_3_1_from_t_2_2 = np.cumsum(abs(s_3_1_from_t_2_2))/flattened_all_clusters_task_3_first_half.shape[0]
+
+
+    s_task_3_1_from_t_3_2 = np.linalg.multi_dot([t_u_t_3_2, flattened_all_clusters_task_3_first_half, t_v_t_3_2])
+    if diagonal == False:
+        s_3_1_from_t_3_2 = s_task_3_1_from_t_3_2.diagonal()
+    else:
+        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 1)
+    sum_c_task_3_1_from_t_3_2 = np.cumsum(abs(s_3_1_from_t_3_2))/flattened_all_clusters_task_3_first_half.shape[0]
+
+    average_within = np.mean([sum_c_task_2_1_from_t_2_2, sum_c_task_3_1_from_t_3_2], axis = 0)
+    average_between = np.mean([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2], axis = 0)
+ 
+    
+    if HP == True:
+        plt.plot(average_within, label = 'Within Tasks_HP', color='green')
+        plt.plot(average_between, label = 'Between Tasks_HP',linestyle = '--', color = 'green')
+        
+    if HP == False:
+        plt.plot(average_within, label = 'Within Tasks_PFC', color='black')
+        plt.plot(average_between, label = 'Between Tasks_PFC',linestyle = '--', color = 'black')
+      
+    plt.title('SVD')
+    plt.legend()
+    
+
+
+def plotting_correlations_all_time_points(experiment,all_sessions, figure_number = 1):
+    figure_number =  1
+    matrix_for_correlations = extract_trials_all_time_points(experiment_aligned_PFC,all_sessions_PFC)
+    corr_m = np.corrcoef(np.transpose(matrix_for_correlations))
+    v,n = np.linalg.eig(corr_m)
+    ticks_n = np.linspace(0, 450, 15)
+    
+    for i in range(len(v)):
+        if i < 16:
+            fig = plt.subplot(4, 4, i+1)
+            fig.plot(np.real(n[:,i]))
+            plt.xticks(ticks_n, ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+                       '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+                       '2 I T2', '3 I T3', '3 B T1 R',\
+                       '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')  
+            
+    plt.figure(figure_number)
+    plt.imshow(corr_m)
+    plt.xticks(ticks_n, ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')
+   
+    plt.yticks(ticks_n, ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
+    
+    plt.colorbar()
+    plt.tight_layout()
+    
+    
+    
 def extract_trials(experiment, all_sessions, time_window = 1): 
 # =============================================================================
 #   This function separates pokes and finds firing rates of each neuron around the pokes.

@@ -16,8 +16,6 @@ from scipy.stats import pearsonr
 import ephys_beh_import as ep
 import math 
 
-
-
 # Function for finding the dot product of two vectors 
 def dotproduct(v1, v2):
   return sum((a*b) for a, b in zip(v1, v2))

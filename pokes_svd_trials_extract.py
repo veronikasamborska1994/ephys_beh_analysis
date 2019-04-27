@@ -10,15 +10,17 @@ import regression_poke_based_include_a as regp
 import ephys_beh_import as ep
 import regressions as re
 import matplotlib.pyplot as plt
+import poke_aligned_spikes as pos
 
 
 # SVDs based on poke aligned data ratcher than choices 
 
 def extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True):
+    
     #Extracts firing rates for A and B rewarded and unrewarded trials with each task split into first and second half
     spikes = session.ephys
     spikes = spikes[:,~np.isnan(spikes[1,:])] 
-    aligned_rates =  regp.histogram_include_a(session)
+    aligned_rates =  pos.histogram_include_a(session)
     aligned_rates = np.asarray(aligned_rates)
     
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = ep.extract_choice_pokes(session)
@@ -29,7 +31,7 @@ def extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True):
     # Getting choice indices 
     predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
-    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = regp.predictors_pokes(session)
     
     if aligned_rates.shape[0] != predictor_A_Task_1.shape[0]:
          aligned_rates = aligned_rates[:,:len(predictor_A_Task_2),:]
@@ -37,141 +39,142 @@ def extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True):
    #Find the tasks that have a shared I poke
     if tasks_unchanged == False:
         if poke_I == poke_I_task_2: 
-            aligned_rates_task_1 = aligned_rates[:,:task_1,:]
+            aligned_rates_task_1 = aligned_rates[:task_1,:,:]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
             predictor_B_Task_1 = predictor_B_Task_1[:task_1]
             reward_task_1 = reward[:task_1]
-            aligned_rates_task_2 = aligned_rates[:,:task_1+task_2,:]
+            aligned_rates_task_2 = aligned_rates[:task_1+task_2,:,:]
             predictor_A_Task_2 = predictor_A_Task_2[:task_1+task_2]
             predictor_B_Task_2 = predictor_B_Task_2[:task_1+task_2]
             reward_task_2 = reward[:task_1+task_2]
             
         elif poke_I == poke_I_task_3:
-            aligned_rates_task_1 = aligned_rates[:,:task_1,:]
+            aligned_rates_task_1 = aligned_rates[:task_1,:,:]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
             predictor_B_Task_1 = predictor_B_Task_1[:task_1]
             reward_task_1 = reward[:task_1]
-            aligned_rates_task_2 = aligned_rates[:,task_1+task_2:,:]
+            aligned_rates_task_2 = aligned_rates[task_1+task_2:,:,:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
             predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
             reward_task_2 = reward[task_1+task_2:]
             
         elif poke_I_task_2 == poke_I_task_3:
-            aligned_rates_task_1 = aligned_rates[:,:task_1+task_2,:]
+            aligned_rates_task_1 = aligned_rates[:task_1+task_2,:,:]
             predictor_A_Task_1 = predictor_A_Task_2[:task_1+task_2]
             predictor_B_Task_1 = predictor_B_Task_2[:task_1+task_2]
             reward_task_1 = reward[:task_1+task_2]
-            aligned_rates_task_2 = aligned_rates[:,task_1+task_2:,:]
+            aligned_rates_task_2 = aligned_rates[task_1+task_2:,:,:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
             predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
             reward_task_2 = reward[task_1+task_2:]
            
-        aligned_rates_task_1_first_half = aligned_rates_task_1[:,:int(aligned_rates_task_1.shape[1]/2),:]
-        aligned_rates_task_1_second_half = aligned_rates_task_1[:,int(aligned_rates_task_1.shape[1]/2):,:]
-        aligned_rates_task_2_first_half = aligned_rates_task_2[:,:int(aligned_rates_task_2.shape[1]/2),:]
-        aligned_rates_task_2_second_half = aligned_rates_task_2[:,int(aligned_rates_task_2.shape[1]/2):,:] 
+        aligned_rates_task_1_first_half = aligned_rates_task_1[:int(len(aligned_rates_task_1)/2)]
+        aligned_rates_task_1_second_half = aligned_rates_task_1[int(len(aligned_rates_task_1)/2):]
+        aligned_rates_task_2_first_half = aligned_rates_task_2[:int(len(aligned_rates_task_2)/2)]
+        aligned_rates_task_2_second_half = aligned_rates_task_2[int(len(aligned_rates_task_2)/2):] 
         
-        predictor_A_Task_1_first_half = predictor_A_Task_1[:int(aligned_rates_task_1.shape[1]/2)]
-        predictor_A_Task_1_second_half = predictor_A_Task_1[int(aligned_rates_task_1.shape[1]/2):]
-        predictor_A_Task_2_first_half = predictor_A_Task_2[:int(aligned_rates_task_2.shape[1]/2)]
-        predictor_A_Task_2_second_half = predictor_A_Task_2[int(aligned_rates_task_2.shape[1]/2):]
+        predictor_A_Task_1_first_half = predictor_A_Task_1[:int(len(aligned_rates_task_1)/2)]
+        predictor_A_Task_1_second_half = predictor_A_Task_1[int(len(aligned_rates_task_1)/2):]
+        predictor_A_Task_2_first_half = predictor_B_Task_2[:int(len(predictor_A_Task_2)/2)]
+        predictor_A_Task_2_second_half = predictor_B_Task_2[int(len(predictor_A_Task_2)/2):]
         
         
-        reward_Task_1_first_half = reward_task_1[:int(aligned_rates_task_1.shape[1]/2)]
-        reward_Task_1_second_half = reward_task_1[int(aligned_rates_task_1.shape[1]/2):]
-        reward_Task_2_first_half = reward_task_2[:int(aligned_rates_task_2.shape[1]/2)]
-        reward_Task_2_second_half = reward_task_2[int(aligned_rates_task_2.shape[1]/2):]
+        reward_Task_1_first_half = reward_task_1[:int(len(reward_task_1)/2)]
+        reward_Task_1_second_half = reward_task_1[int(len(reward_task_1)/2):]
+        reward_Task_2_first_half = reward_task_2[:int(len(reward_task_2)/2)]
+        reward_Task_2_second_half = reward_task_2[int(len(reward_task_2)/2):]
         
         #Indexing A rewarded, B rewarded firing rates in 3 tasks
-        aligned_rates_task_1_first_half_A_reward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 1 )),:]
-        aligned_rates_task_1_first_half_A_Nreward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 0 )),:]
-        aligned_rates_task_1_second_half_A_reward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 1 )),:]
-        aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 )),:]
+        aligned_rates_task_1_first_half_A_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 1 ))]
+        aligned_rates_task_1_first_half_A_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 0 ))]
+        aligned_rates_task_1_second_half_A_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 1 ))]
+        aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 ))]
         
-        aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 )),:]
-        aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 )),:]
-        aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half == 0) & (reward_Task_1_second_half == 1 )),:]
-        aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half == 0 ) & (reward_Task_1_second_half == 0 )),:]
+        aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 ))]
+        aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 ))]
+        aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0) & (reward_Task_1_second_half == 1 ))]
+        aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0 ) & (reward_Task_1_second_half == 0 ))]
         
-        aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 1 )),:]
-        aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 )),:]
-        aligned_rates_task_2_second_half_A_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 1 )),:]
-        aligned_rates_task_2_second_half_A_Nreward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 0 )),:]
+        aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 1 ))]
+        aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 ))]
+        aligned_rates_task_2_second_half_A_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 1 ))]
+        aligned_rates_task_2_second_half_A_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 0 ))]
         
-        aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 )),:]
-        aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 )),:]
-        aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 )),:]
-        aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 )),:]
+        aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 ))]
+        aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 ))]
+        aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 ))]
+        aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 ))]
 
     else:
-          aligned_rates_task_1 = aligned_rates[:,:task_1,:]
-          aligned_rates_task_2 = aligned_rates[:,task_1:task_1+task_2,:]
-          aligned_rates_task_3 = aligned_rates[:,task_1+task_2:,:]
+          aligned_rates_task_1 = aligned_rates[:task_1]
+          aligned_rates_task_2 = aligned_rates[task_1:task_1+task_2]
+          aligned_rates_task_3 = aligned_rates[task_1+task_2:]
+          
+          predictor_A_Task_1_cut = predictor_A_Task_1[:task_1]
+          reward_task_1_cut = reward[:task_1]
+          
+          predictor_A_Task_2_cut = predictor_A_Task_2[task_1:task_1+task_2]
+          reward_task_2_cut = reward[task_1:task_1+task_2]
+          
+          predictor_A_Task_3_cut = predictor_A_Task_3[task_1+task_2:]
+          reward_task_3_cut = reward[task_1+task_2:]
           
           
-          predictor_A_Task_1 = predictor_A_Task_1[:task_1]
-          reward_task_1 = reward[:task_1]
-          
-          predictor_A_Task_2 = predictor_A_Task_2[task_1:task_1+task_2]
-          reward_task_2 = reward[task_1:task_1+task_2]
-          
-          predictor_A_Task_3 = predictor_A_Task_3[task_1+task_2:]
-          reward_task_3 = reward[task_1+task_2:]
-          
-          
-          aligned_rates_task_1_first_half = aligned_rates_task_1[:,:int(aligned_rates_task_1.shape[1]/2),:]
-          aligned_rates_task_1_second_half = aligned_rates_task_1[:,int(aligned_rates_task_1.shape[1]/2):,:]
-          aligned_rates_task_2_first_half = aligned_rates_task_2[:,:int(aligned_rates_task_2.shape[1]/2),:]
-          aligned_rates_task_2_second_half = aligned_rates_task_2[:,int(aligned_rates_task_2.shape[1]/2):,:] 
+          #Split in Halfs Task 1 
+          aligned_rates_task_1_first_half = aligned_rates_task_1[:int(len(aligned_rates_task_1)/2)]
+          aligned_rates_task_1_second_half = aligned_rates_task_1[int(len(aligned_rates_task_1)/2):]
+          predictor_A_Task_1_first_half = predictor_A_Task_1_cut[:int(len(aligned_rates_task_1)/2)]
+          predictor_A_Task_1_second_half = predictor_A_Task_1_cut[int(len(aligned_rates_task_1)/2):]
+          reward_Task_1_first_half = reward_task_1_cut[:int(len(aligned_rates_task_1)/2)]
+          reward_Task_1_second_half = reward_task_1_cut[int(len(aligned_rates_task_1)/2):]
         
-          predictor_A_Task_1_first_half = predictor_A_Task_1[:int(aligned_rates_task_1.shape[1]/2)]
-          predictor_A_Task_1_second_half = predictor_A_Task_1[int(aligned_rates_task_1.shape[1]/2):]
-          predictor_A_Task_2_first_half = predictor_A_Task_2[:int(aligned_rates_task_2.shape[1]/2)]
-          predictor_A_Task_2_second_half = predictor_A_Task_2[int(aligned_rates_task_2.shape[1]/2):]
-    
-          reward_Task_1_first_half = reward_task_1[:int(aligned_rates_task_1.shape[1]/2)]
-          reward_Task_1_second_half = reward_task_1[int(aligned_rates_task_1.shape[1]/2):]
-          reward_Task_2_first_half = reward_task_2[:int(aligned_rates_task_2.shape[1]/2)]
-          reward_Task_2_second_half = reward_task_2[int(aligned_rates_task_2.shape[1]/2):]
-          
-          #Split in Halfs Task 3
-          aligned_rates_task_3_first_half = aligned_rates_task_3[:,:int(aligned_rates_task_3.shape[1]/2),:]
-          aligned_rates_task_3_second_half = aligned_rates_task_3[:,int(aligned_rates_task_3.shape[1]/2):]  
-          predictor_A_Task_3_first_half = predictor_A_Task_3[:int(aligned_rates_task_3.shape[1]/2)]
-          predictor_A_Task_3_second_half = predictor_A_Task_3[int(aligned_rates_task_3.shape[1]/2):]
-          reward_Task_3_first_half = reward_task_3[:int(aligned_rates_task_3.shape[1]/2)]
-          reward_Task_3_second_half = reward_task_3[int(aligned_rates_task_3.shape[1]/2):]
-          
-         #Indexing A rewarded, B rewarded firing rates in 3 tasks
-          aligned_rates_task_1_first_half_A_reward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 1 )),:]
-          aligned_rates_task_1_first_half_A_Nreward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 0 )),:]
-          aligned_rates_task_1_second_half_A_reward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 1 )),:]
-          aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 )),:]
-        
-          aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 )),:]
-          aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[:,np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 )),:]
-          aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half == 0) & (reward_Task_1_second_half == 1 )),:]
-          aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[:,np.where((predictor_A_Task_1_second_half == 0 ) & (reward_Task_1_second_half == 0 )),:]
-        
-          aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 1 )),:]
-          aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 )),:]
-          aligned_rates_task_2_second_half_A_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 1 )),:]
-          aligned_rates_task_2_second_half_A_Nreward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 0 )),:]
-        
-          aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 )),:]
-          aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[:,np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 )),:]
-          aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 )),:]
-          aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[:,np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 )),:]
-    
-          aligned_rates_task_3_first_half_A_reward = aligned_rates_task_3_first_half[:,np.where((predictor_A_Task_3_first_half ==1) & (reward_Task_3_first_half == 1 )),:]
-          aligned_rates_task_3_first_half_A_Nreward = aligned_rates_task_3_first_half[:,np.where((predictor_A_Task_3_first_half ==1) & (reward_Task_3_first_half == 0 )),:]
-          aligned_rates_task_3_second_half_A_reward = aligned_rates_task_3_second_half[:,np.where((predictor_A_Task_3_second_half ==1) & (reward_Task_3_second_half == 1 )),:]
-          aligned_rates_task_3_second_half_A_Nreward = aligned_rates_task_3_second_half[:,np.where((predictor_A_Task_3_second_half ==1) & (reward_Task_3_second_half == 0 )),:]
+          #Split in Halfs Task 2
+          aligned_rates_task_2_first_half = aligned_rates_task_2[:int(len(aligned_rates_task_2)/2)]
+          aligned_rates_task_2_second_half = aligned_rates_task_2[int(len(aligned_rates_task_2)/2):] 
+          predictor_A_Task_2_first_half = predictor_A_Task_2_cut[:int(len(aligned_rates_task_2)/2)]
+          predictor_A_Task_2_second_half = predictor_A_Task_2_cut[int(len(aligned_rates_task_2)/2):]
+          reward_Task_2_first_half = reward_task_2_cut[:int(len(aligned_rates_task_2)/2)]
+          reward_Task_2_second_half = reward_task_2_cut[int(len(aligned_rates_task_2)/2):]
          
-          aligned_rates_task_3_first_half_B_reward = aligned_rates_task_3_first_half[:,np.where((predictor_A_Task_3_first_half == 0) & (reward_Task_3_first_half == 1 )),:]
-          aligned_rates_task_3_first_half_B_Nreward = aligned_rates_task_3_first_half[:,np.where((predictor_A_Task_3_first_half == 0) & (reward_Task_3_first_half == 0 )),:]
-          aligned_rates_task_3_second_half_B_reward = aligned_rates_task_3_second_half[:,np.where((predictor_A_Task_3_second_half == 0) & (reward_Task_3_second_half == 1 )),:]
-          aligned_rates_task_3_second_half_B_Nreward = aligned_rates_task_3_second_half[:,np.where((predictor_A_Task_3_second_half == 0 ) & (reward_Task_3_second_half == 0 )),:]
+          #Split in Halfs Task 3
+          aligned_rates_task_3_first_half = aligned_rates_task_3[:int(len(aligned_rates_task_3)/2)]
+          aligned_rates_task_3_second_half = aligned_rates_task_3[int(len(aligned_rates_task_3)/2):]  
+          predictor_A_Task_3_first_half = predictor_A_Task_3_cut[:int(len(aligned_rates_task_3)/2)]
+          predictor_A_Task_3_second_half = predictor_A_Task_3_cut[int(len(aligned_rates_task_3)/2):]
+          reward_Task_3_first_half = reward_task_3_cut[:int(len(aligned_rates_task_3)/2)]
+          reward_Task_3_second_half = reward_task_3_cut[int(len(aligned_rates_task_3)/2):]
+          
+         
+          aligned_rates_task_1_first_half_A_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 1 ))]
+          aligned_rates_task_1_first_half_A_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half ==1) & (reward_Task_1_first_half == 0 ))]
+          aligned_rates_task_1_second_half_A_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 1 ))]
+          aligned_rates_task_1_second_half_A_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half ==1) & (reward_Task_1_second_half == 0 ))]     
+
+          aligned_rates_task_1_first_half_B_reward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 1 ))]
+          aligned_rates_task_1_first_half_B_Nreward = aligned_rates_task_1_first_half[np.where((predictor_A_Task_1_first_half == 0) & (reward_Task_1_first_half == 0 ))]
+          aligned_rates_task_1_second_half_B_reward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0) & (reward_Task_1_second_half == 1 ))]
+          aligned_rates_task_1_second_half_B_Nreward = aligned_rates_task_1_second_half[np.where((predictor_A_Task_1_second_half == 0 ) & (reward_Task_1_second_half == 0 ))]
+    
+          aligned_rates_task_2_first_half_A_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 1) & (reward_Task_2_first_half == 1 ))]
+          aligned_rates_task_2_first_half_A_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half ==1) & (reward_Task_2_first_half == 0 ))]
+          aligned_rates_task_2_second_half_A_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 1 ))]
+          aligned_rates_task_2_second_half_A_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half ==1) & (reward_Task_2_second_half == 0 ))]
+          
+          aligned_rates_task_2_first_half_B_reward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 1 ))]
+          aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 ))]
+          aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 ))]
+          aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 ))]
+         
+    
+          aligned_rates_task_3_first_half_A_reward = aligned_rates_task_3_first_half[np.where((predictor_A_Task_3_first_half ==1) & (reward_Task_3_first_half == 1 ))]
+          aligned_rates_task_3_first_half_A_Nreward = aligned_rates_task_3_first_half[np.where((predictor_A_Task_3_first_half ==1) & (reward_Task_3_first_half == 0 ))]
+          aligned_rates_task_3_second_half_A_reward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half ==1) & (reward_Task_3_second_half == 1 ))]
+          aligned_rates_task_3_second_half_A_Nreward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half ==1) & (reward_Task_3_second_half == 0 ))]
+         
+          aligned_rates_task_3_first_half_B_reward = aligned_rates_task_3_first_half[np.where((predictor_A_Task_3_first_half == 0) & (reward_Task_3_first_half == 1 ))]
+          aligned_rates_task_3_first_half_B_Nreward = aligned_rates_task_3_first_half[np.where((predictor_A_Task_3_first_half == 0) & (reward_Task_3_first_half == 0 ))]
+          aligned_rates_task_3_second_half_B_reward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half == 0) & (reward_Task_3_second_half == 1 ))]
+          aligned_rates_task_3_second_half_B_Nreward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half == 0 ) & (reward_Task_3_second_half == 0 ))]
     
     return spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
     aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
@@ -190,7 +193,7 @@ def extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True):
 
 def svd_trial_selection_around_pokes(experiment, tasks_unchanged = True, just_a = False, just_b = False, average_reward = False):
   
-    #Finds means of rates on trials of interest
+   #Finds means of rates on trials of interest
     all_clusters_task_1_first_half = []
     all_clusters_task_1_second_half = []
     all_clusters_task_2_first_half = []
@@ -201,7 +204,9 @@ def svd_trial_selection_around_pokes(experiment, tasks_unchanged = True, just_a 
   
     for s,session in enumerate(experiment):
         if s != 15 and s !=31 and s!= 29:
+            
             #Empty lists to hold append mean firing rates to 
+           
             cluster_list_task_1_first_half = []
             cluster_list_task_1_second_half = []
             cluster_list_task_2_first_half = []
@@ -220,163 +225,160 @@ def svd_trial_selection_around_pokes(experiment, tasks_unchanged = True, just_a 
             aligned_rates_task_3_first_half_A_reward,aligned_rates_task_3_first_half_A_Nreward,\
             aligned_rates_task_3_second_half_A_reward,aligned_rates_task_3_second_half_A_Nreward,\
             aligned_rates_task_3_first_half_B_reward,aligned_rates_task_3_first_half_B_Nreward,\
-            aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward = extract_session_predictors_rates_pokes_svd(session, tasks_unchanged = True)
+            aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward = extract_session_predictors_rates(session)
             
-            if (aligned_rates_task_3_first_half_A_reward.shape[2] > 0) & (aligned_rates_task_3_first_half_A_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_3_second_half_A_reward.shape[2] > 0) & (aligned_rates_task_3_second_half_A_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_3_first_half_B_reward.shape[2] > 0) & (aligned_rates_task_3_first_half_B_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_3_second_half_B_reward.shape[2] > 0) & (aligned_rates_task_3_second_half_B_Nreward.shape[2] > 0)&\
-            (aligned_rates_task_1_first_half_A_reward.shape[2] > 0) & (aligned_rates_task_1_first_half_A_Nreward.shape[2] > 0) & (aligned_rates_task_1_second_half_A_reward.shape[2] > 0) &\
-            (aligned_rates_task_1_second_half_A_Nreward.shape[2] > 0) & (aligned_rates_task_1_first_half_B_reward.shape[2] > 0) & (aligned_rates_task_1_first_half_B_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_1_second_half_B_reward.shape[2] > 0) & (aligned_rates_task_1_second_half_B_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_2_first_half_A_reward.shape[2] > 0) & (aligned_rates_task_2_first_half_A_Nreward.shape[2]> 0) & (aligned_rates_task_2_second_half_A_reward.shape[2] > 0) &\
-            (aligned_rates_task_2_second_half_A_Nreward.shape[2] > 0) & (aligned_rates_task_2_first_half_B_reward.shape[2]> 0) & (aligned_rates_task_2_first_half_B_Nreward.shape[2] > 0) &\
-            (aligned_rates_task_2_second_half_B_reward.shape[2] > 0) & (aligned_rates_task_2_second_half_B_Nreward.shape[2] > 0):
+            if (len(aligned_rates_task_3_first_half_A_reward) > 0) & (len(aligned_rates_task_3_first_half_A_Nreward) > 0) & (len(aligned_rates_task_3_second_half_A_reward) > 0) &\
+            (len(aligned_rates_task_3_second_half_A_Nreward) > 0) & (len(aligned_rates_task_3_first_half_B_reward) > 0) & (len(aligned_rates_task_3_first_half_B_Nreward) > 0) &\
+            (len(aligned_rates_task_3_second_half_B_reward) > 0) & (len(aligned_rates_task_3_second_half_B_Nreward) > 0)&\
+            (len(aligned_rates_task_1_first_half_A_reward) > 0) & (len(aligned_rates_task_1_first_half_A_Nreward) > 0) & (len(aligned_rates_task_1_second_half_A_reward) > 0) &\
+            (len(aligned_rates_task_1_second_half_A_Nreward) > 0) & (len(aligned_rates_task_1_first_half_B_reward) > 0) & (len(aligned_rates_task_1_first_half_B_Nreward) > 0) &\
+            (len(aligned_rates_task_1_second_half_B_reward) > 0) & (len(aligned_rates_task_1_second_half_B_Nreward) > 0)&\
+            (len(aligned_rates_task_2_first_half_A_reward) > 0) & (len(aligned_rates_task_2_first_half_A_Nreward) > 0) & (len(aligned_rates_task_2_second_half_A_reward) > 0) &\
+            (len(aligned_rates_task_2_second_half_A_Nreward) > 0) & (len(aligned_rates_task_2_first_half_B_reward) > 0) & (len(aligned_rates_task_2_first_half_B_Nreward) > 0) &\
+            (len(aligned_rates_task_2_second_half_B_reward) > 0) & (len(aligned_rates_task_2_second_half_B_Nreward) > 0):
   
-            
+  
         
                 unique_neurons  = np.unique(spikes[0])   
                 for i in range(len(unique_neurons)):
                     
-                    mean_firing_rate_task_1_first_half_A_reward  = np.mean(aligned_rates_task_1_first_half_A_reward[i,:,:,:],axis = 1)
-                    mean_firing_rate_task_1_first_half_A_Nreward  = np.mean(aligned_rates_task_1_first_half_A_Nreward[i,:,:,:],1)
-                    mean_firing_rate_task_1_second_half_A_reward  = np.mean(aligned_rates_task_1_second_half_A_reward[i,:,:,:],1)
-                    mean_firing_rate_task_1_second_half_A_Nreward  = np.mean(aligned_rates_task_1_second_half_A_Nreward[i,:,:,:],1)
+                    mean_firing_rate_task_1_first_half_A_reward  = np.mean(aligned_rates_task_1_first_half_A_reward[:,i,:],0)
+                    mean_firing_rate_task_1_first_half_A_Nreward  = np.mean(aligned_rates_task_1_first_half_A_Nreward[:,i,:],0)
+                    mean_firing_rate_task_1_second_half_A_reward  = np.mean(aligned_rates_task_1_second_half_A_reward[:,i,:],0)
+                    mean_firing_rate_task_1_second_half_A_Nreward  = np.mean(aligned_rates_task_1_second_half_A_Nreward[:,i,:],0)
                     
           
-                    mean_firing_rate_task_2_first_half_A_reward  = np.mean(aligned_rates_task_2_first_half_A_reward[i,:,:,:],1)
-                    mean_firing_rate_task_2_first_half_A_Nreward  = np.mean(aligned_rates_task_2_first_half_A_Nreward[i,:,:,:],1)
-                    mean_firing_rate_task_2_second_half_A_reward  = np.mean(aligned_rates_task_2_second_half_A_reward[i,:,:,:],1)
-                    mean_firing_rate_task_2_second_half_A_Nreward  = np.mean(aligned_rates_task_2_second_half_A_Nreward[i,:,:,:],1)
+                    mean_firing_rate_task_2_first_half_A_reward  = np.mean(aligned_rates_task_2_first_half_A_reward[:,i,:],0)
+                    mean_firing_rate_task_2_first_half_A_Nreward  = np.mean(aligned_rates_task_2_first_half_A_Nreward[:,i,:],0)
+                    mean_firing_rate_task_2_second_half_A_reward  = np.mean(aligned_rates_task_2_second_half_A_reward[:,i,:],0)
+                    mean_firing_rate_task_2_second_half_A_Nreward  = np.mean(aligned_rates_task_2_second_half_A_Nreward[:,i,:],0)
                     
-                    mean_firing_rate_task_1_first_half_B_reward  = np.mean(aligned_rates_task_1_first_half_B_reward[i,:,:,:],1)
-                    mean_firing_rate_task_1_first_half_B_Nreward  = np.mean(aligned_rates_task_1_first_half_B_Nreward[i,:,:,:],1)           
-                    mean_firing_rate_task_1_second_half_B_reward  = np.mean(aligned_rates_task_1_second_half_B_reward[i,:,:,:],1)     
-                    mean_firing_rate_task_1_second_half_B_Nreward  = np.mean(aligned_rates_task_1_second_half_B_Nreward[i,:,:,:],1)
+                    mean_firing_rate_task_1_first_half_B_reward  = np.mean(aligned_rates_task_1_first_half_B_reward[:,i,:],0)
+                    mean_firing_rate_task_1_first_half_B_Nreward  = np.mean(aligned_rates_task_1_first_half_B_Nreward[:,i,:],0)           
+                    mean_firing_rate_task_1_second_half_B_reward  = np.mean(aligned_rates_task_1_second_half_B_reward[:,i,:],0)     
+                    mean_firing_rate_task_1_second_half_B_Nreward  = np.mean(aligned_rates_task_1_second_half_B_Nreward[:,i,:],0)
             
-                    mean_firing_rate_task_2_first_half_B_reward  = np.mean(aligned_rates_task_2_first_half_B_reward[i,:,:,:],1)
-                    mean_firing_rate_task_2_first_half_B_Nreward  = np.mean(aligned_rates_task_2_first_half_B_Nreward[i,:,:,:],1)               
-                    mean_firing_rate_task_2_second_half_B_reward  = np.mean(aligned_rates_task_2_second_half_B_reward[i,:,:,:],1)
-                    mean_firing_rate_task_2_second_half_B_Nreward  = np.mean(aligned_rates_task_2_second_half_B_Nreward[i,:,:,:],1)
+                    mean_firing_rate_task_2_first_half_B_reward  = np.mean(aligned_rates_task_2_first_half_B_reward[:,i,:],0)
+                    mean_firing_rate_task_2_first_half_B_Nreward  = np.mean(aligned_rates_task_2_first_half_B_Nreward[:,i,:],0)               
+                    mean_firing_rate_task_2_second_half_B_reward  = np.mean(aligned_rates_task_2_second_half_B_reward[:,i,:],0)
+                    mean_firing_rate_task_2_second_half_B_Nreward  = np.mean(aligned_rates_task_2_second_half_B_Nreward[:,i,:],0)
                     
                     
                     if tasks_unchanged == True:
-                        mean_firing_rate_task_3_first_half_A_reward  = np.mean(aligned_rates_task_3_first_half_A_reward[i,:,:,:],1)
-                        mean_firing_rate_task_3_first_half_A_Nreward  = np.mean(aligned_rates_task_3_first_half_A_Nreward[i,:,:,:],1)
+                        mean_firing_rate_task_3_first_half_A_reward  = np.mean(aligned_rates_task_3_first_half_A_reward[:,i,:],0)
+                        mean_firing_rate_task_3_first_half_A_Nreward  = np.mean(aligned_rates_task_3_first_half_A_Nreward[:,i,:],0)
                     
-                        mean_firing_rate_task_3_second_half_A_reward  = np.mean(aligned_rates_task_3_second_half_A_reward[i,:,:,:],1)
-                        mean_firing_rate_task_3_second_half_A_Nreward  = np.mean(aligned_rates_task_3_second_half_A_Nreward[i,:,:,:],1)
+                        mean_firing_rate_task_3_second_half_A_reward  = np.mean(aligned_rates_task_3_second_half_A_reward[:,i,:],0)
+                        mean_firing_rate_task_3_second_half_A_Nreward  = np.mean(aligned_rates_task_3_second_half_A_Nreward[:,i,:],0)
         
-                        mean_firing_rate_task_3_first_half_B_reward  = np.mean(aligned_rates_task_3_first_half_B_reward[i,:,:,:],1)
-                        mean_firing_rate_task_3_first_half_B_Nreward  = np.mean(aligned_rates_task_3_first_half_B_Nreward[i,:,:,:],1)
+                        mean_firing_rate_task_3_first_half_B_reward  = np.mean(aligned_rates_task_3_first_half_B_reward[:,i,:],0)
+                        mean_firing_rate_task_3_first_half_B_Nreward  = np.mean(aligned_rates_task_3_first_half_B_Nreward[:,i,:],0)
                        
-                        mean_firing_rate_task_3_second_half_B_reward  = np.mean(aligned_rates_task_3_second_half_B_reward[i,:,:,:],1)
-                        mean_firing_rate_task_3_second_half_B_Nreward  = np.mean(aligned_rates_task_3_second_half_B_Nreward[i,:,:,:],1)
+                        mean_firing_rate_task_3_second_half_B_reward  = np.mean(aligned_rates_task_3_second_half_B_reward[:,i,:],0)
+                        mean_firing_rate_task_3_second_half_B_Nreward  = np.mean(aligned_rates_task_3_second_half_B_Nreward[:,i,:],0)
                         
                     if average_reward == False and just_a == False and just_b == False: 
                         mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward,\
                                                                              mean_firing_rate_task_1_first_half_B_reward,\
-                                                                             mean_firing_rate_task_1_first_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
                         
                         mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward,\
                                                                              mean_firing_rate_task_1_second_half_B_reward,\
-                                                                             mean_firing_rate_task_1_second_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_1_second_half_B_Nreward), axis = 0)
                         
                         mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward,\
                                                                              mean_firing_rate_task_2_first_half_B_reward,\
-                                                                             mean_firing_rate_task_2_first_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_2_first_half_B_Nreward), axis = 0)
                         
                         mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward,\
                                                                              mean_firing_rate_task_2_second_half_B_reward,\
-                                                                             mean_firing_rate_task_2_second_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)
                         
                     elif just_a == True and just_b== False :
                             
-                        mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward), axis = 1)
+                        mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward), axis = 0)
                         
-                        mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward), axis = 1)
+                        mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward), axis = 0)
                         
-                        mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward), axis = 1)
+                        mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward), axis = 0)
                         
-                        mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward), axis = 1)
+                        mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward), axis = 0)
                       
                     elif just_a == False and just_b == True:
+                       mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
                        
-                       mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward), axis = 1)
-                       
-                       mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward), axis = 1)
+                       mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward), axis = 0)
                         
-                       mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward), axis = 1)
+                       mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward), axis = 0)
                         
-                       mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward), axis = 1)
-                   
+                       mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)
                     elif average_reward == True:
-                       a_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward],axis = 1)
+                       a_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward],axis = 0)
                        
-                       b_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward],axis = 1)
+                       b_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward],axis = 0)
     
-                       a_average_reward_task_1_second_half  =  np.mean([mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward],axis = 1)
+                       a_average_reward_task_1_second_half  =  np.mean([mean_firing_rate_task_1_second_half_A_reward, mean_firing_rate_task_1_second_half_A_Nreward],axis = 0)
                        
-                       b_average_reward_task_1_second_half  =  np.mean([mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward],axis = 1)
+                       b_average_reward_task_1_second_half  =  np.mean([mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward],axis = 0)
                        
-                       a_average_reward_task_2_first_half  =  np.mean([mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward],axis = 1)
+                       a_average_reward_task_2_first_half  =  np.mean([mean_firing_rate_task_2_first_half_A_reward, mean_firing_rate_task_2_first_half_A_Nreward],axis = 0)
                        
-                       b_average_reward_task_2_first_half  =  np.mean([mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward],axis = 1)
+                       b_average_reward_task_2_first_half  =  np.mean([mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward],axis = 0)
     
-                       a_average_reward_task_2_second_half  =  np.mean([mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward],axis = 1)
+                       a_average_reward_task_2_second_half  =  np.mean([mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward],axis = 0)
                        
-                       b_average_reward_task_2_second_half  =  np.mean([mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward],axis = 1)
+                       b_average_reward_task_2_second_half  =  np.mean([mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward],axis = 0)
     
     
     
-                       mean_firing_rate_task_1_first_half = np.concatenate((a_average_reward_task_1_first_half, b_average_reward_task_1_first_half), axis = 1)
+                       mean_firing_rate_task_1_first_half = np.concatenate((a_average_reward_task_1_first_half, b_average_reward_task_1_first_half), axis = 0)
                        
-                       mean_firing_rate_task_1_second_half = np.concatenate((a_average_reward_task_1_second_half, b_average_reward_task_1_second_half), axis = 1)
+                       mean_firing_rate_task_1_second_half = np.concatenate((a_average_reward_task_1_second_half, b_average_reward_task_1_second_half), axis = 0)
                         
-                       mean_firing_rate_task_2_first_half = np.concatenate((a_average_reward_task_2_first_half, b_average_reward_task_2_first_half), axis = 1)
+                       mean_firing_rate_task_2_first_half = np.concatenate((a_average_reward_task_2_first_half, b_average_reward_task_2_first_half), axis = 0)
                         
-                       mean_firing_rate_task_2_second_half = np.concatenate((a_average_reward_task_2_second_half, b_average_reward_task_2_second_half), axis = 1)
+                       mean_firing_rate_task_2_second_half = np.concatenate((a_average_reward_task_2_second_half, b_average_reward_task_2_second_half), axis = 0)
                
-                    cluster_list_task_1_first_half.append(mean_firing_rate_task_1_first_half[0,:]) 
-                    cluster_list_task_1_second_half.append(mean_firing_rate_task_1_second_half[0,:])
-                    cluster_list_task_2_first_half.append(mean_firing_rate_task_2_first_half[0,:]) 
-                    cluster_list_task_2_second_half.append(mean_firing_rate_task_2_second_half[0,:])
+                    cluster_list_task_1_first_half.append(mean_firing_rate_task_1_first_half) 
+                    cluster_list_task_1_second_half.append(mean_firing_rate_task_1_second_half)
+                    cluster_list_task_2_first_half.append(mean_firing_rate_task_2_first_half) 
+                    cluster_list_task_2_second_half.append(mean_firing_rate_task_2_second_half)
                     
                 
                     if tasks_unchanged == True: 
                         if average_reward == False and just_a == False and just_b == False: 
                             mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward,\
                                                                              mean_firing_rate_task_3_first_half_B_reward,\
-                                                                             mean_firing_rate_task_3_first_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
                         
                             mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward,\
                                                                              mean_firing_rate_task_3_second_half_B_reward,\
-                                                                             mean_firing_rate_task_3_second_half_B_Nreward), axis = 1)
+                                                                             mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
                         elif just_a == True and just_b== False :
                             
-                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward), axis = 1)
+                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward), axis = 0)
                         
-                            mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward), axis = 1)
+                            mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward), axis = 0)
                         elif just_a == False and just_b == True:
-                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward), axis = 1)
+                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
                         
-                            mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward), axis = 1)
+                            mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
                             
                         elif average_reward == True:
-                            a_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward],axis = 1)
+                            a_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward],axis = 0)
                        
-                            b_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward],axis = 1)
+                            b_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward],axis = 0)
     
-                            a_average_reward_task_3_second_half  =  np.mean([mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward],axis = 1)
+                            a_average_reward_task_3_second_half  =  np.mean([mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward],axis = 0)
                            
-                            b_average_reward_task_3_second_half  =  np.mean([mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward],axis = 1)
+                            b_average_reward_task_3_second_half  =  np.mean([mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward],axis = 0)
                             
-                            mean_firing_rate_task_3_first_half = np.concatenate((a_average_reward_task_3_first_half, b_average_reward_task_3_first_half), axis = 1)
+                            mean_firing_rate_task_3_first_half = np.concatenate((a_average_reward_task_3_first_half, b_average_reward_task_3_first_half), axis = 0)
                         
-                            mean_firing_rate_task_3_second_half = np.concatenate((a_average_reward_task_3_second_half, b_average_reward_task_3_second_half), axis = 1)
+                            mean_firing_rate_task_3_second_half = np.concatenate((a_average_reward_task_3_second_half, b_average_reward_task_3_second_half), axis = 0)
                
-                        cluster_list_task_3_first_half.append(mean_firing_rate_task_3_first_half[0,:]) 
-                        cluster_list_task_3_second_half.append(mean_firing_rate_task_3_second_half[0,:])
+                        cluster_list_task_3_first_half.append(mean_firing_rate_task_3_first_half) 
+                        cluster_list_task_3_second_half.append(mean_firing_rate_task_3_second_half)
                 
             cluster_list_task_1_first_half = np.asarray(cluster_list_task_1_first_half)
             cluster_list_task_1_second_half = np.asarray(cluster_list_task_1_second_half)

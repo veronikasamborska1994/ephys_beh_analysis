@@ -24,6 +24,7 @@ from collections import OrderedDict
 from numpy.linalg import matrix_rank
 from matplotlib import colors as mcolors
 
+from scipy.ndimage import gaussian_filter1d
 
 
 # all_sessions objects need to be generated from poke_aligned_spikes 
@@ -463,6 +464,10 @@ def regression_choices_c(experiment, all_sessions):
     
     return C_task_1, C_task_2,C_task_3
 
+#sorting_by_task_1(experiment_aligned_HP,all_sessions_HP)
+
+#sorting_by_task_1(experiment_aligned_PFC,all_sessions_PFC)
+
 
 def sorting_by_task_1(experiment,all_sessions):
     C_task_1, C_task_2, C_task_3 = regression_choices_c(experiment, all_sessions)
@@ -477,15 +482,21 @@ def sorting_by_task_1(experiment,all_sessions):
     task_3_by_1 = task_3[argmax_neuron]
     
     
-    plt.figure(3)
-    
+    plt.figure(2)
+    smooth_sd_ms = 5
     y = np.arange(len(task_1))
-    
-    plt.scatter(y,task_2_by_1,s = 0.5, color = 'red', label = 'Task 2 sorted by Task 1')
+    normalised_task_2 = gaussian_filter1d(task_2_by_1.astype(float), smooth_sd_ms)
+    normalised_task_3 = gaussian_filter1d(task_3_by_1.astype(float), smooth_sd_ms)
 
-    plt.scatter(y,task_3_by_1,s = 0.5,color = 'slateblue', label = 'Task 3 sorted by Task 1')
+    #plt.plot(task_1, color = 'slateblue', label = 'Task 1')
+
+    plt.plot(normalised_task_2, color = 'red', label = 'Task 2 sorted by Task 1')
+
+    plt.plot(normalised_task_3, color = 'slateblue', label = 'Task 3 sorted by Task 1')
     
-    plt.scatter(y,task_1,s = 0.5,color = 'black', label = 'Task 1 sorted')
+    plt.scatter(y,task_2_by_1,s = 0.5,color = 'red', label = 'Task 1 sorted')
+    plt.scatter(y,task_3_by_1,s = 0.5,color = 'slateblue', label = 'Task 1 sorted')
+
     plt.legend()
     
 
@@ -501,11 +512,12 @@ def plotting_coeff(C_task_1,C_task_2,C_task_3):
     task_3_by_1 = task_3[argmax_neuron]
     
     y = np.arange(len(task_1))
+    plt.figure(1)
     plt.scatter(y,task_2_by_1,s = 2, color = 'red', label = 'Task 2 sorted by Task 1')
 
     plt.scatter(y,task_3_by_1,s = 2,color = 'slateblue', label = 'Task 3 sorted by Task 1')
     
-    plt.scatter(y,task_1,s = 2,color = 'black', label = 'Task 1 sorted')
+    #plt.scatter(y,task_1,s = 2,color = 'black', label = 'Task 1 sorted')
 
     #plt.plot(y,task_1,color = 'black', label = 'Task 1 sorted')
     

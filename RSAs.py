@@ -6,14 +6,6 @@ Created on Tue Apr 16 15:19:56 2019
 @author: veronikasamborska
 """
 import numpy as np
-import matplotlib.pyplot as plt
-
-font = {'family' : 'normal',
-        'weight' : 'normal',
-        'size'   : 4}
-
-plt.rc('font', **font)
-
 
 def RSA_physical_rdm():
 
@@ -62,6 +54,62 @@ def RSA_physical_rdm():
     
     port_5_choice_task_3_nr = np.array([bool(i & 0) for i in range(15)])
     port_5_choice_task_3_nr[13:15] =  True
+    
+    
+    physical_rsa = np.vstack([port_a_choice_task_1_r,port_a_choice_task_1_nr,port_a_choice_task_2_r,port_a_choice_task_2_nr,\
+                              port_a_choice_task_3_r,port_a_choice_task_3_nr,port_2_initiation_task_1,port_2_initiation_task_2,\
+                              port_3_initiation_task_3,port_3_choice_task_2_r,port_3_choice_task_2_nr,port_4_choice_task_1_r,\
+                              port_4_choice_task_1_nr,port_5_choice_task_3_r,port_5_choice_task_3_nr])
+
+    return physical_rsa
+
+def RSA_physical_rdm_across_time():
+
+    # RSA Physical Space coding
+    port_a_choice_task_1_r = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_1_r[0:6*30] = True
+    
+    port_a_choice_task_1_nr = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_1_nr[0:6*30] = True
+    
+    port_a_choice_task_2_r = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_2_r[0:6*30] = True
+    
+    port_a_choice_task_2_nr = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_2_nr[0:6*30] = True
+    
+    port_a_choice_task_3_r = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_3_r[0:6*30] = True
+    
+    port_a_choice_task_3_nr = np.array([bool(i & 0) for i in range(450)])
+    port_a_choice_task_3_nr[0:6*30] = True
+    
+    port_2_initiation_task_1 = np.array([bool(i & 0) for i in range(450)])
+    port_2_initiation_task_1[6*30:8*30] = True
+    
+    port_2_initiation_task_2 = np.array([bool(i & 0) for i in range(450)])
+    port_2_initiation_task_2[6*30:8*30] = True
+    
+    port_3_initiation_task_3 = np.array([bool(i & 0) for i in range(450)])
+    port_3_initiation_task_3[8*30:11*30] = True
+    
+    port_3_choice_task_2_r = np.array([bool(i & 0) for i in range(450)])
+    port_3_choice_task_2_r[8*30:11*30] =  True
+    
+    port_3_choice_task_2_nr = np.array([bool(i & 0) for i in range(450)])
+    port_3_choice_task_2_nr[8*30:11*30] =  True
+    
+    port_4_choice_task_1_r = np.array([bool(i & 0) for i in range(450)])
+    port_4_choice_task_1_r[11*30:13*30] = True
+    
+    port_4_choice_task_1_nr = np.array([bool(i & 0) for i in range(450)])
+    port_4_choice_task_1_nr[11*30:13*30] = True
+    
+    port_5_choice_task_3_r = np.array([bool(i & 0) for i in range(450)])
+    port_5_choice_task_3_r[13*30:15*30] =  True
+    
+    port_5_choice_task_3_nr = np.array([bool(i & 0) for i in range(450)])
+    port_5_choice_task_3_nr[13*30:15*30] =  True
     
     
     physical_rsa = np.vstack([port_a_choice_task_1_r,port_a_choice_task_1_nr,port_a_choice_task_2_r,port_a_choice_task_2_nr,\
@@ -278,25 +326,18 @@ def remapping_a_to_b():
     port_a_choice_task_1_nr[11:15] =  True
 
     port_a_choice_task_2_r = np.array([bool(i & 0) for i in range(15)])
-    #port_a_choice_task_2_r[0:6] = True
     
     port_a_choice_task_2_nr = np.array([bool(i & 0) for i in range(15)])
-    #port_a_choice_task_2_nr[0:6] = True
     
     port_a_choice_task_3_r = np.array([bool(i & 0) for i in range(15)])
-    #port_a_choice_task_3_r[0:6] = True
     
     port_a_choice_task_3_nr = np.array([bool(i & 0) for i in range(15)])
-    #port_a_choice_task_3_nr[0:6] = True
     
     port_2_initiation_task_1 = np.array([bool(i & 0) for i in range(15)])
-    #port_2_initiation_task_1[6:8] = True
     
     port_2_initiation_task_2 = np.array([bool(i & 0) for i in range(15)])
-    #port_2_initiation_task_2[6:8] = True
     
     port_3_initiation_task_3 = np.array([bool(i & 0) for i in range(15)])
-    #port_3_initiation_task_3[8:11] = True
     
     port_3_choice_task_2_r = np.array([bool(i & 0) for i in range(15)])
     

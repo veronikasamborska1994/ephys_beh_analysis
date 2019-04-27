@@ -26,8 +26,8 @@ import svds_u_only as svdu
 
 
 #PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
-#HP_forced = HP_forced[1:]
 #HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
+#HP_forced = HP_forced[1:]
 
 
 
@@ -36,7 +36,7 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
     spikes = session.ephys
     spikes = spikes[:,~np.isnan(spikes[1,:])] 
     aligned_rates = session.aligned_rates
-    
+
     poke_A, poke_A_task_2, poke_A_task_3, poke_B, poke_B_task_2, poke_B_task_3,poke_I, poke_I_task_2,poke_I_task_3 = ep.extract_choice_pokes(session)
     trial_сhoice_state_task_1, trial_сhoice_state_task_2, trial_сhoice_state_task_3, ITI_task_1, ITI_task_2,ITI_task_3 = ep.initiation_and_trial_end_timestamps(session)
     task_1 = len(trial_сhoice_state_task_1)
@@ -60,31 +60,25 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         if poke_I == poke_I_task_2: 
             aligned_rates_task_1 = aligned_rates[:task_1]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
-            predictor_B_Task_1 = predictor_B_Task_1[:task_1]
             reward_task_1 = reward[:task_1]
-            aligned_rates_task_2 = aligned_rates[:task_1+task_2]
-            predictor_A_Task_2 = predictor_A_Task_2[:task_1+task_2]
-            predictor_B_Task_2 = predictor_B_Task_2[:task_1+task_2]
-            reward_task_2 = reward[:task_1+task_2]
+            aligned_rates_task_2 = aligned_rates[task_1:task_1+task_2]
+            predictor_A_Task_2 = predictor_A_Task_2[task_1:task_1+task_2]
+            reward_task_2 = reward[task_1:task_1+task_2]
             
         elif poke_I == poke_I_task_3:
             aligned_rates_task_1 = aligned_rates[:task_1]
             predictor_A_Task_1 = predictor_A_Task_1[:task_1]
-            predictor_B_Task_1 = predictor_B_Task_1[:task_1]
             reward_task_1 = reward[:task_1]
             aligned_rates_task_2 = aligned_rates[task_1+task_2:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
-            predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
             reward_task_2 = reward[task_1+task_2:]
             
         elif poke_I_task_2 == poke_I_task_3:
-            aligned_rates_task_1 = aligned_rates[:task_1+task_2]
-            predictor_A_Task_1 = predictor_A_Task_2[:task_1+task_2]
-            predictor_B_Task_1 = predictor_B_Task_2[:task_1+task_2]
-            reward_task_1 = reward[:task_1+task_2]
+            aligned_rates_task_1 = aligned_rates[task_1:task_1+task_2]
+            predictor_A_Task_1 = predictor_A_Task_2[task_1:task_1+task_2]
+            reward_task_1 = reward[task_1:task_1+task_2]
             aligned_rates_task_2 = aligned_rates[task_1+task_2:]
             predictor_A_Task_2 = predictor_A_Task_3[task_1+task_2:]
-            predictor_B_Task_2 = predictor_B_Task_3[task_1+task_2:]
             reward_task_2 = reward[task_1+task_2:]
            
         aligned_rates_task_1_first_half = aligned_rates_task_1[:int(len(aligned_rates_task_1)/2)]
@@ -94,8 +88,8 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         
         predictor_A_Task_1_first_half = predictor_A_Task_1[:int(len(aligned_rates_task_1)/2)]
         predictor_A_Task_1_second_half = predictor_A_Task_1[int(len(aligned_rates_task_1)/2):]
-        predictor_A_Task_2_first_half = predictor_B_Task_2[:int(len(predictor_A_Task_2)/2)]
-        predictor_A_Task_2_second_half = predictor_B_Task_2[int(len(predictor_A_Task_2)/2):]
+        predictor_A_Task_2_first_half = predictor_A_Task_2[:int(len(predictor_A_Task_2)/2)]
+        predictor_A_Task_2_second_half = predictor_A_Task_2[int(len(predictor_A_Task_2)/2):]
         
         
         reward_Task_1_first_half = reward_task_1[:int(len(reward_task_1)/2)]
@@ -123,8 +117,9 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
         aligned_rates_task_2_first_half_B_Nreward = aligned_rates_task_2_first_half[np.where((predictor_A_Task_2_first_half == 0) & (reward_Task_2_first_half == 0 ))]
         aligned_rates_task_2_second_half_B_reward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0) & (reward_Task_2_second_half == 1 ))]
         aligned_rates_task_2_second_half_B_Nreward = aligned_rates_task_2_second_half[np.where((predictor_A_Task_2_second_half == 0 ) & (reward_Task_2_second_half == 0 ))]
-
-    else:
+        
+        
+    elif tasks_unchanged == True:
           aligned_rates_task_1 = aligned_rates[:task_1]
           aligned_rates_task_2 = aligned_rates[task_1:task_1+task_2]
           aligned_rates_task_3 = aligned_rates[task_1+task_2:]
@@ -195,19 +190,29 @@ def extract_session_predictors_rates(session, tasks_unchanged = True):
           aligned_rates_task_3_second_half_B_reward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half == 0) & (reward_Task_3_second_half == 1 ))]
           aligned_rates_task_3_second_half_B_Nreward = aligned_rates_task_3_second_half[np.where((predictor_A_Task_3_second_half == 0 ) & (reward_Task_3_second_half == 0 ))]
     
-    return spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
-    aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
-    aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
-    aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
-    aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
-    aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
-    aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
-    aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward,\
-    aligned_rates_task_3_first_half_A_reward,aligned_rates_task_3_first_half_A_Nreward,\
-    aligned_rates_task_3_second_half_A_reward,aligned_rates_task_3_second_half_A_Nreward,\
-    aligned_rates_task_3_first_half_B_reward,aligned_rates_task_3_first_half_B_Nreward,\
-    aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward
-    
+    if tasks_unchanged == True:  
+        return spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
+        aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
+        aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
+        aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
+        aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
+        aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
+        aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
+        aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward,\
+        aligned_rates_task_3_first_half_A_reward,aligned_rates_task_3_first_half_A_Nreward,\
+        aligned_rates_task_3_second_half_A_reward,aligned_rates_task_3_second_half_A_Nreward,\
+        aligned_rates_task_3_first_half_B_reward,aligned_rates_task_3_first_half_B_Nreward,\
+        aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward
+    elif tasks_unchanged == False:  
+        return spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
+        aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
+        aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
+        aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
+        aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
+        aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
+        aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
+        aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward
+        
     
 def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just_b = False, average_reward = False):
     #Finds means of rates on trials of interest
@@ -222,8 +227,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
     for s,session in enumerate(experiment):
         if s != 15 and s !=31 and s!= 29:
             
-            #Empty lists to hold append mean firing rates to 
-           
+       #Empty lists to hold append mean firing rates to 
             cluster_list_task_1_first_half = []
             cluster_list_task_1_second_half = []
             cluster_list_task_2_first_half = []
@@ -231,23 +235,31 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
             cluster_list_task_3_first_half = []
             cluster_list_task_3_second_half = []
 
-            spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
-            aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
-            aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
-            aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
-            aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
-            aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
-            aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
-            aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward,\
-            aligned_rates_task_3_first_half_A_reward,aligned_rates_task_3_first_half_A_Nreward,\
-            aligned_rates_task_3_second_half_A_reward,aligned_rates_task_3_second_half_A_Nreward,\
-            aligned_rates_task_3_first_half_B_reward,aligned_rates_task_3_first_half_B_Nreward,\
-            aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward = extract_session_predictors_rates(session)
+            if tasks_unchanged == True:  
+                spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
+        aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
+        aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
+        aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
+        aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
+        aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
+        aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
+        aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward,\
+        aligned_rates_task_3_first_half_A_reward,aligned_rates_task_3_first_half_A_Nreward,\
+        aligned_rates_task_3_second_half_A_reward,aligned_rates_task_3_second_half_A_Nreward,\
+        aligned_rates_task_3_first_half_B_reward,aligned_rates_task_3_first_half_B_Nreward,\
+        aligned_rates_task_3_second_half_B_reward,aligned_rates_task_3_second_half_B_Nreward = extract_session_predictors_rates(session, tasks_unchanged = tasks_unchanged)
             
-            if (len(aligned_rates_task_3_first_half_A_reward) > 0) & (len(aligned_rates_task_3_first_half_A_Nreward) > 0) & (len(aligned_rates_task_3_second_half_A_reward) > 0) &\
-            (len(aligned_rates_task_3_second_half_A_Nreward) > 0) & (len(aligned_rates_task_3_first_half_B_reward) > 0) & (len(aligned_rates_task_3_first_half_B_Nreward) > 0) &\
-            (len(aligned_rates_task_3_second_half_B_reward) > 0) & (len(aligned_rates_task_3_second_half_B_Nreward) > 0)&\
-            (len(aligned_rates_task_1_first_half_A_reward) > 0) & (len(aligned_rates_task_1_first_half_A_Nreward) > 0) & (len(aligned_rates_task_1_second_half_A_reward) > 0) &\
+            elif tasks_unchanged == False:  
+                spikes, aligned_rates_task_1_first_half_A_reward, aligned_rates_task_1_first_half_A_Nreward,\
+        aligned_rates_task_1_second_half_A_reward,aligned_rates_task_1_second_half_A_Nreward,\
+        aligned_rates_task_1_first_half_B_reward,aligned_rates_task_1_first_half_B_Nreward,\
+        aligned_rates_task_1_second_half_B_reward,aligned_rates_task_1_second_half_B_Nreward,\
+        aligned_rates_task_2_first_half_A_reward,aligned_rates_task_2_first_half_A_Nreward,\
+        aligned_rates_task_2_second_half_A_reward,aligned_rates_task_2_second_half_A_Nreward,\
+        aligned_rates_task_2_first_half_B_reward,aligned_rates_task_2_first_half_B_Nreward,\
+        aligned_rates_task_2_second_half_B_reward,aligned_rates_task_2_second_half_B_Nreward = extract_session_predictors_rates(session, tasks_unchanged = tasks_unchanged)
+        
+            if  (len(aligned_rates_task_1_first_half_A_reward) > 0) & (len(aligned_rates_task_1_first_half_A_Nreward) > 0) & (len(aligned_rates_task_1_second_half_A_reward) > 0) &\
             (len(aligned_rates_task_1_second_half_A_Nreward) > 0) & (len(aligned_rates_task_1_first_half_B_reward) > 0) & (len(aligned_rates_task_1_first_half_B_Nreward) > 0) &\
             (len(aligned_rates_task_1_second_half_B_reward) > 0) & (len(aligned_rates_task_1_second_half_B_Nreward) > 0)&\
             (len(aligned_rates_task_2_first_half_A_reward) > 0) & (len(aligned_rates_task_2_first_half_A_Nreward) > 0) & (len(aligned_rates_task_2_second_half_A_reward) > 0) &\
@@ -257,6 +269,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
   
         
                 unique_neurons  = np.unique(spikes[0])   
+                
                 for i in range(len(unique_neurons)):
                     
                     mean_firing_rate_task_1_first_half_A_reward  = np.mean(aligned_rates_task_1_first_half_A_reward[:,i,:],0)
@@ -280,21 +293,9 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                     mean_firing_rate_task_2_second_half_B_reward  = np.mean(aligned_rates_task_2_second_half_B_reward[:,i,:],0)
                     mean_firing_rate_task_2_second_half_B_Nreward  = np.mean(aligned_rates_task_2_second_half_B_Nreward[:,i,:],0)
                     
-                    
-                    if tasks_unchanged == True:
-                        mean_firing_rate_task_3_first_half_A_reward  = np.mean(aligned_rates_task_3_first_half_A_reward[:,i,:],0)
-                        mean_firing_rate_task_3_first_half_A_Nreward  = np.mean(aligned_rates_task_3_first_half_A_Nreward[:,i,:],0)
-                    
-                        mean_firing_rate_task_3_second_half_A_reward  = np.mean(aligned_rates_task_3_second_half_A_reward[:,i,:],0)
-                        mean_firing_rate_task_3_second_half_A_Nreward  = np.mean(aligned_rates_task_3_second_half_A_Nreward[:,i,:],0)
-        
-                        mean_firing_rate_task_3_first_half_B_reward  = np.mean(aligned_rates_task_3_first_half_B_reward[:,i,:],0)
-                        mean_firing_rate_task_3_first_half_B_Nreward  = np.mean(aligned_rates_task_3_first_half_B_Nreward[:,i,:],0)
-                       
-                        mean_firing_rate_task_3_second_half_B_reward  = np.mean(aligned_rates_task_3_second_half_B_reward[:,i,:],0)
-                        mean_firing_rate_task_3_second_half_B_Nreward  = np.mean(aligned_rates_task_3_second_half_B_Nreward[:,i,:],0)
-                        
+                          
                     if average_reward == False and just_a == False and just_b == False: 
+                        
                         mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward,\
                                                                              mean_firing_rate_task_1_first_half_B_reward,\
                                                                              mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
@@ -311,7 +312,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                                                                              mean_firing_rate_task_2_second_half_B_reward,\
                                                                              mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)
                         
-                    elif just_a == True and just_b== False :
+                    elif just_a == True and just_b == False :
                             
                         mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward), axis = 0)
                         
@@ -322,6 +323,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                         mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_A_reward, mean_firing_rate_task_2_second_half_A_Nreward), axis = 0)
                       
                     elif just_a == False and just_b == True:
+                       
                        mean_firing_rate_task_1_first_half = np.concatenate((mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward), axis = 0)
                        
                        mean_firing_rate_task_1_second_half = np.concatenate((mean_firing_rate_task_1_second_half_B_reward, mean_firing_rate_task_1_second_half_B_Nreward), axis = 0)
@@ -329,7 +331,9 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                        mean_firing_rate_task_2_first_half = np.concatenate((mean_firing_rate_task_2_first_half_B_reward, mean_firing_rate_task_2_first_half_B_Nreward), axis = 0)
                         
                        mean_firing_rate_task_2_second_half = np.concatenate((mean_firing_rate_task_2_second_half_B_reward, mean_firing_rate_task_2_second_half_B_Nreward), axis = 0)
+                    
                     elif average_reward == True:
+                       
                        a_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_A_reward, mean_firing_rate_task_1_first_half_A_Nreward],axis = 0)
                        
                        b_average_reward_task_1_first_half  =  np.mean([mean_firing_rate_task_1_first_half_B_reward, mean_firing_rate_task_1_first_half_B_Nreward],axis = 0)
@@ -356,6 +360,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                         
                        mean_firing_rate_task_2_second_half = np.concatenate((a_average_reward_task_2_second_half, b_average_reward_task_2_second_half), axis = 0)
                
+                    
                     cluster_list_task_1_first_half.append(mean_firing_rate_task_1_first_half) 
                     cluster_list_task_1_second_half.append(mean_firing_rate_task_1_second_half)
                     cluster_list_task_2_first_half.append(mean_firing_rate_task_2_first_half) 
@@ -363,7 +368,21 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                     
                 
                     if tasks_unchanged == True: 
+        
+                        mean_firing_rate_task_3_first_half_A_reward  = np.mean(aligned_rates_task_3_first_half_A_reward[:,i,:],0)
+                        mean_firing_rate_task_3_first_half_A_Nreward  = np.mean(aligned_rates_task_3_first_half_A_Nreward[:,i,:],0)
+                    
+                        mean_firing_rate_task_3_second_half_A_reward  = np.mean(aligned_rates_task_3_second_half_A_reward[:,i,:],0)
+                        mean_firing_rate_task_3_second_half_A_Nreward  = np.mean(aligned_rates_task_3_second_half_A_Nreward[:,i,:],0)
+        
+                        mean_firing_rate_task_3_first_half_B_reward  = np.mean(aligned_rates_task_3_first_half_B_reward[:,i,:],0)
+                        mean_firing_rate_task_3_first_half_B_Nreward  = np.mean(aligned_rates_task_3_first_half_B_Nreward[:,i,:],0)
+                       
+                        mean_firing_rate_task_3_second_half_B_reward  = np.mean(aligned_rates_task_3_second_half_B_reward[:,i,:],0)
+                        mean_firing_rate_task_3_second_half_B_Nreward  = np.mean(aligned_rates_task_3_second_half_B_Nreward[:,i,:],0)
+                  
                         if average_reward == False and just_a == False and just_b == False: 
+                            
                             mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward,\
                                                                              mean_firing_rate_task_3_first_half_B_reward,\
                                                                              mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
@@ -373,15 +392,16 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
                                                                              mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
                         elif just_a == True and just_b== False :
                             
-                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward), axis = 0)
-                        
+                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward), axis = 0)                    
                             mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_A_reward, mean_firing_rate_task_3_second_half_A_Nreward), axis = 0)
-                        elif just_a == False and just_b == True:
-                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
                         
+                        elif just_a == False and just_b == True:
+                            
+                            mean_firing_rate_task_3_first_half = np.concatenate((mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward), axis = 0)
                             mean_firing_rate_task_3_second_half = np.concatenate((mean_firing_rate_task_3_second_half_B_reward, mean_firing_rate_task_3_second_half_B_Nreward), axis = 0)
                             
                         elif average_reward == True:
+                            
                             a_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_A_reward, mean_firing_rate_task_3_first_half_A_Nreward],axis = 0)
                        
                             b_average_reward_task_3_first_half  =  np.mean([mean_firing_rate_task_3_first_half_B_reward, mean_firing_rate_task_3_first_half_B_Nreward],axis = 0)
@@ -408,6 +428,7 @@ def svd_trial_selection(experiment, tasks_unchanged = True, just_a = False, just
             all_clusters_task_2_second_half.append(cluster_list_task_2_second_half[:])
             
             if tasks_unchanged == True: 
+                
                 cluster_list_task_3_first_half = np.asarray(cluster_list_task_3_first_half)
                 cluster_list_task_3_second_half = np.asarray(cluster_list_task_3_second_half)
                 all_clusters_task_3_first_half.append(cluster_list_task_3_first_half[:])
@@ -421,7 +442,7 @@ def flatten(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, 
     
     all_clusters_task_1_first_half, all_clusters_task_1_second_half,\
     all_clusters_task_2_first_half, all_clusters_task_2_second_half,\
-    all_clusters_task_3_first_half,all_clusters_task_3_second_half = svd_trial_selection(experiment, just_a = plot_a, just_b = plot_b, average_reward = average_reward)
+    all_clusters_task_3_first_half,all_clusters_task_3_second_half = svd_trial_selection(experiment, tasks_unchanged = tasks_unchanged, just_a = plot_a, just_b = plot_b, average_reward = average_reward)
    
    
     all_clusters_task_1_first_half  = np.asarray(all_clusters_task_1_first_half)
@@ -482,9 +503,120 @@ def flatten(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, 
     else:
         return flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half
+
+
+
+def plotting_correlation_matrix(experiment):
+    session = experiment_aligned_HP[0]
+    t_out = session.t_out
+    initiate_choice_t = session.target_times 
+    reward = initiate_choice_t[-2] +250
+
+    ind_init = (np.abs(t_out-initiate_choice_t[1])).argmin()
+    ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
+    ind_reward = (np.abs(t_out-reward)).argmin()
+    
+    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = False, plot_a = True, plot_b = False, average_reward = False)
+    
+    
+    m_full = np.concatenate([flattened_all_clusters_task_1_first_half,flattened_all_clusters_task_1_second_half,\
+                             flattened_all_clusters_task_2_first_half,flattened_all_clusters_task_2_second_half], axis =1)
         
+    plt.figure(1)
+
+    corrmf = np.corrcoef(np.transpose(m_full))
+
+    plt.imshow(corrmf)
+    ticks_n  = np.linspace(0, corrmf.shape[0],16)
+
+    plt.yticks(ticks_n, ('A Reward T1 1', 'A No Reward T1 1','B Reward T1 1', 'B No Reward T1 1',\
+                         'A Reward T1 2', 'A No Reward T1 2','B Reward T1 2', 'B No Reward T1 2',
+                         'A Reward T2 1', 'A No Reward T2 1','B Reward T2 1', 'B No Reward T2 1',\
+                         'A Reward T2 2', 'A No Reward T2 2','B Reward T2 2', 'B No Reward T2 2'))
+    
+    plt.xticks(ticks_n, ('A Reward T1 1', 'A No Reward T1 1','B Reward T1 1', 'B No Reward T1 1',\
+                         'A Reward T1 2', 'A No Reward T1 2','B Reward T1 2', 'B No Reward T1 2'
+                         'A Reward T2 1', 'A No Reward T2 1','B Reward T2 1', 'B No Reward T2 1',\
+                         'A Reward T2 2', 'A No Reward T2 2','B Reward T2 2', 'B No Reward T2 2'))
+
+
+    T1_T1 = corrmf[64*2:64*4,:64*2]
+    T1_T2 = corrmf[64*4:64*6,64*2:64*4]
+    
+    plt.figure(2)
+    difference = T1_T1-T1_T2
+    plt.imshow(difference)
+    plt.xticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')  
+    plt.yticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
+
+   
+    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+    flattened_all_clusters_task_3_first_half, flattened_all_clusters_task_3_second_half\
+    = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = True, plot_a = True, plot_b = False, average_reward = False)
+    
+    fig = plt.figure(figsize=(8, 25))
+    grid = plt.GridSpec(5, 4, hspace=0.7, wspace=0.4)
+
+    example_reward = corrmf[:64,64*2:64*3]
+    for i in range(example_reward.shape[1]):
+        if i > ind_reward and i <60:
+            fig.add_subplot(grid[i-ind_reward-1])
+            plt.plot(example_reward[:,i], label = 'Reward --> Reward')
+            plt.xticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')  
+
+    example_no_reward = corrmf[:64,64*3:64*4]
+    for i in range(example_no_reward.shape[1]):
+        if i > ind_reward and i <60:
+            fig.add_subplot(grid[i-ind_reward-1])
+            plt.plot(example_no_reward[:,i],label ='No Reward --> No Reward')
+            plt.xticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')  
+            
+    example_no_reward_to_reward = corrmf[64*3:64*4,64*2:64*3]
+    for i in range(example_no_reward_to_reward.shape[1]):
+        if i > ind_reward and i <60:
+            fig.add_subplot(grid[i-ind_reward-1])
+            plt.plot(example_no_reward_to_reward[:,i], label = 'No Reward --> Reward')
+            plt.xticks([ind_init,ind_choice,ind_reward], label =('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')  
+    
+    example_reward_no_reward = corrmf[:64,64:64*2]
+    for i in range(example_reward_no_reward.shape[1]):
+        if i > ind_reward and i <60:
+            fig.add_subplot(grid[i-ind_reward-1])
+            plt.plot(example_reward_no_reward[:,i], label = 'Reward --> No Reward')
+            plt.xticks([ind_init,ind_choice,ind_reward], label =('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')      
+            plt.ylabel('Corr  Coef')
+    
         
+    plt.legend()
+    fig.add_subplot(grid[16])
+    plt.imshow(example_reward)
+    plt.xlabel('Reward')
+    plt.ylabel('Reward')
+    
+    fig.add_subplot(grid[17])
+    plt.imshow(example_no_reward)
+    plt.xlabel('No Reward')
+    plt.ylabel('No Reward')
+    
+    fig.add_subplot(grid[18])
+    plt.imshow(example_no_reward_to_reward)
+    plt.ylabel('No Reward')
+    plt.xlabel('Reward')
+    
+    fig.add_subplot(grid[19])
+    plt.imshow(example_reward_no_reward)
+    plt.ylabel('Reward')
+    plt.xlabel('No Reward')
+    
+
+    plt.yticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
+    plt.xticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
+
+   
 def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, diagonal = False, demean_all_tasks = True):
+   
     #Calculating SVDs for trials split by A and B, reward/no reward (no block information) 
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
@@ -495,25 +627,25 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
   
      #SVDsu.shape, s.shape, vh.shape for task 1 first half
-    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = True)
+    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = False)
         
     #SVDsu.shape, s.shape, vh.shape for task 1 second half
-    u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = True)
+    u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
     
     #SVDsu.shape, s.shape, vh.shape for task 2 first half
-    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_first_half, full_matrices = True)
+    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_first_half, full_matrices = False)
     
     #SVDsu.shape, s.shape, vh.shape for task 2 second half
-    u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = True)
+    u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
     
     
 
     if tasks_unchanged == True:
         #SVDsu.shape, s.shape, vh.shape for task 3 first half
-        u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_first_half, full_matrices = True)
+        u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_first_half, full_matrices = False)
     
         #SVDsu.shape, s.shape, vh.shape for task 3 first half
-        u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = True)
+        u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
     
     #Finding variance explained in second half of task 1 using the Us and Vs from the first half
     t_u = np.transpose(u_t1_1)  
@@ -597,7 +729,8 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
         average_within = np.mean([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1], axis = 0)
         average_between = np.mean([sum_c_task_2_1_from_t_1_2], axis = 0)
         
-    
+    #average_within = average_within/average_within[-1]
+    #average_between = average_between/average_between[-1]
     if HP == True:
         plt.figure(10)
         if demean_all_tasks == True: #Demean Across all taks (False - Within Each Task)
