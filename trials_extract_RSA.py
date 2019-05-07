@@ -379,7 +379,7 @@ def extract_trials_all_time_points(experiment,all_sessions):
             session_list_poke_b_task_z_spikes_nr.append(mean_poke_b_task_z_spikes_nr)
             
   
-   session_list_poke_a_task_x_r_spikes = np.concatenate(session_list_poke_a_task_x_r_spikes,0)
+   session_list_poke_a_task_x_r_spikes = np.concatenate(session_list_poke_a_task_x_r_spikes,0) 
    session_list_poke_a_task_x_nr_spikes = np.concatenate(session_list_poke_a_task_x_nr_spikes,0)
     
    session_list_poke_a_task_y_r_spikes = np.concatenate(session_list_poke_a_task_y_r_spikes,0)
@@ -403,14 +403,46 @@ def extract_trials_all_time_points(experiment,all_sessions):
    session_list_poke_b_task_z_spikes_r = np.concatenate(session_list_poke_b_task_z_spikes_r,0)
    session_list_poke_b_task_z_spikes_nr  = np.concatenate(session_list_poke_b_task_z_spikes_nr,0)
    
-   matrix_for_correlations = np.concatenate([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
+   ####Flatten 
+   session_list_poke_a_task_x_r_spikes = session_list_poke_a_task_x_r_spikes.flatten()
+   session_list_poke_a_task_x_nr_spikes = session_list_poke_a_task_x_nr_spikes.flatten()
+    
+   session_list_poke_a_task_y_r_spikes = session_list_poke_a_task_y_r_spikes.flatten()
+   session_list_poke_a_task_y_nr_spikes = session_list_poke_a_task_y_nr_spikes.flatten()
+     
+   session_list_poke_a_task_z_r_spikes = session_list_poke_a_task_z_r_spikes.flatten()
+   session_list_poke_a_task_z_nr_spikes = session_list_poke_a_task_z_nr_spikes.flatten()
+    
+   session_list_poke_initiation_task_x_spikes = session_list_poke_initiation_task_x_spikes.flatten()
+   session_list_poke_initiation_task_y_spikes = session_list_poke_initiation_task_y_spikes.flatten()
+    
+       
+   session_list_poke_initiation_b_task_z_spikes =session_list_poke_initiation_b_task_z_spikes.flatten()
+       
+   session_list_poke_choice_b_task_x_spikes_r = session_list_poke_choice_b_task_x_spikes_r.flatten()
+   session_list_poke_choice_b_task_x_spikes_nr = session_list_poke_choice_b_task_x_spikes_nr.flatten()
+    
+   session_list_poke_b_task_y_spikes_r = session_list_poke_b_task_y_spikes_r.flatten()
+   session_list_poke_b_task_y_spikes_nr = session_list_poke_b_task_y_spikes_nr.flatten()
+    
+   session_list_poke_b_task_z_spikes_r = session_list_poke_b_task_z_spikes_r.flatten()
+   session_list_poke_b_task_z_spikes_nr  = session_list_poke_b_task_z_spikes_nr.flatten()
+   matrix_for_correlations = np.vstack([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
                                        session_list_poke_a_task_y_nr_spikes,session_list_poke_a_task_z_r_spikes,session_list_poke_a_task_z_nr_spikes,\
                                        session_list_poke_initiation_task_x_spikes,session_list_poke_initiation_task_y_spikes,\
                                        session_list_poke_initiation_b_task_z_spikes,session_list_poke_choice_b_task_x_spikes_r,\
                                        session_list_poke_choice_b_task_x_spikes_nr,session_list_poke_b_task_y_spikes_r,\
-                                       session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr],axis = 1)
+                                       session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr])
    
-
+   
+#   matrix_for_correlations = np.concatenate([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
+#                                       session_list_poke_a_task_y_nr_spikes,session_list_poke_a_task_z_r_spikes,session_list_poke_a_task_z_nr_spikes,\
+#                                       session_list_poke_initiation_task_x_spikes,session_list_poke_initiation_task_y_spikes,\
+#                                       session_list_poke_initiation_b_task_z_spikes,session_list_poke_choice_b_task_x_spikes_r,\
+#                                       session_list_poke_choice_b_task_x_spikes_nr,session_list_poke_b_task_y_spikes_r,\
+#                                       session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr],axis = 1)
+#   
+    
    return matrix_for_correlations
 
 
@@ -846,8 +878,8 @@ def svd(experiment, all_sessions, diagonal = False, HP = False):
 
 
 def plotting_correlations_all_time_points(experiment,all_sessions, figure_number = 1):
-    figure_number =  1
-    matrix_for_correlations = extract_trials_all_time_points(experiment_aligned_PFC,all_sessions_PFC)
+
+    matrix_for_correlations = extract_trials_all_time_points(experiment,all_sessions)
     corr_m = np.corrcoef(np.transpose(matrix_for_correlations))
     v,n = np.linalg.eig(corr_m)
     ticks_n = np.linspace(0, 450, 15)
@@ -1066,7 +1098,9 @@ def regression_RSA(matrix_for_correlations):
     reward_at_choices = 1*reward_at_choices.flatten()
     choice_initiation_rsa =  rsa.choice_vs_initiation()
     choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
-    
+    a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+    a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
+
     ones = np.ones(len(choice_ab_rsa))
     
 
@@ -1075,6 +1109,7 @@ def regression_RSA(matrix_for_correlations):
                               ('Reward',reward_no_reward),
                               ('Reward at A vs B',reward_at_choices),
                               ('Choice vs Initiation',choice_initiation_rsa),
+                              ('A and B Task Specific',a_bs_task_specific_rsa),
                               ('constant', ones)])                                        
            
     X = np.vstack(predictors.values()).T[:len(physical_rsa),:].astype(float)
@@ -1088,44 +1123,21 @@ def regression_RSA(matrix_for_correlations):
     
     return C,correlation_m,predictors
 
-def matrices_for_plots(experiment,all_sessions):
-    #all_sessions_HP = pos.raster_plot_save(experiment_aligned_HP,time_window_start = 50, time_window_end = 110)
-    #all_sessions_PFC = pos.raster_plot_save(experiment_aligned_PFC,time_window_start = 50, time_window_end = 110)
-# =============================================================================
-#   This is functionthat goes through the full length of the poke aligned histogram (-1.5 to 1.5 sec)
-#   and finds the data matrix and computes regression coefficient for each data point around the poke
-
-#   Default time window is 60 from -1500 to 1500 around poke
-# =============================================================================
+def rsa_across_time(experiment,all_sessions):
+    matrix_for_correlations = extract_trials_all_time_points(experiment_aligned_HP,all_sessions_HP)
+    C,correlation_m,predictors = regression_RSA(matrix_for_correlations)
     
-    C_list =  []
-    correlation_m_list = []
-    
-    for i in range(60):
-        matrix_for_correlations = extract_trials(experiment, all_sessions, time_window = i)
-        C,correlation_m, predictors = regression_RSA(matrix_for_correlations)
-        C_list.append(C)
-        correlation_m_list.append(correlation_m)
-    C_list = np.concatenate(C_list,0)
-    
-    return C_list,correlation_m_list
-
-  
-def matrices_for_different_times(C_list,correlation_m_list, HP = True):
-# =============================================================================
-#    This function plots predictor RSA matrices; and creates animations of 
-#   the actual correlation matrix of the data at each data point between -1.5 to 1.5 seconds around the poke entry
-# =============================================================================
     ### Predictor RSA Matrices 
     physical_rsa = rsa.RSA_physical_rdm()
     choice_ab_rsa = rsa.RSA_a_b_initiation_rdm()
     reward_no_reward = rsa.reward_rdm() 
     reward_at_choices = rsa.reward_choice_space()
     choice_initiation_rsa =  rsa.choice_vs_initiation()
-    
+    a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+
     # Set up the axes with gridspec
     fig = plt.figure(figsize=(6, 25))
-    grid = plt.GridSpec(10, 3, hspace=0.5, wspace=1)
+    grid = plt.GridSpec(12, 3, hspace=0.5, wspace=1)
     space_plt = fig.add_subplot(grid[0:2, 0])
     plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
                '1 A T3 R','1 A T3 NR', ' 2 I T1',\
@@ -1160,6 +1172,16 @@ def matrices_for_different_times(C_list,correlation_m_list, HP = True):
 
     choice_initiation_plt = fig.add_subplot(grid[8:10, 0])
     
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
+    plt.xticks([])
+    plt.title('Choice vs Initiation')
+      
+    
+    a_bs_task_specific_rsa_plt = fig.add_subplot(grid[10:12, 0])
+    
     plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
                '1 A T3 R','1 A T3 NR', ' 2 I T1',\
                '2 I T2', '3 I T3', '3 B T1 R',\
@@ -1168,21 +1190,141 @@ def matrices_for_different_times(C_list,correlation_m_list, HP = True):
                '1 A T3 R','1 A T3 NR', ' 2 I T1',\
                '2 I T2', '3 I T3', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
-    plt.title('Choice vs Initiation')
+    plt.title('As and Bs within Task')
+      
     
+    len_C = range(len(C[0]))
+    bar_plot = fig.add_subplot(grid[1:4, 1:3])
+    plt.ylabel('Regression Coefficient')
+    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'A and Bs Task Specific','Constant'), rotation = 'vertical')
+     
+    trial_corr_plot = fig.add_subplot(grid[ 6:10, 1:3])
+    plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')
+   
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
+    
+    bar_plot.bar(len_C,C[0])
+    space_plt.imshow(physical_rsa,aspect = 'auto')
+    choice_plt.imshow(choice_ab_rsa,aspect = 'auto')
+    reward_no_reward_plt.imshow(reward_no_reward,aspect = 'auto')
+    reward_at_choices_plt.imshow(reward_at_choices,aspect = 'auto')
+    choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto')
+    a_bs_task_specific_rsa_plt.imshow(a_bs_task_specific_rsa,aspect = 'auto')
+    sh = trial_corr_plot.imshow(correlation_m, aspect = 1)
+    plt.colorbar(sh)
+
+    
+def matrices_for_plots(experiment,all_sessions):
+    #all_sessions_HP = pos.raster_plot_save(experiment_aligned_HP,time_window_start = 50, time_window_end = 110)
+    #all_sessions_PFC = pos.raster_plot_save(experiment_aligned_PFC,time_window_start = 50, time_window_end = 110)
+# =============================================================================
+#   This is functionthat goes through the full length of the poke aligned histogram (-1.5 to 1.5 sec)
+#   and finds the data matrix and computes regression coefficient for each data point around the poke
+
+#   Default time window is 60 from -1500 to 1500 around poke
+# =============================================================================
+    
+    C_list =  []
+    correlation_m_list = []
+    
+    for i in range(60):
+        matrix_for_correlations = extract_trials(experiment, all_sessions, time_window = i)
+        C,correlation_m, predictors = regression_RSA(matrix_for_correlations)
+        C_list.append(C)
+        correlation_m_list.append(correlation_m)
+    C_list = np.concatenate(C_list,0)
+    
+    return C_list,correlation_m_list
+
+  
+def matrices_for_different_times(C_list,correlation_m_list, HP = True):
+# =============================================================================
+#    This function plots predictor RSA matrices; and creates animations of 
+#   the actual correlation matrix of the data at each data point between -1.5 to 1.5 seconds around the poke entry
+# =============================================================================
+    ### Predictor RSA Matrices 
+    physical_rsa = rsa.RSA_physical_rdm()
+    choice_ab_rsa = rsa.RSA_a_b_initiation_rdm()
+    reward_no_reward = rsa.reward_rdm() 
+    reward_at_choices = rsa.reward_choice_space()
+    choice_initiation_rsa =  rsa.choice_vs_initiation()
+    a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+
+    # Set up the axes with gridspec
+    fig = plt.figure(figsize=(6, 25))
+    grid = plt.GridSpec(12, 3, hspace=0.5, wspace=1)
+    space_plt = fig.add_subplot(grid[0:2, 0])
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
+    plt.xticks([])
+    plt.title('Space')
+
+    choice_plt = fig.add_subplot(grid[2:4, 0])
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
+    plt.xticks([])
+    plt.title('A vs B')
+
+    reward_no_reward_plt = fig.add_subplot(grid[4:6, 0])
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
+    plt.xticks([])
+    plt.title('Reward')
+
+    reward_at_choices_plt = fig.add_subplot(grid[6:8, 0])
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR')) 
+    plt.xticks([])
+    plt.title('Reward at Choice')
+
+    choice_initiation_plt = fig.add_subplot(grid[8:10, 0])
+    
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
+    plt.xticks([])
+    plt.title('Choice vs Initiation')
+      
+    
+    a_bs_task_specific_rsa_plt = fig.add_subplot(grid[10:12, 0])
+    
+    plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')
+    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
+               '2 I T2', '3 I T3', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
+    plt.title('As and Bs within Task')
     
     len_C = range(C_list.shape[1])
     bar_plot = fig.add_subplot(grid[0:3, 1:3])
     plt.ylabel('Regression Coefficient')
-    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'Constant'), rotation = 'vertical')
+    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'A and Bs Task Specific','Constant'), rotation = 'vertical')
     
     # Coordinates of the slider # 50 ms window 
     
-    slider_plot  = fig.add_subplot(grid[9:10, 1:3])
+    slider_plot  = fig.add_subplot(grid[10:11, 1:3])
     plt.yticks([])
     plt.xticks([0,10,20,30,40,50,60],['- 1500 ms','- 1000 ms', '- 500 sec', 'Poke Entry', '+ 500 ms', '1000 ms', '+ 1500 ms'])  
     
-    trial_corr_plot = fig.add_subplot(grid[ 4:8, 1:3])
+    trial_corr_plot = fig.add_subplot(grid[ 5:9, 1:3])
     plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
                '1 A T3 R','1 A T3 NR', ' 2 I T1',\
                '2 I T2', '3 I T3', '3 B T1 R',\
@@ -1205,6 +1347,7 @@ def matrices_for_different_times(C_list,correlation_m_list, HP = True):
         reward_no_reward_plt.imshow(reward_no_reward,aspect = 'auto')
         reward_at_choices_plt.imshow(reward_at_choices,aspect = 'auto')
         choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto')
+        a_bs_task_specific_rsa_plt.imshow(a_bs_task_specific_rsa,aspect = 'auto')
         camera.snap()
         
     plt.colorbar(sh)

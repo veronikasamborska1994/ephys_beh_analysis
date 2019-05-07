@@ -125,7 +125,6 @@ def RSA_a_b_initiation_rdm():
 
 def reward_rdm():  
     # RSA Physical Space coding
-    
     port_a_choice_task_1_r = np.array([bool(i & 0) for i in range(15)])
     port_a_choice_task_1_r[0] = True
     port_a_choice_task_1_r[2] = True
@@ -379,6 +378,61 @@ def choice_vs_initiation():
                               port_4_choice_task_1_nr,port_5_choice_task_3_r,port_5_choice_task_3_nr])
      
     return choice_initiation_rsa
+
+
+def a_bs_task_specific():
+    
+    # RSA Physical Space coding
+    
+    port_a_choice_task_1_r = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_1_r[0:2] = True
+    
+    port_a_choice_task_1_nr = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_1_nr[0:2] = True
+
+    port_a_choice_task_2_r = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_2_r[2:4] = True
+
+    port_a_choice_task_2_nr = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_2_nr[2:4] = True
+
+    port_a_choice_task_3_r = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_3_r[4:6] = True
+
+    port_a_choice_task_3_nr = np.array([bool(i & 0) for i in range(15)])
+    port_a_choice_task_3_nr[4:6] = True
+
+    port_2_initiation_task_1 = np.array([bool(i & 0) for i in range(15)])
+    
+    port_2_initiation_task_2 = np.array([bool(i & 0) for i in range(15)])
+    
+    port_3_initiation_task_3 = np.array([bool(i & 0) for i in range(15)])
+    
+    port_3_choice_task_2_r = np.array([bool(i & 0) for i in range(15)])
+    port_3_choice_task_2_r[9:11] = True
+
+    port_3_choice_task_2_nr = np.array([bool(i & 0) for i in range(15)])
+    port_3_choice_task_2_nr[9:11] = True
+
+    port_4_choice_task_1_r = np.array([bool(i & 0) for i in range(15)])
+    port_4_choice_task_1_r[11:13] = True
+
+    port_4_choice_task_1_nr = np.array([bool(i & 0) for i in range(15)])
+    port_4_choice_task_1_nr[11:13] = True
+
+    port_5_choice_task_3_r = np.array([bool(i & 0) for i in range(15)])
+    port_5_choice_task_3_r[13:15] = True
+
+    port_5_choice_task_3_nr = np.array([bool(i & 0) for i in range(15)])
+    port_5_choice_task_3_nr[13:15] = True
+
+    
+    a_bs_task_specific_rsa = np.vstack([port_a_choice_task_1_r,port_a_choice_task_1_nr,port_a_choice_task_2_r,port_a_choice_task_2_nr,\
+                              port_a_choice_task_3_r,port_a_choice_task_3_nr,port_2_initiation_task_1,port_2_initiation_task_2,\
+                              port_3_initiation_task_3,port_3_choice_task_2_r,port_3_choice_task_2_nr,port_4_choice_task_1_r,\
+                              port_4_choice_task_1_nr,port_5_choice_task_3_r,port_5_choice_task_3_nr])
+   
+    return a_bs_task_specific_rsa
 
 
     

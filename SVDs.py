@@ -16,14 +16,14 @@ import heatmap_aligned as ha
 import forced_trials_extract_data as ft
 import svds_u_only as svdu
 
-#
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-#experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
-#experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
-#experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
 
+ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
+experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
+experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
+HP = HP[1:]
 
 #PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
 #HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
@@ -516,9 +516,15 @@ def plotting_correlation_matrix(experiment):
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward)).argmin()
     
+   # flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+   # flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+   # flattened_all_clusters_task_3_first_half, flattened_all_clusters_task_3_second_half\
+   # = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = True, plot_a = True, plot_b = False, average_reward = False)
+    
     flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
     flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = False, plot_a = True, plot_b = False, average_reward = False)
-    
+     
+
     
     m_full = np.concatenate([flattened_all_clusters_task_1_first_half,flattened_all_clusters_task_1_second_half,\
                              flattened_all_clusters_task_2_first_half,flattened_all_clusters_task_2_second_half], axis =1)
@@ -538,7 +544,7 @@ def plotting_correlation_matrix(experiment):
     plt.xticks(ticks_n, ('A Reward T1 1', 'A No Reward T1 1','B Reward T1 1', 'B No Reward T1 1',\
                          'A Reward T1 2', 'A No Reward T1 2','B Reward T1 2', 'B No Reward T1 2'
                          'A Reward T2 1', 'A No Reward T2 1','B Reward T2 1', 'B No Reward T2 1',\
-                         'A Reward T2 2', 'A No Reward T2 2','B Reward T2 2', 'B No Reward T2 2'))
+                         'A Reward T2 2', 'A No Reward T2 2','B Reward T2 2', 'B No Reward T2 2'), rotation = 'vertical')
 
 
     T1_T1 = corrmf[64*2:64*4,:64*2]
@@ -551,11 +557,7 @@ def plotting_correlation_matrix(experiment):
     plt.yticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
 
    
-    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-    flattened_all_clusters_task_3_first_half, flattened_all_clusters_task_3_second_half\
-    = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = True, plot_a = True, plot_b = False, average_reward = False)
-    
+  
     fig = plt.figure(figsize=(8, 25))
     grid = plt.GridSpec(5, 4, hspace=0.7, wspace=0.4)
 
