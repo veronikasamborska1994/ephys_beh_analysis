@@ -13,7 +13,7 @@ import ephys_beh_import as ep
 
 
 def plotting_reward(experiment):
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/spikes_HP.pdf')
+    pdf = PdfPages('/Users/veronikasamborska/Desktop/spikes_PFC.pdf')
 
     for session in experiment:
         poke_I_1_2 = False

@@ -17,13 +17,13 @@ import forced_trials_extract_data as ft
 import svds_u_only as svdu
 
 
-ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
-experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
-experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
-HP = HP[1:]
+#ephys_path = '/Users/veronikasamborska/Desktop/neurons'
+#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
+#HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+#experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
+#experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
+#experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
+#HP = HP[1:]
 
 #PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
 #HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
@@ -516,13 +516,13 @@ def plotting_correlation_matrix(experiment):
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward)).argmin()
     
-   # flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-   # flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-   # flattened_all_clusters_task_3_first_half, flattened_all_clusters_task_3_second_half\
-   # = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = True, plot_a = True, plot_b = False, average_reward = False)
-    
     flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment_aligned_HP, tasks_unchanged = False, plot_a = True, plot_b = False, average_reward = False)
+    flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+    flattened_all_clusters_task_3_first_half, flattened_all_clusters_task_3_second_half\
+    = svdu.demean_data(experiment_aligned_PFC, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False)
+    
+ #   flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+ #   flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment_aligned_PFC, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False)
      
 
     
@@ -548,13 +548,19 @@ def plotting_correlation_matrix(experiment):
 
 
     T1_T1 = corrmf[64*2:64*4,:64*2]
-    T1_T2 = corrmf[64*4:64*6,64*2:64*4]
-    
-    plt.figure(2)
-    difference = T1_T1-T1_T2
-    plt.imshow(difference)
+    T1_T2 = corrmf[64*10:64*14,:64]
+    #a = corrmf[0:64,64:64*3]
+    #plt.imshow(a)
+    #plt.figure(2)
+    #difference = T1_T1-T1_T2
+    plt.imshow(T1_T2)
     plt.xticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ), rotation = 'vertical')  
-    plt.yticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
+    ticks_n  = np.linspace(0, T1_T2.shape[0],4)
+
+    plt.yticks(ticks_n, ('B Reward T2', 'B No Reward T2',\
+                         'A Reward T2', 'A No Reward T2'))
+    
+    #plt.yticks([ind_init,ind_choice,ind_reward], ('Initiation', 'Choice', 'Reward' ))  
 
    
   
@@ -623,10 +629,10 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = svdu.demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = svdu.demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
   
      #SVDsu.shape, s.shape, vh.shape for task 1 first half
     u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = False)
