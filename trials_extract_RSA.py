@@ -21,6 +21,7 @@ import poke_aligned_spikes as pos
 import matplotlib.animation as animation
 from matplotlib.animation import FFMpegWriter
 from matplotlib.widgets import Slider, Button, RadioButtons
+import rsa_no_initiation as rs
 
 font = {'family' : 'normal',
         'weight' : 'normal',
@@ -1074,10 +1075,16 @@ def extract_trials(experiment, all_sessions, time_window = 1):
    session_list_poke_b_task_z_spikes_r = np.concatenate(session_list_poke_b_task_z_spikes_r,0)
    session_list_poke_b_task_z_spikes_nr  = np.concatenate(session_list_poke_b_task_z_spikes_nr,0)
    
+   #matrix_for_correlations = np.vstack([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
+   #                                    session_list_poke_a_task_y_nr_spikes,session_list_poke_a_task_z_r_spikes,session_list_poke_a_task_z_nr_spikes,\
+   #                                    session_list_poke_initiation_task_x_spikes,session_list_poke_initiation_task_y_spikes,\
+   #                                    session_list_poke_initiation_b_task_z_spikes,session_list_poke_choice_b_task_x_spikes_r,\
+   #                                   session_list_poke_choice_b_task_x_spikes_nr,session_list_poke_b_task_y_spikes_r,\
+   #                                    session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr])
+   
    matrix_for_correlations = np.vstack([session_list_poke_a_task_x_r_spikes,session_list_poke_a_task_x_nr_spikes,session_list_poke_a_task_y_r_spikes,\
                                        session_list_poke_a_task_y_nr_spikes,session_list_poke_a_task_z_r_spikes,session_list_poke_a_task_z_nr_spikes,\
-                                       session_list_poke_initiation_task_x_spikes,session_list_poke_initiation_task_y_spikes,\
-                                       session_list_poke_initiation_b_task_z_spikes,session_list_poke_choice_b_task_x_spikes_r,\
+                                       session_list_poke_choice_b_task_x_spikes_r,\
                                        session_list_poke_choice_b_task_x_spikes_nr,session_list_poke_b_task_y_spikes_r,\
                                        session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr])
    
@@ -1091,24 +1098,24 @@ def regression_RSA(matrix_for_correlations):
     C = [] 
     correlation_m = np.corrcoef(matrix_for_correlations)
     correlation_m_f = correlation_m.flatten()
-    physical_rsa = rsa.RSA_physical_rdm()
+    physical_rsa = rs.RSA_physical_rdm()
     physical_rsa  = 1*physical_rsa.flatten()
-    choice_ab_rsa = rsa.RSA_a_b_initiation_rdm()
+    choice_ab_rsa = rs.RSA_a_b_initiation_rdm()
     choice_ab_rsa = 1*choice_ab_rsa.flatten()
-    reward_no_reward = rsa.reward_rdm()
+    reward_no_reward = rs.reward_rdm()
     reward_no_reward = 1*reward_no_reward.flatten()
-    reward_at_choices = rsa.reward_choice_space()
+    reward_at_choices = rs.reward_choice_space()
     reward_at_choices = 1*reward_at_choices.flatten()
-    choice_initiation_rsa =  rsa.choice_vs_initiation()
-    choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
-    a_bs_task_specific_rsa = rsa.a_bs_task_specific()
-    a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
+    #choice_initiation_rsa =  rsa.choice_vs_initiation()
+    #choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
+    #a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+    #a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
 
     ones = np.ones(len(choice_ab_rsa))
     
 
-    predictors = OrderedDict([#('Space' , physical_rsa),
-                              #('A vs B', choice_ab_rsa),
+    predictors = OrderedDict([('Space' , physical_rsa),
+                              ('A vs B', choice_ab_rsa),
                               ('Reward',reward_no_reward),
                               ('Reward at A vs B',reward_at_choices),
                               #('Choice vs Initiation',choice_initiation_rsa),
@@ -1126,99 +1133,75 @@ def regression_RSA(matrix_for_correlations):
     
     return C,correlation_m,predictors
 
+
 def rsa_across_time(experiment,all_sessions):
-    matrix_for_correlations = extract_trials_all_time_points(experiment_aligned_HP,all_sessions_HP)
+    matrix_for_correlations = extract_trials(experiment_aligned_HP,all_sessions_HP,time_window = 30)
     C,correlation_m,predictors = regression_RSA(matrix_for_correlations)
     
+    #plt.imshow(correlation_m)
     ### Predictor RSA Matrices 
-    physical_rsa = rsa.RSA_physical_rdm()
-    choice_ab_rsa = rsa.RSA_a_b_initiation_rdm()
-    reward_no_reward = rsa.reward_rdm() 
-    reward_at_choices = rsa.reward_choice_space()
-    choice_initiation_rsa =  rsa.choice_vs_initiation()
-    a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+    physical_rsa = rs.RSA_physical_rdm()
+    choice_ab_rsa = rs.RSA_a_b_initiation_rdm()
+    reward_no_reward = rs.reward_rdm() 
+    reward_at_choices = rs.reward_choice_space()
+    #choice_initiation_rsa =  rsa.choice_vs_initiation()
+    #a_bs_task_specific_rsa = rsa.a_bs_task_specific()
 
     # Set up the axes with gridspec
     fig = plt.figure(figsize=(6, 25))
     grid = plt.GridSpec(12, 3, hspace=0.5, wspace=1)
-    space_plt = fig.add_subplot(grid[0:2, 0])
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    space_plt = fig.add_subplot(grid[1:3, 0])
+    plt.yticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
     plt.xticks([])
     plt.title('Space')
 
-    choice_plt = fig.add_subplot(grid[2:4, 0])
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    choice_plt = fig.add_subplot(grid[3:5, 0])
+    plt.yticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
     plt.xticks([])
     plt.title('A vs B')
 
-    reward_no_reward_plt = fig.add_subplot(grid[4:6, 0])
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    reward_no_reward_plt = fig.add_subplot(grid[5:7, 0])
+    plt.yticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))
     plt.xticks([])
     plt.title('Reward')
 
-    reward_at_choices_plt = fig.add_subplot(grid[6:8, 0])
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    reward_at_choices_plt = fig.add_subplot(grid[7:9, 0])
+    plt.yticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR')) 
-    plt.xticks([])
-    plt.title('Reward at Choice')
-
-    choice_initiation_plt = fig.add_subplot(grid[8:10, 0])
+    plt.xticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
+               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'),rotation = 'vertical' ) 
     
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-              '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
-              '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
-    plt.xticks([])
-    plt.title('Choice vs Initiation')
-      
+    plt.title('Reward at Choice')    
     
-    a_bs_task_specific_rsa_plt = fig.add_subplot(grid[10:12, 0])
-    
-    plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
-               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
-               '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
-    plt.title('As and Bs within Task')
-      
-    
-    len_C = range(len(C[0]))
+    len_C = range(len(C[0][:-1]))
     bar_plot = fig.add_subplot(grid[1:4, 1:3])
     plt.ylabel('Regression Coefficient')
-    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice','Choice vs Initiation', 'A and Bs Task Specific','Constant'), rotation = 'vertical')
+    plt.xticks(len_C,('Space','A vs B','Reward','Reward at Choice'), rotation = 'vertical')
      
     trial_corr_plot = fig.add_subplot(grid[ 6:10, 1:3])
-    plt.xticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    plt.xticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'), rotation = 'vertical')
    
-    plt.yticks(range(15), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
-               '1 A T3 R','1 A T3 NR', ' 2 I T1',\
-               '2 I T2', '3 I T3', '3 B T1 R',\
+    plt.yticks(range(12), ('1 A T1 R', '1 A T1 NR','1 A T2 R', '1 A T2 NR',\
+               '1 A T3 R','1 A T3 NR', '3 B T1 R',\
                '3 B T1 NR','4 B T2 R', '4 B T2 NR', '5 B T3 R', '5 B T3 NR'))  
     
-    bar_plot.bar(len_C,C[0])
+    bar_plot.bar(len_C,C[0][:-1])
     space_plt.imshow(physical_rsa,aspect = 'auto')
     choice_plt.imshow(choice_ab_rsa,aspect = 'auto')
     reward_no_reward_plt.imshow(reward_no_reward,aspect = 'auto')
     reward_at_choices_plt.imshow(reward_at_choices,aspect = 'auto')
-    choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto')
-    a_bs_task_specific_rsa_plt.imshow(a_bs_task_specific_rsa,aspect = 'auto')
+    #choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto')
+   # a_bs_task_specific_rsa_plt.imshow(a_bs_task_specific_rsa,aspect = 'auto')
     sh = trial_corr_plot.imshow(correlation_m, aspect = 1)
     plt.colorbar(sh)
 

@@ -1052,16 +1052,17 @@ def plotting_no_hist(experiment,experiment_aligned):
                 
                 plt.legend()
 
-                plt.plot(x_coordinates_A_1_nR, y_coordinates_A_1_nR[neuron], color = 'red', linestyle='dashed')   
-                plt.plot(x_coordinates_A_2_nR, y_coordinates_A_2_nR[neuron], color = 'blue', linestyle='dashed')      
-                plt.plot(x_coordinates_A_3_nR, y_coordinates_A_3_nR[neuron], color = 'green',linestyle='dashed')      
-                plt.plot(x_coordinates_B_1_nR, y_coordinates_B_1_nR[neuron], color = 'red',linestyle='dashed')    
-                plt.plot(x_coordinates_B_2_nR, y_coordinates_B_2_nR[neuron], color = 'blue',linestyle='dashed' )       
-                plt.plot(x_coordinates_B_3_nR, y_coordinates_B_3_nR[neuron], color = 'green', linestyle='dashed')   
-                plt.plot(x_coordinates_I_1_nR, y_coordinates_I_1_nR[neuron], color = 'red',linestyle='dashed')   
-                plt.plot(x_coordinates_I_2_nR, y_coordinates_I_2_nR[neuron], color = 'blue',  linestyle='dashed')      
-                plt.plot(x_coordinates_I_3_nR, y_coordinates_I_3_nR[neuron], color = 'green',  linestyle='dashed')    
-                                                             
+                plt.plot(x_coordinates_A_1_nR, y_coordinates_A_1_nR[neuron], color = 'firebrick', linestyle='dashed', alpha=0.5)   
+                plt.plot(x_coordinates_A_2_nR, y_coordinates_A_2_nR[neuron], color = 'cadetblue', linestyle='dashed', alpha=0.5)      
+                plt.plot(x_coordinates_A_3_nR, y_coordinates_A_3_nR[neuron], color = 'olive',linestyle='dashed', alpha=0.5)      
+                plt.plot(x_coordinates_B_1_nR, y_coordinates_B_1_nR[neuron], color = 'firebrick',linestyle='dashed', alpha=0.5)    
+                plt.plot(x_coordinates_B_2_nR, y_coordinates_B_2_nR[neuron], color = 'cadetblue',linestyle='dashed', alpha=0.5 )       
+                plt.plot(x_coordinates_B_3_nR, y_coordinates_B_3_nR[neuron], color = 'olive', linestyle='dashed', alpha=0.5)   
+                plt.plot(x_coordinates_I_1_nR, y_coordinates_I_1_nR[neuron], color = 'red',linestyle='dashed', alpha=0.5)   
+                plt.plot(x_coordinates_I_2_nR, y_coordinates_I_2_nR[neuron], color = 'blue',  linestyle='dashed', alpha=0.5)      
+                plt.plot(x_coordinates_I_3_nR, y_coordinates_I_3_nR[neuron], color = 'green',  linestyle='dashed',alpha=0.5 )    
+                plt.legend()
+                                           
                 plt.axvline(ind_init_poke_1,ymin=0.8, ymax=1,linestyle = '--' ,c = 'Grey', linewidth=0.5)
                 plt.axvline(ind_choice_poke_1,ymin=0.8, ymax=1,linestyle = '--', c = 'Black', linewidth=0.5)
                 plt.axvline(ind_reward_poke_1, ymin=0.8, ymax=1,linestyle = '--', c = 'Pink', linewidth=0.5)
