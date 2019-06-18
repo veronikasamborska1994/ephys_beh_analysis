@@ -13,6 +13,9 @@ import math
 import scipy.optimize as op
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import regressions as re
+from collections import OrderedDict
+from sklearn.linear_model import LinearRegression
 
 log_max_float = np.log(sys.float_info.max/2.1) # Log of largest possible floating point number.
 
@@ -99,24 +102,43 @@ class Q1():
         choice_b_ind = []
         
         # Unpack trial events.
-        choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+        choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
+        task = session.trial_data['task']
+        
+        #forced_trials = session.trial_data['forced_trial']
+        #non_forced_array = np.where(forced_trials == 0)[0]
+        #task_non_forced = task[non_forced_array]
+        #choices = choices[non_forced_array]
+        #outcomes = outcomes[non_forced_array]
+        
+        task_1 = np.where(task == 1)[0]
+        task_2 = np.where(task == 2)[0]  
+        
+        ind_task_2 = len(task_1)
+        ind_task_3 = len(task_1)+len(task_2)
+
         n_trials = choices.shape[0]
+        
         # Unpack parameters.
         alpha, iTemp, k = params  
 
-        #Variables.
+        # Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
 
         for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-
-            nc = 1 - c # Not chosen action.
-
-            # update action values simple RW
-            Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
-            Q_td[i+1,nc] = Q_td[i,nc]
+            if i == ind_task_2 or i == ind_task_3: 
+                nc = 1 - c # Not chosen action.
+                # update action values simple RW
+                Q_td[i+1, c] = 0
+                Q_td[i+1,nc] = 0 
+            else:
+                nc = 1 - c # Not chosen action.
+                # update action values simple RW
+                Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
+                Q_td[i+1,nc] = Q_td[i,nc]
            
 
-        # Evaluate choice probabilities and likelihood. 
+        # Evaluate choice probabilities and likelihood.     
         choice_probs = array_softmax(Q_td, iTemp)
         for c,choice in enumerate(choices):
             if choice == 0:
@@ -140,8 +162,7 @@ class Q1():
 
 class Q2():
     ''' A Q2 (one variable RW) in which outcomes on A update both A and B action values simultaneously'''
-
-
+    
     def __init__(self):
 
         self.name = 'Q2'
@@ -163,7 +184,7 @@ class Q2():
         # Unpack parameters.
         alpha, iTemp, k  = params  
 
-        #Variables.
+        # Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Action values.
 
         for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
@@ -275,7 +296,21 @@ class Q4():
         choice_a_ind = []
         choice_b_ind = []
         
-        choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+        # Unpack trial events.
+        choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
+        task = session.trial_data['task']
+        
+        #forced_trials = session.trial_data['forced_trial']
+        #non_forced_array = np.where(forced_trials == 0)[0]
+        #task_non_forced = task[non_forced_array]
+        #choices = choices[non_forced_array]
+        #outcomes = outcomes[non_forced_array]
+        
+        task_1 = np.where(task == 1)[0]
+        task_2 = np.where(task == 2)[0]  
+        ind_task_2 = len(task_1)
+        ind_task_3 = len(task_1)+len(task_2)
+        
         n_trials = choices.shape[0]
 
         # Unpack parameters.
@@ -284,11 +319,18 @@ class Q4():
         #Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
         for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-            nc = 1 - c # Not chosen action.
-            # update action values simple RW
-            Q_td[i+1, c] = (1-alpha)*Q_td[i, c]+alpha*o
-            Q_td[i+1, nc] = (1-alpha*abs(h))*Q_td[i, nc]+alpha*h*o
-                                
+            if i == ind_task_2 or i == ind_task_3:             
+                nc = 1 - c # Not chosen action.
+                # update action values simple RW
+                Q_td[i+1, c] = 0
+                Q_td[i+1,nc] = 0
+                
+            else:
+                nc = 1 - c # Not chosen action.
+                # update action values simple RW
+                Q_td[i+1, c] = (1-alpha)*Q_td[i, c]+alpha*o
+                Q_td[i+1, nc] = (1-alpha*abs(h))*Q_td[i, nc]+alpha*h*o
+                                    
         # Evaluate choice probabilities
         for c,choice in enumerate(choices):
             if choice == 0:
@@ -354,7 +396,19 @@ def simulate_Q1(session, params):
     # Unpack trial events.
     choice_a_ind = []
     choice_b_ind = []
-    choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+    # Unpack trial events.
+    choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
+    task = session.trial_data['task']
+    #forced_trials = session.trial_data['forced_trial']
+    #non_forced_array = np.where(forced_trials == 0)[0]
+    #task_non_forced = task[non_forced_array]
+    #choices = choices[non_forced_array]
+    #outcomes = outcomes[non_forced_array]
+    task_1 = np.where(task == 1)[0]
+    task_2 = np.where(task == 2)[0]  
+    ind_task_2 = len(task_1)
+    ind_task_3 = len(task_1)+len(task_2)
+    
     n_trials = choices.shape[0]
 
     # Unpack parameters.
@@ -362,13 +416,22 @@ def simulate_Q1(session, params):
 
     #Variables.
     Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
-
+    Q_chosen = [0]
     for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-        nc = 1 - c # Not chosen action.
-        
-        # update action values simple RW
-        Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
-        Q_td[i+1,nc] = Q_td[i,nc]
+        if i == ind_task_2 or i == ind_task_3: 
+            nc = 1 - c # Not chosen action.
+            # update action values simple RW
+            Q_td[i+1, c] = 0
+            Q_td[i+1,nc] = 0 
+            Q_chosen.append(Q_td[i+1,c])
+
+        else:           
+            nc = 1 - c # Not chosen action.           
+            # update action values simple RW
+            Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
+            Q_td[i+1,nc] = Q_td[i,nc]
+            Q_chosen.append(Q_td[i+1,c])
+
                   
     # Evaluate choice probabilities
     for c,choice in enumerate(choices):
@@ -384,111 +447,49 @@ def simulate_Q1(session, params):
     
     choice_probs = array_softmax(Q_td, iTemp)
 
-    return choice_probs, Q_td
+    return choice_probs, Q_td, Q_chosen
 
-def simulate_Q2(session, params):
-    # Unpack trial events.
-    choice_a_ind = []
-    choice_b_ind = []
-    
-    choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
-    n_trials = choices.shape[0]
-
-    # Unpack parameters.
-    alpha, iTemp, k = params  
-
-    #Variables.
-    Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
-
-    for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-        nc = 1 - c # Not chosen action.
-        # update action values simple RW
-        Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
-        Q_td[i+1,nc] = 1-Q_td[i+1, c]
-                  
-    # Evaluate choice probabilities
-    for c,choice in enumerate(choices):
-            if choice == 0:
-                if choices[c] == choices[c-1]:
-                    choice_a_ind.append(c-1)
-            elif choice == 1:
-                if choices[c] == choices[c-1]:
-                    choice_b_ind.append(c-1)
-                    
-    Q_td[choice_a_ind,0] *= k 
-    Q_td[choice_b_ind,1] *= k 
-    choice_probs = array_softmax(Q_td, iTemp)
-    
-    return choice_probs, Q_td
-
-    
-def simulate_Q3(session, params):
-
-    # Unpack trial events.
-    choice_a_ind = []
-    choice_b_ind = []
-    
-    choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
-    n_trials = choices.shape[0]
-
-    # Unpack parameters.
-    alpha,beta, iTemp, h, k = params  
-    
-    #Variables.
-    Q_td_standard = np.zeros([n_trials + 1, 2])  # Model free action values.
-    Q_td_one_variable = np.zeros([n_trials + 1, 2]) 
-    Q_td = np.zeros([n_trials + 1, 2]) 
-    for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-        nc = 1 - c # Not chosen action.
-        # update action values simple RW
-        Q_td_standard[i+1, c] = Q_td_standard[i, c] + alpha*(o - Q_td_standard[i, c])
-        Q_td_standard[i+1,nc] = Q_td_standard[i,nc]
-             
-        Q_td_one_variable[i+1, c] = Q_td_one_variable[i, c] + beta*(o - Q_td_one_variable[i, c])
-        Q_td_one_variable[i+1,nc] = 1-Q_td_one_variable[i+1, c]
-        
-        Q_td[i+1, c] = (1-abs(h))* Q_td_standard[i+1, c] + h*Q_td_one_variable[i+1, c]                
-        Q_td[i+1, nc] = (1-abs(h))* Q_td_standard[i+1, nc] + h*Q_td_one_variable[i+1, nc]                
-      
-    
-    for c,choice in enumerate(choices):
-            if choice == 0:
-                if choices[c] == choices[c-1]:
-                    choice_a_ind.append(c-1)
-            elif choice == 1:
-                if choices[c] == choices[c-1]:
-                    choice_b_ind.append(c-1)
-                    
-    Q_td[choice_a_ind,0] *= k 
-    Q_td[choice_b_ind,1] *= k 
- 
-    # Evaluate choice probabilities
-    choice_probs = array_softmax(Q_td, iTemp)    
-    
-    return choice_probs, Q_td
 
 def simulate_Q4(session, params):
         # Unpack trial events.
         choice_a_ind = []
         choice_b_ind = []
         
-        choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
-
+        # Unpack trial events.
+        choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
+        #forced_trials = session.trial_data['forced_trial']
+        #non_forced_array = np.where(forced_trials == 0)[0]
+        #task_non_forced = task[non_forced_array]
+        #choices = choices[non_forced_array]
+        #outcomes = outcomes[non_forced_array]
+        task_1 = np.where(task == 1)[0]
+        task_2 = np.where(task == 2)[0]  
+        
+        ind_task_2 = len(task_1)
+        ind_task_3 = len(task_1)+len(task_2)
         n_trials = choices.shape[0]
 
         # Unpack parameters.
         alpha, iTemp, h, k = params  
 
         #Variables.
-        Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
-        
-      
+        Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.    
+        Q_chosen = [0]
         for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
-            nc = 1 - c # Not chosen action
-            # update action values simple RW
-            Q_td[i+1, c] = (1-alpha)*Q_td[i, c]+alpha*o
-            Q_td[i+1, nc] = (1-alpha*abs(h))*Q_td[i, nc]+alpha*h*o
-                                        
+            if i == ind_task_2 or i == ind_task_3: 
+                nc = 1 - c # Not chosen action.
+                # update action values simple RW
+                Q_td[i+1, c] = 0
+                Q_td[i+1,nc] = 0
+                Q_chosen.append(Q_td[i+1, c])
+
+            else:
+                nc = 1 - c # Not chosen action
+                # update action values simple RW
+                Q_td[i+1, c] = (1-alpha)*Q_td[i, c]+alpha*o
+                Q_td[i+1, nc] = (1-alpha*abs(h))*Q_td[i, nc]+alpha*h*o
+                Q_chosen.append(Q_td[i+1, c])
+                                            
         # Evaluate choice probabilities
         for c,choice in enumerate(choices):
             if choice == 0:
@@ -503,7 +504,7 @@ def simulate_Q4(session, params):
         
         choice_probs = array_softmax(Q_td, iTemp)
         
-        return choice_probs, Q_td
+        return choice_probs, Q_td,Q_chosen
  
         
 def fit_sessions(sessions, agent):
@@ -525,14 +526,17 @@ def fit_sessions(sessions, agent):
 
 def BIC_all_sessions():
     
-    sessions = experiment_aligned_HP + experiment_aligned_PFC
+    all_sessions = experiment_aligned_HP + experiment_aligned_PFC
     
-    fits_Q1 = fit_sessions(sessions, Q1())
-    fits_Q2 = fit_sessions(sessions, Q2())
-    fits_Q3 = fit_sessions(sessions, Q3())
-    fits_Q4 = fit_sessions(sessions, Q4())
+    fits_Q1_HP = fit_sessions(experiment_aligned_HP, Q1())
+    fits_Q1_PFC = fit_sessions(experiment_aligned_PFC, Q1())
 
-    
+    fits_Q4_HP = fit_sessions(experiment_aligned_HP, Q4())
+    fits_Q4_PFC = fit_sessions(experiment_aligned_PFC, Q4())
+
+    fits_Q1 = fit_sessions(all_sessions, Q1())
+    fits_Q4 = fit_sessions(all_sessions, Q4())
+
     BIC_Q1_list = []
     for t,l,p in zip(fits_Q1['n_trials'],fits_Q1['likelihood'],fits_Q1['params']):
         n_trials = t 
@@ -541,25 +545,7 @@ def BIC_all_sessions():
         
         BIC_Q1 =  BIC(n_trials,likelihood, n_params)
         BIC_Q1_list.append(BIC_Q1)
-        
-    BIC_Q2_list = []
-    for t,l,p in zip(fits_Q2['n_trials'],fits_Q2['likelihood'],fits_Q2['params']):
-        n_trials = t 
-        likelihood = l
-        n_params = len(p)
-      
-        BIC_Q2 =  BIC(n_trials,likelihood, n_params)
-        BIC_Q2_list.append(BIC_Q2)
-        
-            
-    BIC_Q3_list = []
-    for t,l,p in zip(fits_Q3['n_trials'],fits_Q3['likelihood'],fits_Q3['params']):
-        n_trials = t 
-        likelihood = l
-        n_params = len(p)
-      
-        BIC_Q3 =  BIC(n_trials,likelihood, n_params)
-        BIC_Q3_list.append(BIC_Q3)
+
         
     BIC_Q4_list = []
     for t,l,p in zip(fits_Q4['n_trials'],fits_Q4['likelihood'],fits_Q4['params']):
@@ -574,18 +560,14 @@ def BIC_all_sessions():
     for p in fits_Q4['params']:
         cross_term_list.append(p[-2])
         
-    h_Q3 = []  
-    for p in fits_Q3['params']:
-        h_Q3.append(p[-1])
         
     m_cross_term = np.mean(cross_term_list)
         
     BIC_Q1_sum = np.mean(BIC_Q1_list)
-    BIC_Q2_sum = np.mean(BIC_Q2_list)
-    BIC_Q3_sum = np.mean(BIC_Q3_list)
+   
     BIC_Q4_sum = np.mean(BIC_Q4_list)
     
-    return BIC_Q1_sum, BIC_Q2_sum, BIC_Q3_sum, BIC_Q4_sum, m_cross_term
+    return BIC_Q1_sum, BIC_Q4_sum, m_cross_term
 
 
 def BIC(n_trials,likelihood, n_params):
@@ -598,55 +580,49 @@ def plotting(session):
     
     session_fit_Q1 = fit_session(session = session, agent = Q1(), repeats = 5, brute_init = True, verbose = False)
     
-    session_fit_Q2 = fit_session(session = session, agent = Q2(), repeats = 5, brute_init = True, verbose = False)
-    
-    session_fit_Q3 = fit_session(session = session, agent = Q3(), repeats = 5, brute_init = True, verbose = False)
-    
     session_fit_Q4 = fit_session(session = session, agent = Q4(), repeats = 5, brute_init = True, verbose = False)
+    
+    task = session.trial_data['task']
 
+    #choices = session.trial_data['choices']
+    #forced_trials = session.trial_data['forced_trial']
+    #non_forced_array = np.where(forced_trials == 0)[0]
+    #task_non_forced = task[non_forced_array]
+    #choices = choices[non_forced_array]
+    
+    task_1 = np.where(task == 1)[0]
+    task_2 = np.where(task == 2)[0]  
+    ind_task_2 = len(task_1)
+    ind_task_3 = len(task_1)+len(task_2)
 
     params_Q1 = session_fit_Q1['params']
-    params_Q2 = session_fit_Q2['params']
-    params_Q3 = session_fit_Q3['params']
+   
     params_Q4 = session_fit_Q4['params']
 
-    choice_probs_Q1, Q_td_Q1 = simulate_Q1(session, params_Q1)
-    choice_probs_Q2, Q_td_Q2 = simulate_Q2(session, params_Q2)
-    choice_probs_Q3, Q_td_Q3 = simulate_Q3(session, params_Q3)
-    choice_probs_Q4, Q_td_Q4 = simulate_Q4(session, params_Q4)
+    choice_probs_Q1, Q_td_Q1, Q_chosen_1 = simulate_Q1(session, params_Q1)
+    
+    choice_probs_Q4, Q_td_Q4 ,Q_chosen_4 = simulate_Q4(session, params_Q4)
 
     fig = plt.figure(figsize=(6, 40))
-    grid = plt.GridSpec(12, 3, hspace=6, wspace=1)
+    grid = plt.GridSpec(8, 3, hspace=6, wspace=1)
     fig.add_subplot(grid[0:2,:3]) 
     plt.plot(Q_td_Q1[:,0], label = 'Value A', color = 'green')
     plt.plot(Q_td_Q1[:,1], label = 'Value B', color = 'black')
-    plt.plot(session.trial_data['choices'], '--', color = 'grey',linewidth = 0.5)
+    plt.plot(choices, '--', color = 'grey',linewidth = 0.5)
+    plt.vlines(ind_task_2, 0, 1, color = 'red')
+    plt.vlines(ind_task_3, 0, 1, color = 'red')
+
     plt.ylabel('Q')
     plt.title('Q_a(t) = Q_a(t-1) + alpha*(outcome -Q_a(t-1))\nQ_b(t) = Q_b(t-1)')
-                 
+
 
     fig.add_subplot(grid[2:4,:3]) 
-    plt.plot(Q_td_Q2[:,0], label = 'Value A', color = 'green')
-    plt.plot(Q_td_Q2[:,1], label = 'Value B', color = 'black')
-    plt.plot(session.trial_data['choices'], '--', color = 'grey',linewidth = 0.5)
-    plt.ylabel('Q')
-    plt.title('Q_a(t) = Q_a(t-1) + alpha*(outcome -Q_a(t-1))\nQ_b(t) = 1-Q_a')
-          
-
-    
-    fig.add_subplot(grid[4:6,:3]) 
-    plt.plot(Q_td_Q3[:,0], label = 'Value A',  color = 'green')
-    plt.plot(Q_td_Q3[:,1], label = 'Value B', color = 'black')
-    plt.plot(session.trial_data['choices'], '--', color = 'grey',linewidth = 0.5)
-    plt.ylabel('Q') 
-    plt.title('Q_td = (1-h)*Q_classic + h*Q_one_variable')
-
-
-
-    fig.add_subplot(grid[6:8,:3]) 
     plt.plot(Q_td_Q4[:,0], label = 'Value A',  color = 'green')
     plt.plot(Q_td_Q4[:,1], label = 'Value B', color = 'black')
-    plt.plot(session.trial_data['choices'], '--', color = 'grey', linewidth = 0.5)
+    plt.plot(choices, '--', color = 'grey', linewidth = 0.5)
+    plt.vlines(ind_task_2, -1, 1, color = 'red')
+    plt.vlines(ind_task_3, -1, 1, color = 'red')
+
     plt.ylabel('Q')
     plt.xlabel('Trial N')
     plt.title('Q_a(t) = (1-alpha)*Q(t-1)+alpha*outcome\nQ_b(t)= (1-alpha*abs(h))*Q_b(t-1)+alpha*h*outcome')
@@ -654,19 +630,117 @@ def plotting(session):
 
     plt.legend()
     
-    dict_BIC = {'RW':BIC_Q1_sum, 'RW 1 Variable':BIC_Q2_sum,'Mix RW and 1 Variable':BIC_Q3_sum, 'RW cross-learning rates':BIC_Q4_sum}
+    dict_BIC = {'RW':BIC_Q1_sum, 'RW cross-learning rates':BIC_Q4_sum}
     BICs = np.array(list(dict_BIC.values()))
     p = dict_BIC.keys()
     
-    fig.add_subplot(grid[8:11,:2]) 
+    fig.add_subplot(grid[4:7,:2]) 
     plt.bar(np.arange(len(BICs)), BICs, color = 'pink')
     plt.xticks(np.arange(len(BICs)),p, rotation = 'vertical')
     plt.ylabel('Mean BIC score')
-    fig.add_subplot(grid[8:11,2]) 
+    fig.add_subplot(grid[4:7,2]) 
     plt.bar([0,1,2], [0,m_cross_term,0], color = 'grey')
     plt.xticks([0,1,2], ['','Cross-Term',''])
 
     
     
+def simulate_Qtd_experiment(fits_Q1, fits_Q4, experiment):
+    
+    experiment_sim_Q1 = []
+    experiment_sim_Q4 = []
+
+    for s,session in enumerate(experiment):
+        
+        params_Q1 = fits_Q1['params'][s]
+        params_Q4 = fits_Q4['params'][s]
+
+        choice_probs_Q1, Q_td_Q1, Q_chosen_Q1 = simulate_Q1(session, params_Q1)
+        choice_probs_Q4, Q_td_Q4, Q_chosen_Q4 = simulate_Q4(session, params_Q4)
+        
+        experiment_sim_Q1.append(Q_chosen_Q1)
+        experiment_sim_Q4.append(Q_chosen_Q4)
+        
+    return experiment_sim_Q1, experiment_sim_Q4
+
+        
+        
+#experiment_sim_Q1_HP, experiment_sim_Q4_HP=  simulate_Qtd_experiment(fits_Q1_HP, fits_Q4_HP, experiment_aligned_HP)  
+#experiment_sim_Q1_PFC, experiment_sim_Q4_PFC =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
     
 
+
+
+def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
+    C_1_first_half = []
+    cpd = []
+
+    # Finding correlation coefficients for task 1 
+    for s,session in enumerate(experiment):
+        aligned_spikes= session.aligned_rates[:]
+        if aligned_spikes.shape[1] > 0: # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            
+            Q_1 = np.asarray(experiment_sim_Q1[s])
+            Q_4 = np.asarray(experiment_sim_Q4[s])
+            Q_1 = Q_1[:-1]
+            Q_4 = Q_4[:-1]
+
+            # Getting out task indicies
+            forced_trials = session.trial_data['forced_trial']
+            outcomes = session.trial_data['outcomes']
+
+            choices = session.trial_data['choices']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            Q_1 = Q_1[non_forced_array]
+            Q_4 = Q_4[non_forced_array]
+            choices = choices[non_forced_array]
+            aligned_spikes = aligned_spikes[:len(choices),:,:]
+            outcomes = outcomes[non_forced_array]
+            # Getting out task indicies
+
+            ones = np.ones(len(choices))
+            
+            predictors = OrderedDict([('Q1', Q_1),
+                                      #('Q4', Q_4),
+                                      ('choice', choices),
+                                      #('reward', outcomes),
+                                      ('ones', ones)])
+        
+           
+            X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
+            n_predictors = X.shape[1]
+            y = aligned_spikes.reshape([len(aligned_spikes),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= True)
+            ols.fit(X,y)
+            C_1_first_half.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            cpd.append(re._CPD(X,y).reshape(n_neurons,n_timepoints, n_predictors))
+
+
+    cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
+    return cpd, predictors
+
+
+def plotting_cpd(): 
+    session = experiment_aligned_PFC[0]
+    t_out = session.t_out
+    initiate_choice_t = session.target_times 
+    reward_time = initiate_choice_t[-2] +250
+            
+    ind_init = (np.abs(t_out-initiate_choice_t[1])).argmin()
+    ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
+    ind_reward = (np.abs(t_out-reward_time)).argmin()
+
+    cpd, predictors = regression_on_Q_values(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC)
+    cpd = cpd[:,:-1]
+    p = [*predictors]
+    plt.figure(2)
+    colors = ['red', 'darkblue', 'black', 'green']
+    for i in np.arange(cpd.shape[1]):
+        plt.plot(cpd[:,i], label =p[i], color = colors[i])
+        #plt.title('PFC')
+    #plt.vlines(ind_reward,ymin = 0, ymax = 0.1,linestyles= '--', color = 'grey', label = 'Outcome')
+    #plt.vlines(ind_choice,ymin = 0, ymax = 0.1,linestyles= '--', color = 'pink', label = 'Choice')
+
+    plt.legend()
+    plt.ylabel('Coefficient of Partial Determination')
+    plt.xlabel('Time (ms)')

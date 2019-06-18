@@ -176,11 +176,10 @@ def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, p
     if tasks_unchanged == True:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, z_score = False)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward)
     else:
         flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = demean_data(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks, z_score = False)
-   
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half = sv.flatten(experiment, tasks_unchanged = tasks_unchanged, plot_a = plot_a, plot_b = plot_b, average_reward = average_reward, demean_all_tasks = demean_all_tasks)
     task_1_len = flattened_all_clusters_task_1_first_half.shape[1]/4
     session =experiment[0]
     t_out = session.t_out

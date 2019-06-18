@@ -9,11 +9,7 @@ import numpy as np
 import ephys_beh_import as ep
 import heatmap_aligned as ha
 from scipy.stats import pearsonr
-ephys_path = '/Users/veronikasamborska/Desktop/neurons'
-beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-HP_new,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
-experiment_aligned_HP_new = ha.all_sessions_aligment(HP_new)
-
+import regressions as re
 #experiment_aligned_PFC = ha.all_sessions_aligment(PFC)
 
 
@@ -31,8 +27,9 @@ def remapping_control(experiment):
         
         aligned_spikes= session.aligned_rates 
         n_trials, n_neurons, n_timepoints = aligned_spikes.shape
-        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3, predictor_B_Task_1,\
-        predictor_B_Task_2, predictor_B_Task_3, reward = ha.predictors_f(session) # Indicies for Choices 
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3 = re.predictors_pokes(session)
         t_out = session.t_out
         initiate_choice_t = session.target_times #T Times of initiation and choice 
         #Find firing rates around choice
@@ -115,10 +112,10 @@ def remapping_control(experiment):
             or a3_pokes_mean_2[neuron] > baseline_mean_all_trials[neuron] + 3*std_all_trials[neuron]:
                 index_neuron.append(neuron)
         if len(index_neuron) > 0:
-            a1_a1_angle = ha.angle(a1_pokes_mean_1[index_neuron], a1_pokes_mean_2[index_neuron])            
-            a2_a2_angle = ha.angle(a2_pokes_mean_1[index_neuron], a2_pokes_mean_2[index_neuron])            
-            a1_a2_angle = ha.angle(a1_pokes_mean_2[index_neuron], a2_pokes_mean_1[index_neuron])
-            a2_a3_angle = ha.angle(a2_pokes_mean_2[index_neuron], a3_pokes_mean_1[index_neuron])
+            a1_a1_angle = re.angle(a1_pokes_mean_1[index_neuron], a1_pokes_mean_2[index_neuron])            
+            a2_a2_angle = re.angle(a2_pokes_mean_1[index_neuron], a2_pokes_mean_2[index_neuron])            
+            a1_a2_angle = re.angle(a1_pokes_mean_2[index_neuron], a2_pokes_mean_1[index_neuron])
+            a2_a3_angle = re.angle(a2_pokes_mean_2[index_neuron], a3_pokes_mean_1[index_neuron])
     
             session_a1_a1.append(a1_a1_angle)
             session_a2_a2.append(a2_a2_angle)
@@ -138,11 +135,7 @@ def remapping_control(experiment):
     return mean_within, mean_between, std_within, std_between
 
 
-bar([1,2,3,4],[mean_within_HP,mean_within_PFC, mean_between_HP, mean_between_PFC], tick_label =['Within HP', 'Within PFC','Between HP','Between PFC',], yerr = [std_within_HP,std_within_PFC,std_between_HP, std_between_PFC],\
-color = ['Black', 'Grey', 'Black', 'Grey'])
-    
-              
-                    
+#plt.bar([1,2,3,4],[mean_within_HP,mean_within_PFC, mean_between_HP, mean_between_PFC], tick_label =['Within HP', 'Within PFC','Between HP','Between PFC',])
 
    
        

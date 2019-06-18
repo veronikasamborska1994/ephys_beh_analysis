@@ -8,24 +8,52 @@ Created on Thu May  9 09:22:57 2019
 import numpy as np
 import SVDs as sv
 import matplotlib.pyplot as plt
+import svds_u_only as svdu
 
 # Spectral Ordering 
+experiment = experiment_aligned_PFC
+
+# Check demeaning 
+flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = svdu.demean_data(experiment,tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False)
+
+mean_task_1  = np.mean(flattened_all_clusters_task_1_second_half,axis = 1)
+mean_task_2  = np.mean(flattened_all_clusters_task_2_first_half,axis = 1)
+mean_task_3  = np.mean(flattened_all_clusters_task_2_second_half,axis = 1)
+  
+corr_1_2 = np.corrcoef(mean_task_1,mean_task_2)        
+corr_2_3 = np.corrcoef(mean_task_2,mean_task_3)        
+corr_1_3 = np.corrcoef(mean_task_1,mean_task_3)    
+
+# Non-demeaned data
 
 flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
 flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment_aligned_PFC, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False)
-
+flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half = sv.flatten(experiment, tasks_unchanged = True, plot_a = False, plot_b = False, average_reward = False)
 
 task_1 = flattened_all_clusters_task_1_first_half+flattened_all_clusters_task_1_second_half/2
 task_2 = flattened_all_clusters_task_2_first_half+flattened_all_clusters_task_2_second_half/2
 task_3 = flattened_all_clusters_task_3_first_half+flattened_all_clusters_task_3_second_half/2
 
-all_data = np.concatenate([task_1, task_2,task_3], axis = 1)                         
+all_data = np.concatenate([task_1, task_2,task_3], axis = 1)
+           
+corr_m = np.corrcoef(all_data)
+v,d = np.linalg.eig(corr_m)
 
-A = all_data
+A = corr_m+1
+session = experiment[0]
+t_out = session.t_out
+initiate_choice_t = session.target_times 
+reward_time = initiate_choice_t[-2] +250
+        
+ind_init = (np.abs(t_out-initiate_choice_t[1])).argmin()
+ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
+ind_reward = (np.abs(t_out-reward_time)).argmin()
 
-G = np.dot(A, np.transpose(A))/2
-G = np.power(G,3)
+A =(A + np.transpose(A))/2
+
+G = np.power(A,1.5)
 Q = -G
 Q = np.triu(Q,1) + np.tril(Q,-1)
 Q = Q - np.diag(sum(Q))
@@ -35,8 +63,6 @@ Q = np.dot(np.diag(t),Q)
 Q = np.dot(Q,np.diag(t))
 
 v,d = np.linalg.eig(Q)
-
-D = np.diag(v)
  
 v2 = d[:,1]
  
@@ -51,19 +77,20 @@ plt.imshow(sorted_data)
 
 trial_length = 64
 n_neurons = 10
+n = 39
+
 HP_range = np.arange(40)
 HP_range = HP_range[1:]
-HP_cut = np.arange(39)
+HP_cut = np.arange(n)
 
 PFC_range = np.arange(57)
 PFC_range = PFC_range[1:]
-PFC_cut = np.arange(56)
+PFC_cut = np.arange(n)
 
 fig = plt.figure(figsize=(30,60))
 
-for end, chunks in zip(PFC_range,PFC_cut):
-    print(chunks)
-    print(end)
+for end, chunks in zip(HP_range,HP_cut):
+    
 
     mean_task_1_a_r = np.mean(sorted_data[chunks*n_neurons:end*n_neurons,:trial_length],axis = 0)
     mean_task_1_a_nr =  np.mean(sorted_data[chunks*n_neurons:end*n_neurons,trial_length:trial_length*2],axis = 0)
@@ -83,7 +110,7 @@ for end, chunks in zip(PFC_range,PFC_cut):
     mean_task_3_b_r = np.mean(sorted_data[chunks*n_neurons:end*n_neurons, trial_length*10: trial_length*11],axis = 0)
     mean_task_3_b_nr = np.mean(sorted_data[chunks*n_neurons:end*n_neurons, trial_length*11: trial_length*12],axis = 0)
 
-    fig.add_subplot(6,10,end)
+    fig.add_subplot(5,8,end)
     plt.plot(mean_task_1_a_r,  color = 'darkblue')
     plt.plot(mean_task_1_a_nr,linestyle ='--', color = 'darkblue')
     
@@ -101,8 +128,10 @@ for end, chunks in zip(PFC_range,PFC_cut):
     
     plt.plot(mean_task_3_b_r, color = 'coral')
     plt.plot(mean_task_3_b_nr,linestyle = '--', color = 'coral')
+    plt.xticks([ind_init,ind_choice,ind_reward], ('I', 'C', 'O' ))  
+
     
-    if end == 56:     
+    if end == n:     
         mean_task_1_a_r = np.mean(sorted_data[end*n_neurons:,:trial_length],axis = 0)
         mean_task_1_a_nr =  np.mean(sorted_data[end*n_neurons:,trial_length:trial_length*2],axis = 0)
         
@@ -121,7 +150,7 @@ for end, chunks in zip(PFC_range,PFC_cut):
         mean_task_3_b_r = np.mean(sorted_data[end*n_neurons:, trial_length*10: trial_length*11],axis = 0)
         mean_task_3_b_nr = np.mean(sorted_data[end*n_neurons:, trial_length*11: trial_length*12],axis = 0)
     
-        fig.add_subplot(6,10,57)
+        fig.add_subplot(5,8,n+1)
         plt.plot(mean_task_1_a_r, label = 'A T1 R', color = 'darkblue')
         plt.plot(mean_task_1_a_nr,label = 'A T1 NR',linestyle ='--', color = 'darkblue')
         
@@ -138,6 +167,8 @@ for end, chunks in zip(PFC_range,PFC_cut):
         plt.plot(mean_task_3_a_nr, label = 'A T3 NR',linestyle = '--', color = 'royalblue')
         
         plt.plot(mean_task_3_b_r, label = 'B T3 R', color = 'coral')
-        plt.plot(mean_task_3_b_nr, label = 'B T3 NR',linestyle = '--', color = 'coral')
-#plt.subplots_adjust(left=0.01, bottom=0.1 , right=0.9 , top=0.09)
+        plt.plot(mean_task_3_b_nr, label = 'B T3 NR',linestyle = '--', color = 'coral')            
+        plt.xticks([ind_init,ind_choice,ind_reward], ('I', 'C', 'O' ))  
+
+
 #plt.legend()

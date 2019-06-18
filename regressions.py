@@ -316,6 +316,18 @@ def predictors_include_previous_trial(session):
     task_2 = np.where(task_non_forced == 2)[0]        
     task_2_len  = len(task_2)
     
+    predictor_A = predictor_A_Task_1+predictor_A_Task_2+predictor_A_Task_3
+    switch = []
+    for i,predictor in enumerate(predictor_A):
+        if i > 0:
+            if predictor_A[i-1] == 1 and predictor_A[i] == 1:
+                switch.append(1)
+            elif predictor_A[i-1] == 0 and predictor_A[i] == 0:
+                switch.append(1)
+            else:
+                switch.append(0)
+                
+                
     for i,predictor in enumerate(predictor_A_Task_1):
         if i > 0:
             if predictor_A_Task_1[i-1] == 1 and predictor_A_Task_1[i] == 1:
@@ -420,7 +432,8 @@ def predictors_include_previous_trial(session):
     same_outcome_task_1 = np.asarray(same_outcome_task_1)
     same_outcome_task_2 = np.asarray(same_outcome_task_2)
     same_outcome_task_3 = np.asarray(same_outcome_task_3)
-    
+   
+
     same_task_1 = same_task_1[:task_1_len-1]
     same_task_2 = same_task_2[task_1_len:task_1_len+task_2_len]
     same_task_3 = same_task_3[task_1_len+task_2_len:]
@@ -465,9 +478,8 @@ def predictors_include_previous_trial(session):
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
     predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
     reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
-    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3 
+    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch
 
-   
 def regression(experiment):
     C_task_1= []     # To strore predictor loadings for each session in task 1.
     C_task_2 = []    # To strore predictor loadings for each session in task 2.
