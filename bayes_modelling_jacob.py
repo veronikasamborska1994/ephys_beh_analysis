@@ -106,11 +106,12 @@ class model():
         n_trials = choices.shape[0]
         
         #Unpack parameters.
-        alpha, iTemp, sigma = params  
-        #sigma =  0.02
-        #alpha = 0.1
+        
+        #alpha, iTemp, sigma = params  
+        sigma =  2.87943965e-05
+        alpha = 0.498897255
         reward  = 0.75
-        #iTemp  =  2.13954916
+        iTemp  =  1.70424019
         
         # Variables.
         Posterior_correct_incorrect = np.zeros([n_trials, 2])  # Array for correct and incorrect posteriors
@@ -125,14 +126,16 @@ class model():
         
         for i, (o, c) in enumerate(zip(outcomes, switch_choice)): # loop over trials.
             if o == 1:
+                Prior_correct_incorrect[i, 0]
+                
                 # Decision is correct based on the probability of getting a reward weighted by the prior of the trial being correct
-                #/Probability of getting a reward in an incorrect prior; probability of getting no reward given the incorrect prior 
-                Posterior_correct_incorrect[i, 0] = reward * Prior_correct_incorrect[i, 0]/((reward*Prior_correct_incorrect[i,0])+ ((1-reward)*Prior_correct_incorrect[i,1]))
+                #/Probability of getting a reward in correct prior; probability of getting no reward given the incorrect prior 
+                Posterior_correct_incorrect[i, 0] = reward_prob_given_correct * Prior_correct_incorrect[i, 0]/((reward_prob_given_correct*Prior_correct_incorrect[i,0])+ ((1-reward)*Prior_correct_incorrect[i,1]))
                 Posterior_correct_incorrect[i, 1] = 1-Posterior_correct_incorrect[i, 0]
            
             elif o == 0:
                  # Decision is correct based on the probability of getting no reward weighted by the prior of the trial being correct
-                #/Probability of getting no reward in an correct prior; probability of getting no reward given the correct prior 
+                #/Probability of getting a reward in an correct prior; probability of getting no reward given the incorrect prior 
                 Posterior_correct_incorrect[i, 0] = (1-reward)*Prior_correct_incorrect[i, 0]/(((reward)*Prior_correct_incorrect[i,0])+ ((1-reward)*Prior_correct_incorrect[i,1]))
                 Posterior_correct_incorrect[i, 1] = 1-Posterior_correct_incorrect[i, 0]
            
@@ -164,6 +167,7 @@ class model():
         return session_log_likelihood
 
 def fit_session(session, agent, repeats = 5, brute_init = True, verbose = False):
+    
     '''Find maximum likelihood parameter estimates for a session or list of sessions.'''
     
     # RL models require parameter transformation from unconstrained to true space.
