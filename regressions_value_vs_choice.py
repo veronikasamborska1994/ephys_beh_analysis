@@ -144,7 +144,7 @@ def regression_Q_values_choices(experiment):
 # #experiment_sim_Q1_PFC, experiment_sim_Q4_PFC =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
 #     
 # =============================================================================
-  
+
 def regression_value_vs_choice(experiment,experiment_sim_Q1):
     C_1 = []
     cpd_1 = []

@@ -673,6 +673,7 @@ def simulate_Qtd_experiment(fits_Q1, fits_Q4, experiment):
 def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
     C_1_first_half = []
     cpd = []
+    C_sq = []
 
     # Finding correlation coefficients for task 1 
     for s,session in enumerate(experiment):
@@ -701,9 +702,9 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
             ones = np.ones(len(choices))
             
             predictors = OrderedDict([('Q1', Q_1),
-                                      #('Q4', Q_4),
+                                      ('Q4', Q_4),
                                       ('choice', choices),
-                                      #('reward', outcomes),
+                                      ('reward', outcomes),
                                       ('ones', ones)])
         
            
@@ -713,11 +714,15 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
             ols = LinearRegression(copy_X = True,fit_intercept= True)
             ols.fit(X,y)
             C_1_first_half.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            C_sq.append((ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)**2))
+
             cpd.append(re._CPD(X,y).reshape(n_neurons,n_timepoints, n_predictors))
 
 
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
-    return cpd, predictors
+    C_sq = np.nanmean(np.concatenate(C_sq,0), axis = 0) # Population CPD is mean over neurons.
+
+    return cpd, predictors,C_sq
 
 
 def plotting_cpd(): 
@@ -730,7 +735,7 @@ def plotting_cpd():
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward_time)).argmin()
 
-    cpd, predictors = regression_on_Q_values(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC)
+    cpd, predictors, C_sq= regression_on_Q_values(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC)
     cpd = cpd[:,:-1]
     p = [*predictors]
     plt.figure(2)

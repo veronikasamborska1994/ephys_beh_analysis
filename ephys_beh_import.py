@@ -49,6 +49,7 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
 
         for session in subject_sessions:
             match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', session)
+            #print(match_ephys)
             date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()
             date_ephys = match_ephys.group()
             if lfp_analyse == 'True': 
