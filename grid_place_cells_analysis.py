@@ -37,7 +37,7 @@ for i in range(len(place_cells_trial_1)):
     values = image[valid_mask]
     it = interpolate.LinearNDInterpolator(coords, values, fill_value=0)
     filled = it(list(np.ndindex(image.shape))).reshape(image.shape)
-    #filled = gaussian_filter(filled, 2)
+    filled = gaussian_filter(filled, 2)
     place_cells_trial_1_int.append(filled)
     
 place_cells_trial_2_int = []
