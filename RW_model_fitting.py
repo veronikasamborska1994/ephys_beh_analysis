@@ -17,6 +17,20 @@ import regressions as re
 from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 
+
+def run():
+    fits_Q1_HP = fit_sessions(experiment_aligned_HP, Q1())
+    fits_Q1_PFC = fit_sessions(experiment_aligned_PFC, Q1())
+    
+    fits_Q4_HP = fit_sessions(experiment_aligned_HP, Q4())
+    fits_Q4_PFC = fit_sessions(experiment_aligned_PFC, Q4())
+    
+    #fits_Q1 = fit_sessions(all_sessions, Q1())
+    #fits_Q4 = fit_sessions(all_sessions, Q4())        
+    experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP =  simulate_Qtd_experiment(fits_Q1_HP, fits_Q4_HP, experiment_aligned_HP)  
+    experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
+        
+
 log_max_float = np.log(sys.float_info.max/2.1) # Log of largest possible floating point number.
 
 # -------------------------------------------------------------------------------------
@@ -504,7 +518,7 @@ def simulate_Q4(session, params):
         
         choice_probs = array_softmax(Q_td, iTemp)
         
-        return choice_probs, Q_td,Q_chosen
+        return choice_probs, Q_td, Q_chosen
  
         
 def fit_sessions(sessions, agent):
@@ -648,6 +662,9 @@ def simulate_Qtd_experiment(fits_Q1, fits_Q4, experiment):
     
     experiment_sim_Q1 = []
     experiment_sim_Q4 = []
+    experiment_sim_Q1_value_a = []
+    experiment_sim_Q1_value_b = []
+    experiment_sim_Q4_values = []
 
     for s,session in enumerate(experiment):
         
@@ -659,19 +676,21 @@ def simulate_Qtd_experiment(fits_Q1, fits_Q4, experiment):
         
         experiment_sim_Q1.append(Q_chosen_Q1)
         experiment_sim_Q4.append(Q_chosen_Q4)
-        
-    return experiment_sim_Q1, experiment_sim_Q4
+        experiment_sim_Q1_value_a.append(Q_td_Q1[:,0])
+        experiment_sim_Q1_value_b.append(Q_td_Q1[:,1])
+
+        experiment_sim_Q4_values.append(Q_td_Q4[:,0])
 
         
+    return experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values
+
         
-#experiment_sim_Q1_HP, experiment_sim_Q4_HP=  simulate_Qtd_experiment(fits_Q1_HP, fits_Q4_HP, experiment_aligned_HP)  
-#experiment_sim_Q1_PFC, experiment_sim_Q4_PFC =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
+
+
+
+def regression_on_Q_values(experiment,experiment_sim_Q1_value_a,experiment_sim_Q1_value_b, experiment_sim_Q4_values):
     
-
-
-
-def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
-    C_1_first_half = []
+    C_1 = []
     cpd = []
     C_sq = []
 
@@ -681,9 +700,12 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
         if aligned_spikes.shape[1] > 0: # sessions with neurons? 
             n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
             
-            Q_1 = np.asarray(experiment_sim_Q1[s])
-            Q_4 = np.asarray(experiment_sim_Q4[s])
-            Q_1 = Q_1[:-1]
+            Q_1_a = np.asarray(experiment_sim_Q1_value_a[s])
+            Q_1_b = np.asarray(experiment_sim_Q1_value_b[s])
+
+            Q_4 = np.asarray(experiment_sim_Q4_values[s])
+            Q_1_a = Q_1_a[:-1]
+            Q_1_b = Q_1_b[:-1]
             Q_4 = Q_4[:-1]
 
             # Getting out task indicies
@@ -692,7 +714,10 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
 
             choices = session.trial_data['choices']
             non_forced_array = np.where(forced_trials == 0)[0]
-            Q_1 = Q_1[non_forced_array]
+            
+            Q_1_a = Q_1_a[non_forced_array]
+            Q_1_b = Q_1_b[non_forced_array]
+
             Q_4 = Q_4[non_forced_array]
             choices = choices[non_forced_array]
             aligned_spikes = aligned_spikes[:len(choices),:,:]
@@ -701,8 +726,9 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
 
             ones = np.ones(len(choices))
             
-            predictors = OrderedDict([('Q1', Q_1),
-                                      ('Q4', Q_4),
+            predictors = OrderedDict([('Q1_a', Q_1_a),
+                                      ('Q1_b', Q_1_b),
+                                      ('Q_4', Q_4), 
                                       ('choice', choices),
                                       ('reward', outcomes),
                                       ('ones', ones)])
@@ -713,7 +739,7 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
             y = aligned_spikes.reshape([len(aligned_spikes),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
             ols = LinearRegression(copy_X = True,fit_intercept= True)
             ols.fit(X,y)
-            C_1_first_half.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            C_1.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
             C_sq.append((ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)**2))
 
             cpd.append(re._CPD(X,y).reshape(n_neurons,n_timepoints, n_predictors))
@@ -722,8 +748,285 @@ def regression_on_Q_values(experiment,experiment_sim_Q1, experiment_sim_Q4):
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
     C_sq = np.nanmean(np.concatenate(C_sq,0), axis = 0) # Population CPD is mean over neurons.
 
-    return cpd, predictors,C_sq
+    return cpd, predictors,C_sq, C_1
 
+
+def regression_on_Q_values_split_by_task(experiment,experiment_sim_Q1_value_a,experiment_sim_Q1_value_b, experiment_sim_Q4_values):
+    
+    C_1 = []
+    C_1_sq = []
+
+    # Finding correlation coefficients for task 1 
+    for s,session in enumerate(experiment):
+        aligned_spikes= session.aligned_rates[:]
+        if aligned_spikes.shape[1] > 0: # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            
+            # Getting out task indicies   
+            task = session.trial_data['task']
+            forced_trials = session.trial_data['forced_trial']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            task_non_forced = task[non_forced_array]
+            task_1 = np.where(task_non_forced == 1)[0]
+            task_2 = np.where(task_non_forced == 2)[0]    
+            
+            
+            Q_1_a = np.asarray(experiment_sim_Q1_value_a[s])
+            Q_1_b = np.asarray(experiment_sim_Q1_value_b[s])
+
+            Q_4 = np.asarray(experiment_sim_Q4_values[s])
+            Q_1_a = Q_1_a[:-1]
+            Q_1_b = Q_1_b[:-1]
+            Q_4 = Q_4[:-1]
+
+            # Getting out task indicies
+            forced_trials = session.trial_data['forced_trial']
+            outcomes = session.trial_data['outcomes']
+
+            choices = session.trial_data['choices']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            
+            Q_1_a = Q_1_a[non_forced_array]
+            Q_1_b = Q_1_b[non_forced_array]
+
+            Q_4 = Q_4[non_forced_array]
+            choices = choices[non_forced_array]
+            aligned_spikes = aligned_spikes[:len(choices),:,:]
+            outcomes = outcomes[non_forced_array]
+            # Getting out task indicies
+            
+            ones = np.ones(len(choices))
+            Q_1_a = Q_1_a[:len(task_1)]
+            Q_1_b = Q_1_b[:len(task_1)]
+            Q_4 = Q_4[:len(task_1)]
+            choices = choices[:len(task_1)]
+            outcomes = outcomes[:len(task_1)]
+            ones = ones[:len(task_1)]
+            aligned_spikes = aligned_spikes[:len(task_1)]
+
+            predictors = OrderedDict([('Q1_a', Q_1_a),
+                                      ('Q1_b', Q_1_b),
+                                      ('Q_4', Q_4), 
+                                      ('choice', choices),
+                                      ('reward', outcomes)])
+                                      #('ones', ones)])
+        
+           
+            X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
+            n_predictors = X.shape[1]
+            y = aligned_spikes.reshape([len(aligned_spikes),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols.fit(X,y)
+            C_1.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            C_1_sq.append((ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)**2))
+
+        
+    C_1 = np.concatenate(C_1, axis = 0) # Population CPD is mean over neurons.
+    C_1_sq = np.concatenate(C_1_sq, axis = 0) # Population CPD is mean over neurons.
+
+    C_2 = []
+    C_2_sq = []
+    # Finding correlation coefficients for task 1 
+    for s,session in enumerate(experiment):
+        aligned_spikes= session.aligned_rates[:]
+        if aligned_spikes.shape[1] > 0: # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            
+            # Getting out task indicies   
+            task = session.trial_data['task']
+            forced_trials = session.trial_data['forced_trial']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            task_non_forced = task[non_forced_array]
+            task_1 = np.where(task_non_forced == 1)[0]
+            task_2 = np.where(task_non_forced == 2)[0]    
+            
+            Q_1_a = np.asarray(experiment_sim_Q1_value_a[s])
+            Q_1_b = np.asarray(experiment_sim_Q1_value_b[s])
+
+            Q_4 = np.asarray(experiment_sim_Q4_values[s])
+            Q_1_a = Q_1_a[:-1]
+            Q_1_b = Q_1_b[:-1]
+            Q_4 = Q_4[:-1]
+
+            # Getting out task indicies
+            forced_trials = session.trial_data['forced_trial']
+            outcomes = session.trial_data['outcomes']
+
+            choices = session.trial_data['choices']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            
+            Q_1_a = Q_1_a[non_forced_array]
+            Q_1_b = Q_1_b[non_forced_array]
+
+            Q_4 = Q_4[non_forced_array]
+            choices = choices[non_forced_array]
+            aligned_spikes = aligned_spikes[:len(choices),:,:]
+            outcomes = outcomes[non_forced_array]
+            # Getting out task indicies
+
+            ones = np.ones(len(choices))
+            
+            Q_1_a = Q_1_a[len(task_1):len(task_1)+len(task_2)]
+            Q_1_b = Q_1_b[len(task_1):len(task_1)+len(task_2)]
+            Q_4 = Q_4[len(task_1):len(task_1)+len(task_2)]
+            choices = choices[len(task_1):len(task_1)+len(task_2)]
+            outcomes = outcomes[len(task_1):len(task_1)+len(task_2)]
+            ones = ones[len(task_1):len(task_1)+len(task_2)]
+            aligned_spikes = aligned_spikes[len(task_1):len(task_1)+len(task_2)]
+            
+            predictors = OrderedDict([('Q1_a', Q_1_a),
+                                      ('Q1_b', Q_1_b),
+                                      ('Q_4', Q_4), 
+                                      ('choice', choices),
+                                      ('reward', outcomes)])
+                                      #('ones', ones)])
+        
+           
+            X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
+            n_predictors = X.shape[1]
+            y = aligned_spikes.reshape([len(aligned_spikes),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols.fit(X,y)
+            C_2.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            C_2_sq.append((ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)**2))
+
+    C_2 = np.concatenate(C_2, axis = 0) # Population CPD is mean over neurons.
+    C_2_sq = np.concatenate(C_2_sq, axis = 0) # Population CPD is mean over neurons.
+
+
+    C_3 = []
+    C_3_sq = []
+    # Finding correlation coefficients for task 1 
+    for s,session in enumerate(experiment):
+        aligned_spikes= session.aligned_rates[:]
+        if aligned_spikes.shape[1] > 0: # sessions with neurons? 
+            n_trials, n_neurons, n_timepoints = aligned_spikes.shape 
+            
+            # Getting out task indicies   
+            task = session.trial_data['task']
+            forced_trials = session.trial_data['forced_trial']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            task_non_forced = task[non_forced_array]
+            task_1 = np.where(task_non_forced == 1)[0]
+            task_2 = np.where(task_non_forced == 2)[0]    
+            
+            Q_1_a = np.asarray(experiment_sim_Q1_value_a[s])
+            Q_1_b = np.asarray(experiment_sim_Q1_value_b[s])
+
+            Q_4 = np.asarray(experiment_sim_Q4_values[s])
+            Q_1_a = Q_1_a[:-1]
+            Q_1_b = Q_1_b[:-1]
+            Q_4 = Q_4[:-1]
+
+            # Getting out task indicies
+            forced_trials = session.trial_data['forced_trial']
+            outcomes = session.trial_data['outcomes']
+
+            choices = session.trial_data['choices']
+            non_forced_array = np.where(forced_trials == 0)[0]
+            
+            Q_1_a = Q_1_a[non_forced_array]
+            Q_1_b = Q_1_b[non_forced_array]
+
+            Q_4 = Q_4[non_forced_array]
+            choices = choices[non_forced_array]
+            aligned_spikes = aligned_spikes[:len(choices),:,:]
+            outcomes = outcomes[non_forced_array]
+            # Getting out task indicies
+
+            ones = np.ones(len(choices))
+            
+  
+            Q_1_a = Q_1_a[len(task_1)+len(task_2):]
+            Q_1_b = Q_1_b[len(task_1)+len(task_2):]
+            Q_4 = Q_4[len(task_1)+len(task_2):]
+            choices = choices[len(task_1)+len(task_2):]
+            outcomes = outcomes[len(task_1)+len(task_2):]
+            ones = ones[len(task_1)+len(task_2):]
+            aligned_spikes = aligned_spikes[len(task_1)+len(task_2):]
+            
+            predictors = OrderedDict([('Q1_a', Q_1_a),
+                                      ('Q1_b', Q_1_b),
+                                      ('Q_4', Q_4), 
+                                      ('choice', choices),
+                                      ('reward', outcomes)])
+                                      #('ones', ones)])
+        
+           
+            X = np.vstack(predictors.values()).T[:len(choices),:].astype(float)
+            n_predictors = X.shape[1]
+            y = aligned_spikes.reshape([len(aligned_spikes),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+            ols = LinearRegression(copy_X = True,fit_intercept= False)
+            ols.fit(X,y)
+            C_3.append(ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)) # Predictor loadings
+            C_3_sq.append((ols.coef_.reshape(n_neurons,n_timepoints, n_predictors)**2))
+
+    C_3 = np.concatenate(C_3, axis = 0) # Population CPD is mean over neurons.
+    C_3_sq = np.concatenate(C_3_sq, axis = 0) # Population CPD is mean over neurons.
+
+    return C_1, C_2, C_3
+
+def plotting_coef():
+    
+    C_1_HP, C_2_HP, C_3_HP = regression_on_Q_values_split_by_task(experiment_aligned_HP,experiment_sim_Q1_value_a_HP,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP)
+
+    C_1_PFC, C_2_PFC, C_3_PFC = regression_on_Q_values_split_by_task(experiment_aligned_PFC,experiment_sim_Q1_value_a_PFC,experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC)
+    
+    C_1_HP = np.mean(C_1_HP, axis = 1)
+    C_2_HP = np.mean(C_2_HP, axis = 1)
+    C_3_HP = np.mean(C_3_HP, axis = 1)
+    
+    
+    task_1 = C_1_HP[:,0].flatten()
+    task_2 = C_2_HP[:,0].flatten()
+    task_3 = C_3_HP[:,0].flatten()
+    
+    argmax_neuron = np.argsort(-task_1)
+    task_2_by_1 = task_2[argmax_neuron]
+    task_1 = task_1[argmax_neuron]
+    task_3_by_1 = task_3[argmax_neuron]
+    
+    y = np.arange(len(task_1))
+    plt.figure(3)
+    plt.scatter(y,task_2_by_1,s = 2, color = 'red', label = 'Task 2 sorted by Task 1')
+    plt.plot(y,task_2_by_1, color = 'grey', label = 'Task 2 sorted by Task 1')
+    
+    #plt.scatter(y,task_3_by_1,s = 2,color = 'slateblue', label = 'Task 3 sorted by Task 1')
+    
+    #plt.scatter(y,task_1,s = 2,color = 'black', label = 'Task 1 sorted')
+    
+    plt.plot(y,task_1,color = 'black', label = 'Task 1 sorted')
+    
+    plt.legend()
+    plt.title('HP Q1')
+    
+    C_1_PFC = np.mean(C_1_PFC, axis = 1)
+    C_2_PFC = np.mean(C_2_PFC, axis = 1)
+    C_3_PFC = np.mean(C_3_PFC, axis = 1)
+    
+    
+    task_1_PFC = C_1_PFC[:,0].flatten()
+    task_2_PFC = C_2_PFC[:,0].flatten()
+    task_3_PFC = C_3_PFC[:,0].flatten()
+    
+    argmax_neuron = np.argsort(-task_1_PFC)
+    task_2_by_1 = task_2_PFC[argmax_neuron]
+    task_1 = task_1_PFC[argmax_neuron]
+    task_3_by_1 = task_3_PFC[argmax_neuron]
+    
+    y = np.arange(len(task_1))
+    plt.figure(4)
+    plt.scatter(y,task_2_by_1,s = 2, color = 'red', label = 'Task 2 sorted by Task 1')
+    plt.plot(y,task_2_by_1, color = 'grey', label = 'Task 2 sorted by Task 1')
+    
+    #plt.scatter(y,task_3_by_1,s = 2,color = 'slateblue', label = 'Task 3 sorted by Task 1')
+    
+    #plt.scatter(y,task_1,s = 2,color = 'black', label = 'Task 1 sorted')
+    
+    plt.plot(y,task_1,color = 'black', label = 'Task 1 sorted')
+    
+    plt.legend()
+    plt.title('PFC Q1')
 
 def plotting_cpd(): 
     session = experiment_aligned_PFC[0]
@@ -735,16 +1038,17 @@ def plotting_cpd():
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward_time)).argmin()
 
-    cpd, predictors, C_sq= regression_on_Q_values(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC)
+    cpd, predictors, C_sq= regression_on_Q_values(experiment_aligned_PFC, experiment_sim_Q1_value_a_PFC,experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC)
     cpd = cpd[:,:-1]
     p = [*predictors]
-    plt.figure(2)
-    colors = ['red', 'darkblue', 'black', 'green']
+    plt.figure(1)
+    colors = ['red', 'darkblue', 'black', 'green', 'pink']
     for i in np.arange(cpd.shape[1]):
         plt.plot(cpd[:,i], label =p[i], color = colors[i])
-        #plt.title('PFC')
-    #plt.vlines(ind_reward,ymin = 0, ymax = 0.1,linestyles= '--', color = 'grey', label = 'Outcome')
-    #plt.vlines(ind_choice,ymin = 0, ymax = 0.1,linestyles= '--', color = 'pink', label = 'Choice')
+    plt.title('PFC')
+
+    plt.vlines(ind_reward,ymin = 0, ymax = 0.1,linestyles= '--', color = 'grey', label = 'Outcome')
+    plt.vlines(ind_choice,ymin = 0, ymax = 0.1,linestyles= '--', color = 'pink', label = 'Choice')
 
     plt.legend()
     plt.ylabel('Coefficient of Partial Determination')

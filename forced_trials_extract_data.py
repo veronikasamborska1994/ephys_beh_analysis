@@ -67,7 +67,6 @@ def state_indices_forced(session):
     state_t2_b_good = np.where(state_2 == 0)[0]
     state_t2_b_good = state_t2_b_good+len(task_1)
 
-
     #Task 3 
     state_3 = state_forced[len(task_1) + len(task_2):]
     state_t3_a_good = np.where(state_3 == 1)[0]
@@ -87,9 +86,11 @@ def extract_correct_forced_states(session):
         elif 'b_forced_state' in event:
             forced_trials.append(0)
     forced_trials = np.asarray(forced_trials)
+    
     return forced_trials
                         
-                        
+
+                             
 def predictors_forced(session):
     forced_trials = session.trial_data['forced_trial']
     forced_array = np.where(forced_trials == 1)[0]

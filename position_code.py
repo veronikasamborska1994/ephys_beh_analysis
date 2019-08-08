@@ -38,7 +38,7 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-subject = 'm478'
+subject = 'm479'
 
 ephys_path = '/Users/veronikasamborska/Desktop/open_field_neurons/'+ subject
 ephys_folder = os.listdir(ephys_path)
@@ -86,6 +86,8 @@ for file_ephys in ephys_folder:
 
                 x = x[mask]
                 y = y[mask]
+                if len(frames) -len(mask) == 1:
+                    frames = frames[:-1]
                 uncycled_time = frames[mask]
 
                 mask_zero = np.nonzero(x)
@@ -109,20 +111,20 @@ for file_ephys in ephys_folder:
                    
                     x_new = x[spikes_per_frame_list]
                     y_new = y[spikes_per_frame_list]
-                    plt.figure()
-                    plt.scatter(x,y, s= 2, c = 'grey')
-                    plt.scatter(x_new, y_new, s = 2, c = 'green')
+                    #plt.figure()
+                    #plt.scatter(x,y, s= 2, c = 'grey')
+                    #plt.scatter(x_new, y_new, s = 2, c = 'green')
                    
-#                    H_occupancy, xedges_occupancy, yedges_occupancy = np.histogram2d(x,y, bins = 100)
-#                    H, xedges, yedges = np.histogram2d(x_new,y_new, bins = 100)
-#                    normalise = H/H_occupancy
-#                    V=normalise.copy()
-#                    V[np.isnan(normalise)]=0
-#                    V[np.isinf(normalise)]=0
+                    H_occupancy, xedges_occupancy, yedges_occupancy = np.histogram2d(x,y, bins = 50)
+                    H, xedges, yedges = np.histogram2d(x_new,y_new, bins = 50)
+                    normalise = H/H_occupancy
+                    V=normalise.copy()
+                    V[np.isnan(normalise)]=0
+                    V[np.isinf(normalise)]=0
 #
-#                    VV=gaussian_filter(V,sigma = 2) 
-#                    plt.figure()
-#                    plt.imshow(VV)
+                    VV=gaussian_filter(V,sigma = 2) 
+                    plt.figure()
+                    plt.imshow(VV)
        
                     
                     

@@ -481,7 +481,7 @@ def predictors_include_previous_trial(session):
     same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch
 
 def regression(experiment):
-    C_task_1= []     # To strore predictor loadings for each session in task 1.
+    C_task_1 = []     # To strore predictor loadings for each session in task 1.
     C_task_2 = []    # To strore predictor loadings for each session in task 2.
     C_task_3 = []    # To strore predictor loadings for each session in task 2.
     
