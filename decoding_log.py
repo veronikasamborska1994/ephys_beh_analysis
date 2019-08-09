@@ -16,6 +16,7 @@ from sklearn import svm
 
 import seaborn as sns
 sns.set_style("white")
+import matplotlib.pyplot as plt
 
 
 
@@ -30,7 +31,9 @@ def classifier(data):
     length = []
     correct_list_within = []
     correct_list_between = []
-  
+    all_y_within_1 = []
+    all_y_between_1 = []
+    all_Ys = []
    
 
     for s, session in enumerate(X):
@@ -64,7 +67,7 @@ def classifier(data):
 
         # Select the first min_trials_in_task in task three
         firing_rates_mean_task_3_1 = firing_rates_all_time[task_3[0]:task_3[0]+min_trials_in_task,:]
-#        firing_rates_mean_task_3_2 = firing_rates_all_time[task_3[-1]-min_trials_in_task:task_3[-1],:]
+        firing_rates_mean_task_3_2 = firing_rates_all_time[task_3[-1]-min_trials_in_task:task_3[-1],:]
 
         
         # Finding the indices of initiations, choices and rewards 
@@ -108,14 +111,15 @@ def classifier(data):
         firing_rates_mean_2_1 = np.concatenate(firing_rates_mean_task_2_1, axis = 1)
         firing_rates_mean_2_2 = np.concatenate(firing_rates_mean_task_2_2, axis = 1)
         firing_rates_mean_3_1 = np.concatenate(firing_rates_mean_task_3_1, axis = 1)
-        
+        firing_rates_mean_3_2 = np.concatenate(firing_rates_mean_task_3_2, axis = 1)
+
         l = firing_rates_mean_1_1.shape[1]
         # Creating a vector which identifies trial stage in the firing rate vector
         Y = np.tile(bins,int(l/len(bins)))
         
         
-        model_nb = svm.SVC(gamma='scale')
-       # model_nb = LinearDiscriminantAnalysis()
+        #model_nb = svm.SVC(gamma='scale')
+        model_nb = LinearDiscriminantAnalysis()
         
         model_nb.fit(np.transpose(firing_rates_mean_1_2),Y)  
         y_pred_class_between_t_1_2 = model_nb.predict(np.transpose(firing_rates_mean_2_1))
@@ -129,26 +133,98 @@ def classifier(data):
         model_nb.fit(np.transpose(firing_rates_mean_2_1),Y)
         y_pred_class_within_t_2_3 = model_nb.predict(np.transpose(firing_rates_mean_2_2))
 
+        model_nb.fit(np.transpose(firing_rates_mean_3_1),Y)
+        y_pred_class_within_t_3 = model_nb.predict(np.transpose(firing_rates_mean_3_2))
+
         correct_within_t_1 = metrics.accuracy_score(Y, y_pred_class_within_t_1_2)
         correct_between_t_1 = metrics.accuracy_score(Y, y_pred_class_between_t_1_2)
         
         correct_within_t_2 = metrics.accuracy_score(Y, y_pred_class_within_t_2_3)
         correct_between_t_2 = metrics.accuracy_score(Y, y_pred_class_between_t_2_3)
 
+        correct_within_t_3 = metrics.accuracy_score(Y, y_pred_class_within_t_3)
+        
         correct_list_within.append(correct_within_t_1)
         correct_list_within.append(correct_within_t_2)
+        correct_list_within.append(correct_within_t_3)
 
         correct_list_between.append(correct_between_t_1)
         correct_list_between.append(correct_between_t_2)
+        all_y_within_1.append(y_pred_class_within_t_1_2)
+        all_y_between_1.append(y_pred_class_between_t_1_2)
+        all_Ys.append(Y)
+
+    return correct_list_within, correct_list_between,all_y_within_1,all_y_between_1,all_Ys
 
 
-        
-    return correct_list_within, correct_list_between,y_pred_class_between,y_pred_class_within,Y
-
-def plot():
-    correct_list_within_PFC, correct_list_between_PFC,y_pred_class_between_PFC,y_pred_class_within_PFC,Y_PFC = classifier(data_PFC)
-    correct_list_within_HP, correct_list_between_HP,y_pred_class_between_HP,y_pred_class_within_HP,Y_HP= classifier(data_HP)
+def confusion_m(y_pred_class,Y,title):
     
+    init_overall_rate = len(np.where(Y == y_pred_class)[0])
+    init_hit_rate = len(np.where((y_pred_class == 0)& (Y == 0))[0])/init_overall_rate
+    choice_hit_rate = len(np.where((y_pred_class == 1)& (Y == 1))[0])/init_overall_rate    
+    reward_hit_rate = len(np.where((y_pred_class == 2)& (Y == 2))[0])/init_overall_rate
+    post_reward_hit_rate = len(np.where((y_pred_class == 3)& (Y == 3))[0])/init_overall_rate
+    
+    
+    init_overall_non_rate = len(np.where(Y != y_pred_class)[0])
+    init_hit_rate_choice = len(np.where((y_pred_class == 1)& (Y == 0))[0])/init_overall_non_rate
+    init_hit_rate_reward = len(np.where((y_pred_class == 2)& (Y == 0))[0])/init_overall_non_rate
+    init_hit_rate_post_reward = len(np.where((y_pred_class == 3)& (Y == 0))[0])/init_overall_non_rate
+
+    choice_hit_rate_init = len(np.where((y_pred_class == 0)& (Y == 1))[0])/init_overall_non_rate
+    choice_hit_rate_reward = len(np.where((y_pred_class == 2)& (Y == 1))[0])/init_overall_non_rate
+    choice_hit_rate_post_reward = len(np.where((y_pred_class == 3)& (Y == 1))[0])/init_overall_non_rate
+
+    reward_hit_rate_init = len(np.where((y_pred_class == 0)& (Y == 2))[0])/init_overall_non_rate
+    reward_hit_rate_choice = len(np.where((y_pred_class == 1)& (Y == 2))[0])/init_overall_non_rate
+    reward_hit_rate_post_reward = len(np.where((y_pred_class == 3)& (Y == 2))[0])/init_overall_non_rate
+
+    post_reward_hit_rate_init = len(np.where((y_pred_class == 0)& (Y == 3))[0])/init_overall_non_rate
+    post_reward_hit_rate_choice = len(np.where((y_pred_class == 1)& (Y == 3))[0])/init_overall_non_rate
+    post_reward_hit_rate_reward = len(np.where((y_pred_class == 2)& (Y == 3))[0])/init_overall_non_rate
+    
+    confusion_m = np.zeros((4,4))
+    confusion_m[0,0] = init_hit_rate
+    confusion_m[1,1] = choice_hit_rate
+    confusion_m[2,2] = reward_hit_rate
+    confusion_m[3,3] = post_reward_hit_rate
+    
+    confusion_m[0,1] = init_hit_rate_choice
+    confusion_m[0,2] = init_hit_rate_reward
+    confusion_m[0,3] = init_hit_rate_post_reward
+
+    confusion_m[1,0] = choice_hit_rate_init
+    confusion_m[1,2] = choice_hit_rate_reward
+    confusion_m[1,3] = choice_hit_rate_post_reward
+
+    confusion_m[2,0] = reward_hit_rate_init
+    confusion_m[2,1] = reward_hit_rate_choice
+    confusion_m[2,3] = reward_hit_rate_post_reward
+
+    confusion_m[3,0] = post_reward_hit_rate_init 
+    confusion_m[3,1] = post_reward_hit_rate_choice
+    confusion_m[3,2] = post_reward_hit_rate_reward
+
+    
+    plt.imshow(confusion_m)
+    plt.xticks((0,1,2,3),['Pre-Init', 'Init-Choice', 'Choice-Reward', 'Post-Reward'])
+    plt.yticks((0,1,2,3),['Pre-Init', 'Init-Choice', 'Choice-Reward', 'Post-Reward'])
+    plt.colorbar()
+    plt.title(title)
+
+
+def plot(data_PFC, data_HP):
+    correct_list_within_PFC, correct_list_between_PFC,y_pred_class_within_PFC,y_pred_class_between_PFC,Y_PFC = classifier(data_PFC)
+    correct_list_within_HP, correct_list_between_HP,y_pred_class_within_HP,y_pred_class_between_HP,Y_HP= classifier(data_HP)
+    
+    Y_PFC = np.concatenate(Y_PFC, 0)
+    y_pred_class_within_PFC = np.concatenate(y_pred_class_within_PFC, 0)
+    y_pred_class_between_PFC = np.concatenate(y_pred_class_between_PFC, 0)
+
+    Y_HP = np.concatenate(Y_HP, 0)
+    y_pred_class_within_HP = np.concatenate(y_pred_class_within_HP, 0)
+    y_pred_class_between_HP = np.concatenate(y_pred_class_between_HP, 0)
+
     mean_within_PFC = np.mean(correct_list_within_PFC)
     std_err_mean_within_PFC = np.std(correct_list_within_PFC)/np.sqrt(len(correct_list_within_PFC))
     mean_between_PFC = np.mean(correct_list_between_PFC)
@@ -163,5 +239,6 @@ def plot():
     sns.swarmplot(data=[correct_list_within_PFC,correct_list_between_PFC,correct_list_within_HP,correct_list_between_HP], color="0", alpha=.35)
     plt.xticks(np.arange(4),('PFC within task', 'PFC between tasks', 'HP within task', 'HP between tasks'))
     plt.ylabel('% correct')
-    plt.title('SVC')
+    plt.title('LDA')
           
+    
