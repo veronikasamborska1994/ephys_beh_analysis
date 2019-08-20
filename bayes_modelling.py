@@ -15,7 +15,7 @@ from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 from numba import jit
 import matplotlib.pyplot as plt
-
+import heatmap_aligned as ha
 
 def simulate_experiment(params, experiment):
     
@@ -35,21 +35,18 @@ def simulate_experiment(params, experiment):
  
 def run_script():
     
-#    HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
-#    experiment_aligned_m484 = ha.all_sessions_aligment(m484, all_sessions)
-#    experiment_aligned_m484 = experiment_aligned_m484[1:]
-#    experiment_aligned_m479 = ha.all_sessions_aligment(m479, all_sessions)
-#    experiment_aligned_m483 = ha.all_sessions_aligment(m483, all_sessions)
-#
-#    experiment_aligned_m478 = ha.all_sessions_aligment(m478, all_sessions)
-#    experiment_aligned_m486 = ha.all_sessions_aligment(m486, all_sessions)
-#    experiment_aligned_m480 = ha.all_sessions_aligment(m480, all_sessions)
-#    experiment_aligned_m481 = ha.all_sessions_aligment(m481, all_sessions)
-
-    #experiment_aligned_HP = experiment_aligned_HP[1:]  # First session recording stopped? 
-    #HP = HP[1:]
-
+    HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
     
+    experiment_aligned_m484 = ha.all_sessions_aligment(m484, all_sessions)
+    experiment_aligned_m479 = ha.all_sessions_aligment(m479, all_sessions)
+    experiment_aligned_m483 = ha.all_sessions_aligment(m483, all_sessions)
+
+    experiment_aligned_m478 = ha.all_sessions_aligment(m478, all_sessions)
+    experiment_aligned_m486 = ha.all_sessions_aligment(m486, all_sessions)
+    experiment_aligned_m480 = ha.all_sessions_aligment(m480, all_sessions)
+    experiment_aligned_m481 = ha.all_sessions_aligment(m481, all_sessions)
+
+     
     fits_484 = fit_sessions(experiment_aligned_m484, model())    
     fits_479 = fit_sessions(experiment_aligned_m479, model())  
     fits_483 = fit_sessions(experiment_aligned_m483, model())

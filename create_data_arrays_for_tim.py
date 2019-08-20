@@ -17,6 +17,7 @@ import regressions as re
 import scipy
 import neuron_firing_all_pokes as nef 
 ### Creating firing rate arrays with forced trials
+
 #ephys_path = '/Users/veronikasamborska/Desktop/neurons'
 #beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
@@ -24,6 +25,8 @@ import neuron_firing_all_pokes as nef
 #experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
 #PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
 #HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
+#data_PFC = tim_create_mat(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC, 'PFC')
+#data_HP = tim_create_mat(experiment_aligned_HP, experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP, 'HP')
 
 
 def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
@@ -182,13 +185,13 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         a_pokes[:] = constant_poke_a[-1]
     
         b_pokes = np.zeros(len(choices))
-        b_pokes[:task_1[-1]] = poke_b_1[-1]
-        b_pokes[task_1[-1]+1:task_2[-1]] = poke_b_2[-1]
+        b_pokes[:task_1[-1]+1] = poke_b_1[-1]
+        b_pokes[task_1[-1]+1:task_2[-1]+1] = poke_b_2[-1]
         b_pokes[task_2[-1]+1:] = poke_b_3[-1]
         
         i_pokes = np.zeros(len(choices))
-        i_pokes[:task_1[-1]] = i_poke_task_1
-        i_pokes[task_1[-1]+1:task_2[-1]] = i_poke_task_2
+        i_pokes[:task_1[-1]+1] = i_poke_task_1
+        i_pokes[task_1[-1]+1:task_2[-1]+1] = i_poke_task_2
         i_pokes[task_2[-1]+1:] = i_poke_task_3
         
         chosen_Q1 = experiment_sim_Q1[s][:len(choices)]
@@ -219,13 +222,11 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         all_sessions_list.append(X)
         firing_rates.append(firing_rate)
    
-    #scipy.io.savemat('/Users/veronikasamborska/Desktop/'+ title + '.mat',{'Data': firing_rates, 'DM': all_sessions_list})
+    scipy.io.savemat('/Users/veronikasamborska/Desktop/'+ title + '.mat',{'Data': firing_rates, 'DM': all_sessions_list})
     data = {'Data': firing_rates, 'DM': all_sessions_list}
     
     return data
 
-#data_PFC = tim_create_mat(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC, 'PFC')
-#data_HP = tim_create_mat(experiment_aligned_HP, experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP, 'HP')
 
 def x_y_coords_pokes(a_poke_task_1, b_poke_task_1, b_poke_task_2, b_poke_task_3, i_poke_task_1, i_poke_task_2,i_poke_task_3):
     one_x = 332

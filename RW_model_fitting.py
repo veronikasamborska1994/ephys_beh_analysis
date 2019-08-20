@@ -16,6 +16,8 @@ from tqdm import tqdm
 import regressions as re
 from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
+import forced_trials_extract_data as ft
+import regressions as re 
 
 
 def run():
@@ -119,11 +121,28 @@ class Q1():
         choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
         task = session.trial_data['task']
         
-        #forced_trials = session.trial_data['forced_trial']
-        #non_forced_array = np.where(forced_trials == 0)[0]
-        #task_non_forced = task[non_forced_array]
-        #choices = choices[non_forced_array]
-        #outcomes = outcomes[non_forced_array]
+     
+        predictor_A_Task_1_forced, predictor_A_Task_2_forced, predictor_A_Task_3_forced,\
+        predictor_B_Task_1_forced, predictor_B_Task_2_forced, predictor_B_Task_3_forced, reward_forced,\
+        predictor_a_good_task_1_forced, predictor_a_good_task_2_forced, predictor_a_good_task_3_forced = ft.predictors_forced(session)
+        
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+        reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+        same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+           
+        choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+        index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+        index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
+
+        non_forced_choices = predictor_A_Task_1 + predictor_A_Task_2 + predictor_A_Task_3
+        forced_choices = predictor_A_Task_1_forced + predictor_A_Task_2_forced + predictor_A_Task_3_forced
+    
+        choices_forced_unforced = np.zeros(len(choices))
+        choices_forced_unforced[index_forced] = forced_choices[:len(index_forced)]
+        choices_forced_unforced[index_non_forced] = non_forced_choices
+        choices_forced_unforced = np.asarray(choices_forced_unforced, dtype = int)
         
         task_1 = np.where(task == 1)[0]
         task_2 = np.where(task == 2)[0]  
@@ -139,10 +158,10 @@ class Q1():
         # Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
 
-        for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
+        for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
             if i == ind_task_2 or i == ind_task_3: 
                 nc = 1 - c # Not chosen action.
-                # update action values simple RW
+                # update action values simple RW 
                 Q_td[i+1, c] = 0
                 Q_td[i+1,nc] = 0 
             else:
@@ -154,19 +173,19 @@ class Q1():
 
         # Evaluate choice probabilities and likelihood.     
         choice_probs = array_softmax(Q_td, iTemp)
-        for c,choice in enumerate(choices):
+        for c,choice in enumerate(choices_forced_unforced):
             if choice == 0:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_a_ind.append(c-1)
             elif choice == 1:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_b_ind.append(c-1)
                     
         Q_td[choice_a_ind,0] *= k 
         Q_td[choice_b_ind,1] *= k 
         choice_probs = array_softmax(Q_td, iTemp)
 
-        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices])
+        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices_forced_unforced])
         session_log_likelihood = np.sum(trial_log_likelihood)
         
         if return_Qs:
@@ -191,8 +210,28 @@ class Q2():
         # Unpack trial events.
         choice_a_ind = []
         choice_b_ind = []
-        
         choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+
+        predictor_A_Task_1_forced, predictor_A_Task_2_forced, predictor_A_Task_3_forced,\
+        predictor_B_Task_1_forced, predictor_B_Task_2_forced, predictor_B_Task_3_forced, reward_forced,\
+        predictor_a_good_task_1_forced, predictor_a_good_task_2_forced, predictor_a_good_task_3_forced = ft.predictors_forced(session)
+        
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+        reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+        same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+           
+        index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+        index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
+
+        non_forced_choices = predictor_A_Task_1 + predictor_A_Task_2 + predictor_A_Task_3
+        forced_choices = predictor_A_Task_1_forced + predictor_A_Task_2_forced + predictor_A_Task_3_forced
+    
+        choices_forced_unforced = np.zeros(len(choices))
+        choices_forced_unforced[index_forced] = forced_choices[:len(index_forced)]
+        choices_forced_unforced[index_non_forced] = non_forced_choices
+    
         n_trials = choices.shape[0]
 
         # Unpack parameters.
@@ -201,7 +240,7 @@ class Q2():
         # Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Action values.
 
-        for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
+        for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
 
             nc = 1 - c # Not chosen action.
 
@@ -211,18 +250,18 @@ class Q2():
 
         # Evaluate choice probabilities and likelihood. 
         
-        for c,choice in enumerate(choices):
+        for c,choice in enumerate(choices_forced_unforced):
             if choice == 0:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_a_ind.append(c-1)
             elif choice == 1:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_b_ind.append(c-1)
         Q_td[choice_a_ind,0] *= k 
         Q_td[choice_b_ind,1] *= k 
         
         choice_probs = array_softmax(Q_td, iTemp)
-        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices])
+        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices_forced_unforced])
         session_log_likelihood = np.sum(trial_log_likelihood)
         if return_Qs:
             return Q_td
@@ -319,6 +358,26 @@ class Q4():
         #task_non_forced = task[non_forced_array]
         #choices = choices[non_forced_array]
         #outcomes = outcomes[non_forced_array]
+        predictor_A_Task_1_forced, predictor_A_Task_2_forced, predictor_A_Task_3_forced,\
+        predictor_B_Task_1_forced, predictor_B_Task_2_forced, predictor_B_Task_3_forced, reward_forced,\
+        predictor_a_good_task_1_forced, predictor_a_good_task_2_forced, predictor_a_good_task_3_forced = ft.predictors_forced(session)
+        
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+        reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+        same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+           
+        index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+        index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
+
+        non_forced_choices = predictor_A_Task_1 + predictor_A_Task_2 + predictor_A_Task_3
+        forced_choices = predictor_A_Task_1_forced + predictor_A_Task_2_forced + predictor_A_Task_3_forced
+    
+        choices_forced_unforced = np.zeros(len(choices))
+        choices_forced_unforced[index_forced] = forced_choices[:len(index_forced)]
+        choices_forced_unforced[index_non_forced] = non_forced_choices
+        choices_forced_unforced = np.asarray(choices_forced_unforced, dtype = int)
         
         task_1 = np.where(task == 1)[0]
         task_2 = np.where(task == 2)[0]  
@@ -332,7 +391,7 @@ class Q4():
 
         #Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
-        for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
+        for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
             if i == ind_task_2 or i == ind_task_3:             
                 nc = 1 - c # Not chosen action.
                 # update action values simple RW
@@ -346,19 +405,19 @@ class Q4():
                 Q_td[i+1, nc] = (1-alpha*abs(h))*Q_td[i, nc]+alpha*h*o
                                     
         # Evaluate choice probabilities
-        for c,choice in enumerate(choices):
+        for c,choice in enumerate(choices_forced_unforced):
             if choice == 0:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_a_ind.append(c-1)
             elif choice == 1:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_b_ind.append(c-1)
                     
         Q_td[choice_a_ind,0] *= k 
         Q_td[choice_b_ind,1] *= k 
         
         choice_probs = array_softmax(Q_td, iTemp)
-        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices])
+        trial_log_likelihood = protected_log(choice_probs[np.arange(n_trials), choices_forced_unforced])
         session_log_likelihood = np.sum(trial_log_likelihood)
         
         if return_Qs:
@@ -413,6 +472,27 @@ def simulate_Q1(session, params):
     # Unpack trial events.
     choices, outcomes,task = (session.trial_data['choices'], session.trial_data['outcomes'], session.trial_data['task'])
     task = session.trial_data['task']
+    predictor_A_Task_1_forced, predictor_A_Task_2_forced, predictor_A_Task_3_forced,\
+    predictor_B_Task_1_forced, predictor_B_Task_2_forced, predictor_B_Task_3_forced, reward_forced,\
+    predictor_a_good_task_1_forced, predictor_a_good_task_2_forced, predictor_a_good_task_3_forced = ft.predictors_forced(session)
+    
+    predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+    predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+    predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+    reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+       
+    index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+    index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
+
+    non_forced_choices = predictor_A_Task_1 + predictor_A_Task_2 + predictor_A_Task_3
+    forced_choices = predictor_A_Task_1_forced + predictor_A_Task_2_forced + predictor_A_Task_3_forced
+
+    choices_forced_unforced = np.zeros(len(choices))
+    choices_forced_unforced[index_forced] = forced_choices[:len(index_forced)]
+    choices_forced_unforced[index_non_forced] = non_forced_choices
+    choices_forced_unforced = np.asarray(choices_forced_unforced, dtype = int)
+       
     #forced_trials = session.trial_data['forced_trial']
     #non_forced_array = np.where(forced_trials == 0)[0]
     #task_non_forced = task[non_forced_array]
@@ -431,7 +511,7 @@ def simulate_Q1(session, params):
     #Variables.
     Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
     Q_chosen = [0]
-    for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
+    for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
         if i == ind_task_2 or i == ind_task_3: 
             nc = 1 - c # Not chosen action.
             # update action values simple RW
@@ -448,12 +528,12 @@ def simulate_Q1(session, params):
 
                   
     # Evaluate choice probabilities
-    for c,choice in enumerate(choices):
+    for c,choice in enumerate(choices_forced_unforced):
             if choice == 0:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_a_ind.append(c-1)
             elif choice == 1:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_b_ind.append(c-1)
                     
     Q_td[choice_a_ind,0] *= k 
@@ -478,7 +558,28 @@ def simulate_Q4(session, params):
         #outcomes = outcomes[non_forced_array]
         task_1 = np.where(task == 1)[0]
         task_2 = np.where(task == 2)[0]  
+        predictor_A_Task_1_forced, predictor_A_Task_2_forced, predictor_A_Task_3_forced,\
+        predictor_B_Task_1_forced, predictor_B_Task_2_forced, predictor_B_Task_3_forced, reward_forced,\
+        predictor_a_good_task_1_forced, predictor_a_good_task_2_forced, predictor_a_good_task_3_forced = ft.predictors_forced(session)
         
+        predictor_A_Task_1, predictor_A_Task_2, predictor_A_Task_3,\
+        predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
+        predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
+        reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
+        same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+           
+        choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
+        index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+        index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
+    
+        non_forced_choices = predictor_A_Task_1 + predictor_A_Task_2 + predictor_A_Task_3
+        forced_choices = predictor_A_Task_1_forced + predictor_A_Task_2_forced + predictor_A_Task_3_forced
+    
+        choices_forced_unforced = np.zeros(len(choices))
+        choices_forced_unforced[index_forced] = forced_choices[:len(index_forced)]
+        choices_forced_unforced[index_non_forced] = non_forced_choices
+        choices_forced_unforced = np.asarray(choices_forced_unforced, dtype = int)
+       
         ind_task_2 = len(task_1)
         ind_task_3 = len(task_1)+len(task_2)
         n_trials = choices.shape[0]
@@ -489,7 +590,7 @@ def simulate_Q4(session, params):
         #Variables.
         Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.    
         Q_chosen = [0]
-        for i, (c, o) in enumerate(zip(choices, outcomes)): # loop over trials.
+        for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
             if i == ind_task_2 or i == ind_task_3: 
                 nc = 1 - c # Not chosen action.
                 # update action values simple RW
@@ -505,12 +606,12 @@ def simulate_Q4(session, params):
                 Q_chosen.append(Q_td[i+1, c])
                                             
         # Evaluate choice probabilities
-        for c,choice in enumerate(choices):
+        for c,choice in enumerate(choices_forced_unforced):
             if choice == 0:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_a_ind.append(c-1)
             elif choice == 1:
-                if choices[c] == choices[c-1]:
+                if choices_forced_unforced[c] == choices_forced_unforced[c-1]:
                     choice_b_ind.append(c-1)
                     
         Q_td[choice_a_ind,0] *= k 

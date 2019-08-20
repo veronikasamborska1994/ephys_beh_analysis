@@ -16,7 +16,7 @@ import align_activity as aa
 
 
 ## Target times for aligned rates of forced trials 
-def all_sessions_aligment_forced(experiment_forced,all_experiments):
+def all_sessions_aligment_forced(experiment_forced,all_experiments, fs = 25):
     target_times_forced_trials  = ha.target_times_f(all_experiments)
     experiment_aligned_forced = []
     for session in experiment_forced:
@@ -36,7 +36,7 @@ def all_sessions_aligment_forced(experiment_forced,all_experiments):
             init_times  =(init_times[:len(choice_times)])
             
         trial_times = np.array([init_times-1000, init_times, choice_times, choice_times+1000]).T
-        aligned_rates_forced, t_out, min_max_stretch = aa.align_activity(trial_times, target_times_forced_trials, spikes)
+        aligned_rates_forced, t_out, min_max_stretch = aa.align_activity(trial_times, target_times_forced_trials, spikes, fs = fs)
         session.aligned_rates_forced = aligned_rates_forced
         session.t_out = t_out
         session.target_times_forced_trials = target_times_forced_trials

@@ -39,7 +39,7 @@ def target_times_f(all_experiments):
     return target_times
 
 ## Target times for aligned rates of non-forced trials 
-def all_sessions_aligment(experiment, all_experiments):
+def all_sessions_aligment(experiment, all_experiments,  fs=25):
     target_times  = target_times_f(all_experiments)
     experiment_aligned = []
     for session in experiment:
@@ -55,7 +55,7 @@ def all_sessions_aligment(experiment, all_experiments):
             init_times  =(init_times[:len(choice_times)])
             
         trial_times = np.array([init_times-1000, init_times, choice_times, choice_times+1000]).T
-        aligned_rates, t_out, min_max_stretch = aa.align_activity(trial_times, target_times, spikes)
+        aligned_rates, t_out, min_max_stretch = aa.align_activity(trial_times, target_times, spikes, fs = fs)
         session.aligned_rates = aligned_rates
         session.t_out = t_out
         session.target_times = target_times
