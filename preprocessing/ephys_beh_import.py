@@ -5,6 +5,10 @@ Created on Fri Oct  5 11:37:21 2018
 
 @author: behrenslab
 """
+# =============================================================================
+# Create data objects with ephys and behaviour together, some utility funcs 
+# =============================================================================
+
 import os
 import numpy as np
 import data_import as di
@@ -15,7 +19,6 @@ from datetime import datetime
 
 #ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
 #beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
-
 
 
 def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
@@ -72,21 +75,26 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                             neurons = np.load(neurons_path)
                             neurons = neurons[:,~np.isnan(neurons[1,:])]
                             behaviour_session.ephys = neurons
-                            if subject_ephys == 'm480':
-                                m480.append(behaviour_session)
-                            elif subject_ephys == 'm483':
-                                m483.append(behaviour_session)
-                            elif subject_ephys == 'm479':
-                                m479.append(behaviour_session)
-                            elif subject_ephys == 'm486':
-                                m486.append(behaviour_session)
-                            elif subject_ephys == 'm478':
-                                m478.append(behaviour_session)
-                            elif subject_ephys == 'm481':
-                                m481.append(behaviour_session)
-                            elif subject_ephys == 'm484':
-                                m484.append(behaviour_session)
-                                
+                            
+                            # Exclude sessions where ephys software stopped working in the middle of a session or no neurons for some reason 
+                            
+                            if behaviour_session.file_name != 'm479-2018-08-12-150904.txt' and behaviour_session.file_name != 'm484-2018-08-12-150904.txt'\
+                            and behaviour_session.file_name !='m483-2018-07-27-164242.txt' and behaviour_session.file_name != 'm480-2018-08-22-111012.txt':
+                                if subject_ephys == 'm480':
+                                    m480.append(behaviour_session)
+                                elif subject_ephys == 'm483':
+                                    m483.append(behaviour_session)
+                                elif subject_ephys == 'm479':
+                                    m479.append(behaviour_session)
+                                elif subject_ephys == 'm486':
+                                    m486.append(behaviour_session)
+                                elif subject_ephys == 'm478':
+                                    m478.append(behaviour_session)
+                                elif subject_ephys == 'm481':
+                                    m481.append(behaviour_session)
+                                elif subject_ephys == 'm484':
+                                    m484.append(behaviour_session)
+                                    
                         if lfp_analyse == 'True':
                             if date_lfp == date_behaviour:                             
                                 lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
