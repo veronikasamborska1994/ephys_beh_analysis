@@ -17,7 +17,6 @@ import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 sns.set_style("white") 
 
-from sklearn import metrics
 
 
 

@@ -255,6 +255,7 @@ class model():
     
 
 def simulate_bayes(session, params):
+
     # Unpack trial events.
     choices, outcomes = (session.trial_data['choices'], session.trial_data['outcomes'])
     
@@ -267,7 +268,9 @@ def simulate_bayes(session, params):
     predictor_B_Task_1, predictor_B_Task_2, predictor_B_Task_3, reward,\
     predictor_a_good_task_1,predictor_a_good_task_2, predictor_a_good_task_3,\
     reward_previous,previous_trial_task_1,previous_trial_task_2,previous_trial_task_3,\
-    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1, different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+    same_outcome_task_1, same_outcome_task_2, same_outcome_task_3,different_outcome_task_1,\
+    different_outcome_task_2, different_outcome_task_3, switch = re.predictors_include_previous_trial(session)     
+    
     stay = np.asarray(switch)
   
     n_trials = choices.shape[0]
@@ -460,10 +463,13 @@ def regression_bayes(experiment,bayes_prior, bayes_posterior):
 
 
     cpd = np.nanmean(np.concatenate(cpd,0), axis = 0) # Population CPD is mean over neurons.
+    C_sq_all = np.concatenate(C,0)
+
     C = np.nanmean(np.concatenate(C,0), axis = 0) 
+
     C_sq = np.nanmean(np.concatenate(C_sq,0), axis = 0) # Population CPD is mean over neurons.
 
-    return cpd, predictors,C_sq
+    return cpd, predictors, C_sq,C_sq_all
 
 
 def plotting_beta_sq():
@@ -476,9 +482,13 @@ def plotting_beta_sq():
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward_time)).argmin()
 
-    cpd, predictors, C_sq = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
-    cpd, predictors, C= regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
-
+    cpd, predictors, C_sq, C_sq_all = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
+    C_sq_all_mean = np.mean(C_sq_all, axis = 1)
+    C_sq_all_mean_prior = C_sq_all_mean[:,3]
+    C_sq_all_mean_prior = sorted(C_sq_all_mean_prior)
+    
+    corr = np.correlate(C_sq_all_mean_prior)
+    
     C_sq = C_sq[:,:-1]
     p = [*predictors]
     plt.figure(2)

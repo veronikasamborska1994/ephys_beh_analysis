@@ -75,8 +75,6 @@ def Is_remapping(data):
     for  s, sess in enumerate(x):
         DM = y[s]
 
-        choices = DM[:,1]
-
         b_pokes = DM[:,6]
         a_pokes = DM[:,5]
         task = DM[:,4]
