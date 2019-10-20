@@ -21,11 +21,18 @@ sns.set_style("white")
 import matplotlib.pyplot as plt
 from Neural_Decoding.decoders import LSTMDecoder 
 
+HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+PFC = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
 
-def classifier(data, session):    
+Data_HP = HP['Data'][0]
+DM_HP = HP['DM'][0]
+Data_PFC = PFC['Data'][0]
+DM_PFC = PFC['DM'][0]
+
+def classifier(Data,DM, session):    
     
-    y = data['DM']
-    X = data['Data']
+    y = DM_HP
+    X = Data_HP
     length = []
     correct_list_within = []
     correct_list_between = []

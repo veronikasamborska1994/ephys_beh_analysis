@@ -47,9 +47,8 @@ def search_for_tasks_where_init_becomes_choice(DM):
 
 def classifier_pseudo_simultaneous(data, session):    
     
-    y = data['DM']
-    X = data['Data']
-
+    y = DM_HP
+    X = Data_HP
     all_sessions_1_1 = []
     all_sessions_1_2 = []
     all_sessions_2_1 = []

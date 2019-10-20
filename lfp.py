@@ -18,8 +18,6 @@ sys.path.append('/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6
 import neurodsp
 from neurodsp.timefrequency import amp_by_time, freq_by_time, phase_by_time
 
-#ephys_path = '/Users/veronikasamborska/Desktop/neurons_lfp'
-#beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 #HP,PFC, m484, m479, m483, m478, m486, m480, m481 = ep.import_code(ephys_path,beh_path)
 #experiment_aligned_HP = ha.all_sessions_aligment(HP)
 def trial_start_end_times(s):

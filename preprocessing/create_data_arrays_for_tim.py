@@ -27,7 +27,7 @@ import scipy
 import neuron_firing_all_pokes as nef 
 
 
-def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
+def tim_create_mat(experiment,title):# experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
     
     all_sessions_list = []
     firing_rates = []
@@ -55,7 +55,7 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         
         task = session.trial_data['task']
         forced_trials = session.trial_data['forced_trial']
-    
+        block = session.trial_data['block']
         non_forced_array = np.where(forced_trials == 0)[0]  
         non_forced_choices = choices[non_forced_array]            
         
@@ -192,26 +192,27 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         i_pokes[task_1[-1]+1:task_2[-1]+1] = i_poke_task_2
         i_pokes[task_2[-1]+1:] = i_poke_task_3
         
-        chosen_Q1 = experiment_sim_Q1[s][:len(choices)]
-        chosen_Q4 = experiment_sim_Q4[s][:len(choices)]
-        Q1_value_a = experiment_sim_Q1_value_a[s][:len(choices)]
-        Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
-        Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
-            
+#        chosen_Q1 = experiment_sim_Q1[s][:len(choices)]
+#        chosen_Q4 = experiment_sim_Q4[s][:len(choices)]
+#        Q1_value_a = experiment_sim_Q1_value_a[s][:len(choices)]
+#        Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
+#        Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
+#            
         predictors_all = OrderedDict([
                           ('latent_state',state),
                           ('choice',choices_forced_unforced ),
                           ('reward', outcomes),
                           ('forced_trials',forced_trials),
+                          ('block', block),
                           ('task',task),
                           ('A', a_pokes),
                           ('B', b_pokes),
                           ('Initiation', i_pokes),
-                          ('Chosen_Simple_RW',chosen_Q1),
-                          ('Chosen_Cross_learning_RW', chosen_Q4),
-                          ('Value_A_RW', Q1_value_a),
-                          ('Value_B_RW', Q1_value_b),
-                          ('Value_A_Cross_learning', Q4_value_a),
+                          #('Chosen_Simple_RW',chosen_Q1),
+                          #('Chosen_Cross_learning_RW', chosen_Q4),
+                          #('Value_A_RW', Q1_value_a),
+                          #('Value_B_RW', Q1_value_b),
+                          #('Value_A_Cross_learning', Q4_value_a),
                           ('ones', ones)])
             
         X = np.vstack(predictors_all.values()).T[:len(choices),:].astype(float)

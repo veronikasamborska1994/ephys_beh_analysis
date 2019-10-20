@@ -63,8 +63,8 @@ def remap(data,n_perm):
        
         choices = DM[:,1]
         b_pokes = DM[:,6]
-        a_pokes = DM[:,5]
-        task = DM[:,4]
+        a_pokes = DM[:,7]
+        task = DM[:,5]
         taskid = rc.task_ind(task,a_pokes,b_pokes)
         
         task_1_a = np.where((taskid == 1) & (choices == 0))[0]
@@ -194,5 +194,121 @@ def plot_pie(data_HP, data_PFC):
     ax1.axis('equal') 
     plt.show()
           
+
+
+
+
+
+def plotting_a_b_i(Data,DM, all_session_b1, all_session_a1, all_session_i1, all_session_b2, all_session_a2,\
+all_session_i2, all_session_b3, all_session_a3, all_session_i3):
+    
+    s_n = 0
+    for  s, sess in enumerate(Data_HP):
+        s_n += 1
+        DM = DM_HP[s]
+        x = Data_HP[s]
+        
+        choices = DM[:,1]
+        b_pokes = DM[:,7]
+        a_pokes = DM[:,6]
+        task = DM[:,5]
+        taskid = rc.task_ind(task,a_pokes,b_pokes)
+        
+        task_1 = np.where((taskid == 1))[0]       
+        task_2 = np.where((taskid == 2))[0]
+        task_3 = np.where((taskid == 3))[0]
+       
+        task_1_a = np.where((taskid == 1) & (choices == 0))[0]       
+        task_2_a = np.where((taskid == 2) & (choices == 0))[0]
+        task_3_a = np.where((taskid == 3) & (choices == 0))[0]
+        
+        task_1_b = np.where((taskid == 1) & (choices == 1))[0]       
+        task_2_b = np.where((taskid == 2) & (choices == 1))[0]
+        task_3_b = np.where((taskid == 3) & (choices == 1))[0]
+        
+        all_session_b1_s = all_session_b1[s]
+        all_session_a1_s = all_session_a1[s]
+        all_session_i1_s = all_session_i1[s]
+        all_session_b2_s = all_session_b2[s]
+        all_session_a2_s = all_session_a2[s]
+        all_session_i2_s = all_session_i2[s]
+        all_session_b3_s = all_session_b3[s]
+        all_session_a3_s = all_session_a3[s]
+        all_session_i3_s = all_session_i3[s]
+        
+        firing_rates_mean_time = x
+        n_trials, n_neurons, n_time = firing_rates_mean_time.shape
+        b1_fr = np.mean(firing_rates_mean_time[task_1_b], axis = 0)
+        b2_fr = np.mean(firing_rates_mean_time[task_2_b], axis = 0)
+        b3_fr = np.mean(firing_rates_mean_time[task_3_b], axis = 0)
+
+        ## As
+        a1_fr = np.mean(firing_rates_mean_time[task_1_a], axis = 0)
+        a2_fr = np.mean(firing_rates_mean_time[task_2_a], axis = 0)
+        a3_fr = np.mean(firing_rates_mean_time[task_3_a], axis = 0)
+  
+         
+        ## Is
+        i1_fr = np.mean(firing_rates_mean_time[task_1], axis = 0)
+        i2_fr = np.mean(firing_rates_mean_time[task_2], axis = 0)
+        i3_fr = np.mean(firing_rates_mean_time[task_3], axis = 0)
+        
+      
+        fig =  plt.figure(s_n)
+
+        for neuron in range(n_neurons):
+
+            if neuron in all_session_b1_s:
+                n_firing_b1 = b1_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_b1, color = 'blue')
+                
+            if neuron in all_session_a1_s:
+                n_firing_a1 = a1_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+
+                plt.plot(n_firing_a1, color = 'red')
+                
+            
+            if neuron in all_session_i1_s:
+                n_firing_i1 = i1_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_i1, color = 'yellow')
+                
+                
+            if neuron in all_session_a2_s:
+                n_firing_a2 = a2_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_a2, color = 'red', linestyle = '--')
+
+            if neuron in all_session_b2_s:
+                n_firing_b2 = b2_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_b2, color = 'blue', linestyle = '--')
+
+
+            if neuron in all_session_i2_s:
+                n_firing_i2 =  i2_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_i2, color = 'yellow', linestyle = '--')
+
+                
+            if neuron in all_session_a3_s:
+                n_firing_a3 =  a3_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_a3, color = 'pink')
+
+                
+            if neuron in all_session_b3_s:
+                n_firing_b3 = b3_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_b3, color = 'lightblue')
+
+            if neuron in all_session_i3_s:
+                n_firing_i3 = i3_fr[neuron]
+                fig.add_subplot(5,5,neuron+1)
+                plt.plot(n_firing_i3, color = 'orange')
+
     
     
+       

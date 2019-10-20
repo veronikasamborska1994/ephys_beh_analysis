@@ -118,7 +118,7 @@ def heatplot_aligned(experiment_aligned):
     peak_inds = np.argmax(same_shape_task_1,1)
     ordering = np.argsort(peak_inds)
     activity_sorted = same_shape_task_1[ordering,:]
-    ormed = np.log(not_normed)
+    normed = np.log(not_normed)
     
     #not_normed = same_shape_task_1[ordering,:]
     #not_normed += 1

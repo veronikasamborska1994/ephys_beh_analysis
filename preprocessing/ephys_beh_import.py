@@ -20,7 +20,6 @@ from datetime import datetime
 #ephys_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/neurons'
 #beh_path = '/media/behrenslab/My Book/Ephys_Reversal_Learning/data/Reversal_learning Behaviour Data and Code/data_3_tasks_ephys'
 
-
 def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
     subjects_ephys = os.listdir(ephys_path)
     subjects_ephys = [subject for subject in subjects_ephys if not subject.startswith('.')] #Exclude .DS store from subject list
@@ -52,18 +51,14 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
 
         for session in subject_sessions:
             match_ephys = re.search(r'\d{4}-\d{2}-\d{2}', session)
-            #print(match_ephys)
             date_ephys = datetime.strptime(match_ephys.group(), '%Y-%m-%d').date()
             date_ephys = match_ephys.group()
-            if lfp_analyse == 'True': 
-                for s in lfp_sessions: 
-                     match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
-                     date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
-                     date_lfp = match_lfp.group()
+            
             for subject in subjects_beh:
                 if subject == subject_ephys:
                     subject_beh_subfolder = beh_path + '/' + subject
                     subject_beh_sessions = os.listdir(subject_beh_subfolder)
+                    subject_beh_sessions = [session for session in subject_beh_sessions if not session.startswith('.')] #Exclude .DS store from subject list
                     for beh_session in subject_beh_sessions:
                         match_behaviour = re.search(r'\d{4}-\d{2}-\d{2}', beh_session)
                         date_behaviour = datetime.strptime(match_behaviour.group(), '%Y-%m-%d').date()
@@ -78,6 +73,22 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                             
                             # Exclude sessions where ephys software stopped working in the middle of a session or no neurons for some reason 
                             
+                            if lfp_analyse == 'True':
+                                if (subject_ephys == 'm483') or (subject_ephys == 'm484') :#r (subject_ephys == 'm484'):
+                                    for s in lfp_sessions: 
+                                         match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
+                                         date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
+                                         date_lfp = match_lfp.group()
+                                         if date_lfp == date_behaviour: 
+                                            lfp_path = subject_subfolder+'/'+'LFP''/'+subject_ephys+'_'+ date_lfp+ '.npy'
+                                            lfp = np.load(lfp_path)
+                                            lfp_time = lfp[0,:]
+                                            lfp_signal = lfp[1:,:]
+                                            lfp_nan = lfp_signal[:,~np.isnan(lfp_time)]
+                                            lfp_time_ex_nan = lfp_time[~np.isnan(lfp_time)]
+                                            behaviour_session.lfp = lfp_nan
+                                            behaviour_session.lfp_time = lfp_time_ex_nan     
+                                            
                             if behaviour_session.file_name != 'm479-2018-08-12-150904.txt' and behaviour_session.file_name != 'm484-2018-08-12-150904.txt'\
                             and behaviour_session.file_name !='m483-2018-07-27-164242.txt' and behaviour_session.file_name != 'm480-2018-08-22-111012.txt':
                                 if subject_ephys == 'm480':
@@ -94,20 +105,8 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                                     m481.append(behaviour_session)
                                 elif subject_ephys == 'm484':
                                     m484.append(behaviour_session)
+                           
                                     
-                        if lfp_analyse == 'True':
-                            if date_lfp == date_behaviour:                             
-                                lfp_path = subject_subfolder+'/'+'LFP''/'+ session[:-4] + '_LFP' + '.npy'
-                                print(lfp_path)
-                                lfp = np.load(lfp_path)
-                                lfp_time = lfp[:,0,:]
-                                lfp_signal = lfp[:,1,:]
-                                lfp_nan = lfp_signal[:,~np.isnan(lfp_time[0,:])]
-                                lfp_time_ex_nan = lfp_time[:,~np.isnan(lfp_time[0,:])]
-                                behaviour_session.lfp = lfp_nan
-                                behaviour_session.lfp_time = lfp_time_ex_nan
-                        
-                            
     HP = m484 + m479 + m483
     PFC = m478 + m486 + m480 + m481
     all_sessions = m484  + m479 + m483 + m478 + m486 + m480 + m481

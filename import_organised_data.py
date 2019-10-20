@@ -20,10 +20,10 @@ experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
 experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
 
 PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions )
-HP_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
-
-experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,\
-experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC = mfit.run(experiment_aligned_HP,experiment_aligned_PFC)
-
-data_PFC = cda.tim_create_mat(experiment_aligned_PFC, experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC, 'PFC') 
-data_HP = cda.tim_create_mat(experiment_aligned_HP, experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP, 'HP')
+PFC_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
+#
+#experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,\
+#experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC = mfit.run(experiment_aligned_HP,experiment_aligned_PFC)
+#
+data_PFC = cda.tim_create_mat(experiment_aligned_PFC, 'PFC')# experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC, 'PFC') 
+data_HP = cda.tim_create_mat(experiment_aligned_HP,'HP')# experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP, 'HP')
