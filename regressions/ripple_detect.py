@@ -45,12 +45,17 @@ import itertools
 #                          #('Value_A_Cross_learning', Q4_value_a),
 #                          ('ones', ones)])
 #            
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 5}
+
+plt.rc('font', **font)
 
 def import_data():
     ephys_path = '/Users/veronikasamborska/Desktop/neurons'
     beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
     HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
-#    HP = m484 + m479 + m483
+#   HP = m484 + m479 + m483
 
     HP_LFP,PFC_LFP, m484_LFP, m479_LFP, m483_LFP, m478_LFP, m486_LFP, m480_LFP, m481_LFP, all_sessions_LFP = ep.import_code(ephys_path,beh_path, lfp_analyse = 'True') 
     all_times_m484_LFP, filtered_LFP_m484_LFP, peak_power_all_m484 = ripple_detect(m484_LFP)
@@ -99,7 +104,7 @@ def ripple_detect(LFP):
 
 
 def plot_check_detect(all_times, HP_LFP, filtered_LFP):
-    for times, session in zip(all_times,HP_LFP):
+    for times, session in zip(all_times_m484_LFP,m484_LFP):
         
         f, ax = plt.subplots()
         for ripple in times.itertuples():
@@ -137,7 +142,7 @@ def plot_check_detect(all_times, HP_LFP, filtered_LFP):
         mean_list = []   
          
         for lfp_st, lfp_en in zip(lfp_start,lfp_end):
-            ripples = filtered_LFP[:,lfp_st[0]:lfp_en[0]]
+            ripples = filtered_LFP_m484_LFP[:,lfp_st[0]:lfp_en[0]]
             mean_ripple = np.mean(ripples, axis = 0)
             mean_list.append(mean_ripple)
             
@@ -148,13 +153,13 @@ def plot_check_detect(all_times, HP_LFP, filtered_LFP):
 
 def plot_tuning_curves(HP,subj,s):
     
-    if subj == m484_LFP:  
+    if subj == 'm484':  
         Data = HP['Data'][0,:16]
         DM = HP['DM'][0,:16]
-    elif subj == m479_LFP:  
+    elif subj == 'm479':  
         Data = HP['Data'][0,16:24]
         DM = HP['DM'][0,16:24]
-    elif subj == m483_LFP:  
+    elif subj == 'm483':  
         Data = HP['Data'][0,24:]
         DM = HP['DM'][0,24:]
         
@@ -188,7 +193,7 @@ def ripple_plot(peak_power_all, LFP, data):
 
     for s,session in enumerate(LFP):
         
-        a1_ind, b1_ind,a2_ind, b2_ind,a3_ind, b3_ind,taskid, task = plot_tuning_curves(data, LFP,s)
+        a1_ind, b1_ind,a2_ind, b2_ind,a3_ind, b3_ind, taskid, task = plot_tuning_curves(data, LFP,s)
         
         task_id_1 = task[(np.where(taskid == 1)[0])][0]
         task_id_2 = task[(np.where(taskid == 2)[0])][0]
@@ -317,12 +322,12 @@ def ripple_plot(peak_power_all, LFP, data):
 
   
    
-def crosscorr_weighted(all_sessions,Data, DM, subj = m484_LFP):
-   
+def crosscorr_weighted(all_sessions,HP, Data, DM, subj = 'm484'):
+    
     all_session_b1, all_session_a1, all_session_i1, all_session_b2, all_session_a2,\
     all_session_i2, all_session_b3, all_session_a3, all_session_i3 = a_b_i_coding(Data,DM)
 
-    if subj == m484_LFP:  
+    if subj == 'm484':  
         all_session_b1 = all_session_b1[:16]
         all_session_a1 = all_session_a1[:16]
         all_session_i1 = all_session_i1[:16]
@@ -333,7 +338,7 @@ def crosscorr_weighted(all_sessions,Data, DM, subj = m484_LFP):
         all_session_a3 = all_session_a3[:16]
         all_session_i3 = all_session_i3[:16]
         
-    elif subj == m479_LFP: 
+    elif subj == 'm479': 
         all_session_b1 = all_session_b1[16:24]
         all_session_a1 = all_session_a1[16:24]
         all_session_i1 = all_session_i1[16:24]
@@ -344,7 +349,7 @@ def crosscorr_weighted(all_sessions,Data, DM, subj = m484_LFP):
         all_session_a3 = all_session_a3[16:24]
         all_session_i3 = all_session_i3[16:24]
       
-    elif subj == m483_LFP: 
+    elif subj == 'm483': 
         all_session_b1 = all_session_b1[24:]
         all_session_a1 = all_session_a1[24:]
         all_session_i1 = all_session_i1[24:]
@@ -355,7 +360,9 @@ def crosscorr_weighted(all_sessions,Data, DM, subj = m484_LFP):
         all_session_a3 = all_session_a3[24:]
         all_session_i3 = all_session_i3[24:]
         
-    for s,session in enumerate(all_sessions_2):
+    session_mean = []
+    
+    for s,session in enumerate(all_sessions):
         
         
         a1_ind, b1_ind,a2_ind, b2_ind,a3_ind, b3_ind, taskid, task = plot_tuning_curves(HP,subj,s)
@@ -439,21 +446,27 @@ def crosscorr_weighted(all_sessions,Data, DM, subj = m484_LFP):
             for r,rr in zip(hist_array_cut[i1],hist_array_cut[i2]):
                 ripple = []
                 corr = []
+                correlation = np.correlate(r,rr, 'full')
                 for lag in range(1,50):
                     Design = np.ones((3,len(r)))
                     Design[1,:]  = r
                     Design[2,:] = rr
                     model = LinearRegression().fit(Design[:,:-lag].T, rr[lag:])
-                    correlation = np.corrcoef(r[:-lag],rr[lag:])
                     corr.append(correlation[1])
                     ripple.append(model.coef_[1])
                 p.append(ripple)
-                corr_n.append(corr)
+                corr_n.append(correlation)
+            if i == [1,0]:
+                plt.plot(np.mean(corr_n,axis = 0))
+            elif i == [0,1]:
+                plt.plot(np.mean(corr_n,axis = 0))
             c.append(p)
             corr_n_r.append(corr_n)
         c = np.asarray(c)
         mean_c = np.nanmean(c, axis = 1)
         
+        session_mean.append(mean_c)
+       
         BA = []
         AB = []
         AI = []
@@ -518,57 +531,75 @@ def simulate_replay():
     
     fake_cells = np.zeros((2,50,199))
     
-    replays = np.arange(0,3)
-    for i in range(20):
-        fake_cells[0,:10,replays] = 1     
-        replays += 6
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[0,:5,replays] = 1    
+        replays += 10
+    
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[0,5:10,replays+1] = 1    
+        replays += 10
+
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[0,30:35,replays+29] = 1    
+        replays += 10 
         
-#    replays = np.arange(0,3) 
-#    for i in range(20):
-#        fake_cells[0,10:15,replays+2] = 1
-#        replays += 6
-#    
-    replays = np.arange(0,3)
-    for i in range(20):
-        fake_cells[1,:10,replays+1] = 1
-        replays += 6
-   
-#    replays = np.arange(0,3)
-#    for i in range(20):
-#        fake_cells[1,10:15,replays+4] = 1
-#        replays += 6    
-#
-    noise = np.random.normal(0,0.001,[2,50,199])
+        
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[1,:5,replays+1] = 1    
+        replays += 10
+          
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[1,5:10,replays+2] = 1    
+        replays += 10
+    
+    replays = np.arange(1)
+    for i in range(15):
+        fake_cells[1,30:35,replays+30] = 1    
+        replays += 10 
+        
+    noise = np.random.normal(0,0.04,[2,50,199])
     fake_cells = fake_cells+noise
-    c = []
-    corr_n_r = []
     pos_1 = [1,0]
     pos_2 = [0,1]
+    
+    one_ripple = fake_cells[:,1,:]   
+    zscore = (one_ripple-np.mean(one_ripple))/np.std(one_ripple)
+    
+    c_all = [] 
+    corr_all   = []     
     for i1,i2 in zip(pos_1,pos_2):
-        p = []
-        corr_n = []
-        for r,rr in zip(fake_cells[i1],fake_cells[i2]):
-            ripple = []
-            corr = []
-            for lag in range(1,50):
-                Design = np.ones((3,len(r)))
-                Design[1,:]  = r
-                Design[2,:] = rr
-                model = LinearRegression().fit(Design[:,:-lag].T, rr[lag:])
-                correlation = np.corrcoef(r[:-lag],rr[lag:])
-                corr.append(correlation[1][0])
-                ripple.append(model.coef_[1])
-            p.append(ripple)
-            corr_n.append(corr)
-        c.append(p)
-        corr_n_r.append(corr_n)
-    c = np.asarray(c)
-    mean_c = np.mean(corr_n_r, axis = 1)
+        corr = []
+        c = []
+       # for r,rr in zip(one_ripple[i1],one_ripple[i2]):
+        #    ripple = []
+        for lag in range(1,198):
+            r = zscore[i1]
+            rr = zscore[i2]
+            #Design = np.ones((2,len(r)))
+            #Design[1,:] = rr
+
+            Design = np.ones((3,len(r)))
+            Design[1,:]  = r
+            Design[2,:] = rr
+            model = LinearRegression().fit(Design[:,:-lag].T, rr[lag:])
+            correlation = np.correlate(r[:-lag],rr[lag:], 'full')
+            corr.append(correlation)
+            c.append(model.coef_[1])
+        c_all.append(c)
+        corr_all.append(corr)
+
+    c_all = np.asarray(c_all)
+    mean_c = np.mean(c, axis = 1)
         
 
-def plot(HP, LFP):
+def plot(HP, LFP,all_sessions):
     
-    for s,session in enumerate(all_sessions_2):
+    for s,session in enumerate(all_sessions):
         
         a1_ind, b1_ind,a2_ind, b2_ind,a3_ind, b3_ind, taskid, task = plot_tuning_curves(HP,m484_LFP,s)
             

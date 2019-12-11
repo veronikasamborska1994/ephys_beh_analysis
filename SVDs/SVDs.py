@@ -725,8 +725,9 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
         average_within = np.mean([sum_c_task_1_2,sum_c_task_2_2_from_t_2_1], axis = 0)
         average_between = np.mean([sum_c_task_2_1_from_t_1_2], axis = 0)
         
-    average_within = average_within/average_within[-1]
-    average_between = average_between/average_between[-1]
+    if diagonal == True:
+        average_within = average_within/average_within[-1]
+        average_between = average_between/average_between[-1]
     if HP == True:
         plt.figure(10)
         if demean_all_tasks == True: #Demean Across all taks (False - Within Each Task)
@@ -748,4 +749,6 @@ def svd_plotting(experiment, tasks_unchanged = True, plot_a = False, plot_b = Fa
     plt.figure(10)
     plt.title('Full SVD')
     plt.legend()
+    
+    return average_within,average_between
     

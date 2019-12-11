@@ -12,10 +12,49 @@ font = {'weight' : 'normal',
 plt.rc('font', **font)
 
 
-def remap_surprise(data, task_1_2 = False, task_2_3 = False, task_1_3 = False):
-    
+
+          
+def remap_surprise_block(data):
+    data = data_HP
     y = data['DM']
     x = data['Data']
+    
+    for  s, sess in enumerate(x):
+        DM = y[s]
+        firing = x[s]
+        n_trials, n_neurons, n_time = firing.shape
+       # state = DM[:,0]
+        block = DM[:,4]
+       # b_pokes = DM[:,7]
+       # a_pokes = DM[:,6]
+        
+        block_change = np.where(np.diff(block) != 0)[0]
+
+        ind_40_around = []
+        ind_baseline = []
+        
+        for i in block_change:
+            start_end = np.arange(i-5,i+5)
+            trials_before = np.arange(i-10,i-5)
+            
+            ind_40_around.append(start_end)
+            ind_baseline.append(trials_before)
+            
+        firing_rates_mean_time = np.mean(firing, axis = 2)
+        
+        for neuron in range(n_neurons):
+            
+            n_firing = firing_rates_mean_time[:,neuron, :]  # Firing rate of each neuron
+                     
+            block_1_baseline = np.mean(n_firing[ind_baseline[0]], axis = 0)
+           
+            
+
+    
+def remap_surprise(data, task_1_2 = False, task_2_3 = False, task_1_3 = False):
+    
+    y = data['DM'][0]
+    x = data['Data'][0]
 
     surprise_list_neurons_a_a = []
     surprise_list_neurons_b_b = []
@@ -24,9 +63,9 @@ def remap_surprise(data, task_1_2 = False, task_2_3 = False, task_1_3 = False):
         DM = y[s]
        
         choices = DM[:,1]
-        b_pokes = DM[:,6]
-        a_pokes = DM[:,5]
-        task = DM[:,4]
+        b_pokes = DM[:,7]
+        a_pokes = DM[:,6]
+        task = DM[:,5]
         taskid = rc.task_ind(task,a_pokes,b_pokes)
                 
         if task_1_2 == True:
@@ -139,13 +178,13 @@ def remap_surprise(data, task_1_2 = False, task_2_3 = False, task_1_3 = False):
             
 def plot_heat_surprise(data_HP, data_PFC):
     
-    mean_b_b_t1_2_HP, mean_a_a_t1_t2_HP, surprise_list_neurons_a_a_std_1_2_HP, surprise_list_neurons_b_b_std_1_2_HP = remap_surprise(data_HP, task_1_2 = True, task_2_3 = False, task_1_3 = False)
-    mean_b_b_t2_3_HP, mean_a_a_t2_t3_HP, surprise_list_neurons_a_a_std_2_3_HP, surprise_list_neurons_b_b_std_2_3_HP = remap_surprise(data_HP, task_1_2 = False, task_2_3 = True, task_1_3 = False)  
-    mean_b_b_t1_3_HP, mean_a_a_t1_3_HP, surprise_list_neurons_a_a_std_1_3_HP, surprise_list_neurons_b_b_std_1_3_HP = remap_surprise(data_HP, task_1_2 = False, task_2_3 = False, task_1_3 = True)
+    mean_b_b_t1_2_HP, mean_a_a_t1_t2_HP, surprise_list_neurons_a_a_std_1_2_HP, surprise_list_neurons_b_b_std_1_2_HP = remap_surprise(HP, task_1_2 = True, task_2_3 = False, task_1_3 = False)
+    mean_b_b_t2_3_HP, mean_a_a_t2_t3_HP, surprise_list_neurons_a_a_std_2_3_HP, surprise_list_neurons_b_b_std_2_3_HP = remap_surprise(HP, task_1_2 = False, task_2_3 = True, task_1_3 = False)  
+    mean_b_b_t1_3_HP, mean_a_a_t1_3_HP, surprise_list_neurons_a_a_std_1_3_HP, surprise_list_neurons_b_b_std_1_3_HP = remap_surprise(HP, task_1_2 = False, task_2_3 = False, task_1_3 = True)
 
-    mean_b_b_t1_2_PFC, mean_a_a_t1_t2_PFC, surprise_list_neurons_a_a_std_1_2_PFC, surprise_list_neurons_b_b_std_1_2_PFC = remap_surprise(data_PFC, task_1_2 = True, task_2_3 = False, task_1_3 = False)
-    mean_b_b_t2_3_PFC, mean_a_a_t2_t3_PFC,  surprise_list_neurons_a_a_std_2_3_PFC, surprise_list_neurons_b_b_std_2_3_PFC = remap_surprise(data_PFC, task_1_2 = False, task_2_3 = True, task_1_3 = False)  
-    mean_b_b_t1_3_PFC, mean_a_a_t1_3_PFC, surprise_list_neurons_a_a_std_1_3_PFC, surprise_list_neurons_b_b_std_1_3_PFC = remap_surprise(data_PFC, task_1_2 = False, task_2_3 = False, task_1_3 = True)
+    mean_b_b_t1_2_PFC, mean_a_a_t1_t2_PFC, surprise_list_neurons_a_a_std_1_2_PFC, surprise_list_neurons_b_b_std_1_2_PFC = remap_surprise(PFC, task_1_2 = True, task_2_3 = False, task_1_3 = False)
+    mean_b_b_t2_3_PFC, mean_a_a_t2_t3_PFC,  surprise_list_neurons_a_a_std_2_3_PFC, surprise_list_neurons_b_b_std_2_3_PFC = remap_surprise(PFC, task_1_2 = False, task_2_3 = True, task_1_3 = False)  
+    mean_b_b_t1_3_PFC, mean_a_a_t1_3_PFC, surprise_list_neurons_a_a_std_1_3_PFC, surprise_list_neurons_b_b_std_1_3_PFC = remap_surprise(PFC, task_1_2 = False, task_2_3 = False, task_1_3 = True)
 
 
     fig1, axes1 = plt.subplots(nrows=2, ncols=2)
@@ -184,7 +223,7 @@ def plot_heat_surprise(data_HP, data_PFC):
     t_2_3_PFC = np.mean(mean_a_a_t2_t3_PFC[36:42,:], axis = 0)
     t_1_3_PFC = np.mean(mean_a_a_t1_3_PFC[36:42,:], axis = 0)
  
-    
+    plt.figure()
     plt.plot(t_1_2_HP, color = 'green',  label = 'HP 1 2')
     plt.fill_between(x_pos, t_1_2_HP -surprise_list_neurons_a_a_std_1_2_HP, t_1_2_HP + surprise_list_neurons_a_a_std_1_2_HP, alpha=0.2, color = 'green')
 
@@ -212,8 +251,8 @@ def plot_heat_surprise(data_HP, data_PFC):
     
 def through_time_plot(data, task_1_2 = False, task_2_3 = False, task_1_3 = False):    
     
-    y = data['DM']
-    x = data['Data']
+    y = data['DM'][0]
+    x = data['Data'][0]
 
     surprise_list_neurons_a_a = []
     surprise_list_neurons_b_b = []
@@ -222,11 +261,11 @@ def through_time_plot(data, task_1_2 = False, task_2_3 = False, task_1_3 = False
         DM = y[s]
        
         choices = DM[:,1]
-        b_pokes = DM[:,6]
-        a_pokes = DM[:,5]
-        task = DM[:,4]
+        b_pokes = DM[:,7]
+        a_pokes = DM[:,6]
+        task = DM[:,5]
         taskid = rc.task_ind(task,a_pokes,b_pokes)
-                
+       
         if task_1_2 == True:
             
             taskid_1 = 1
@@ -352,23 +391,23 @@ def through_time_plot(data, task_1_2 = False, task_2_3 = False, task_1_3 = False
 
 def plot_through_time(data_HP,data_PFC):
     
-    mean_b_b_HP_1_2, mean_a_a_HP_1_2 = through_time_plot(data_HP, task_1_2 = True, task_2_3 = False, task_1_3 = False)
-    mean_b_b_HP_2_3, mean_a_a_HP_2_3 = through_time_plot(data_HP, task_1_2 = False, task_2_3 = True, task_1_3 = False)
-    mean_b_b_HP_1_3, mean_a_a_HP_1_3 = through_time_plot(data_HP, task_1_2 = False, task_2_3 = False, task_1_3 = True)
+    mean_b_b_HP_1_2, mean_a_a_HP_1_2 = through_time_plot(HP, task_1_2 = True, task_2_3 = False, task_1_3 = False)
+    mean_b_b_HP_2_3, mean_a_a_HP_2_3 = through_time_plot(HP, task_1_2 = False, task_2_3 = True, task_1_3 = False)
+    mean_b_b_HP_1_3, mean_a_a_HP_1_3 = through_time_plot(HP, task_1_2 = False, task_2_3 = False, task_1_3 = True)
     
-    mean_b_b_PFC_1_2, mean_a_a_PFC_1_2 = through_time_plot(data_PFC, task_1_2 = True, task_2_3 = False, task_1_3 = False)
-    mean_b_b_PFC_2_3, mean_a_a_PFC_2_3 = through_time_plot(data_PFC, task_1_2 = False, task_2_3 = True, task_1_3 = False)
-    mean_b_b_PFC_1_3, mean_a_a_PFC_1_3 = through_time_plot(data_PFC, task_1_2 = False, task_2_3 = False, task_1_3 = True)
+    mean_b_b_PFC_1_2, mean_a_a_PFC_1_2 = through_time_plot(PFC, task_1_2 = True, task_2_3 = False, task_1_3 = False)
+    mean_b_b_PFC_2_3, mean_a_a_PFC_2_3 = through_time_plot(PFC, task_1_2 = False, task_2_3 = True, task_1_3 = False)
+    mean_b_b_PFC_1_3, mean_a_a_PFC_1_3 = through_time_plot(PFC, task_1_2 = False, task_2_3 = False, task_1_3 = True)
 
 
-    fig, axes = plt.subplots(nrows=2, ncols=2)
+    fig, axes = plt.subplots(nrows = 2, ncols = 2)
     
-    axes[0,0].imshow(mean_b_b_PFC_1_2[:,:63], aspect = 'auto')
-    axes[0,1].imshow(mean_b_b_PFC_1_2[:,63:], aspect = 'auto')
-    axes[1,0].imshow(mean_a_a_PFC_1_2[:,:63], aspect = 'auto')
-    axes[1,1].imshow(mean_a_a_PFC_1_2[:,63:], aspect = 'auto')
+    axes[0,0].imshow(mean_b_b_PFC_1_2, aspect = 'auto')
+    axes[0,1].imshow(mean_b_b_PFC_1_2, aspect = 'auto')
+    axes[1,0].imshow(mean_a_a_PFC_1_2, aspect = 'auto')
+    axes[1,1].imshow(mean_a_a_PFC_1_2, aspect = 'auto')
 
-    fig1, axes1 = plt.subplots(nrows=2, ncols=2)
+    fig1, axes1 = plt.subplots(nrows = 2, ncols = 2)
     im = axes1[0,0].imshow(mean_b_b_HP_2_3, aspect = 'auto')
 
     axes1[0,1].imshow(mean_b_b_PFC_2_3, aspect = 'auto')
@@ -376,7 +415,7 @@ def plot_through_time(data_HP,data_PFC):
     axes1[1,1].imshow(mean_a_a_PFC_2_3, aspect = 'auto')
 
     
-    fig2, axes2 = plt.subplots(nrows=2, ncols=2)
+    fig2, axes2 = plt.subplots(nrows = 2, ncols = 2)
     im = axes2[0,0].imshow(mean_b_b_HP_1_3, aspect = 'auto')
 
     axes2[0,1].imshow(mean_b_b_PFC_1_3,  aspect = 'auto')

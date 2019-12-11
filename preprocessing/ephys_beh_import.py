@@ -74,7 +74,7 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                             # Exclude sessions where ephys software stopped working in the middle of a session or no neurons for some reason 
                             
                             if lfp_analyse == 'True':
-                                if (subject_ephys == 'm483') or (subject_ephys == 'm484') :#r (subject_ephys == 'm484'):
+                                if (subject_ephys == 'm484'): #or (subject_ephys == 'm484') :#r (subject_ephys == 'm484'):
                                     for s in lfp_sessions: 
                                          match_lfp = re.search(r'\d{4}-\d{2}-\d{2}', s)
                                          date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()

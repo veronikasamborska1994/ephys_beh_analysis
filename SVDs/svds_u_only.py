@@ -672,7 +672,7 @@ def svd_u_and_v_separately(experiment, tasks_unchanged = True, plot_a = False, p
         plt.axvline(x=task_1_len*4, label = 'B  No Reward', color = 'black', alpha = 0.5)
         
         first = t_u[0,:]
-        return first
+        return first, average_between_x,average_between_y,average_within_x, average_within_y
 
 
 

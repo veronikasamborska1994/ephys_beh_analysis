@@ -121,8 +121,7 @@ def heatplot_aligned(experiment_aligned):
     normed = np.log(not_normed)
     
     #not_normed = same_shape_task_1[ordering,:]
-    #not_normed += 1
-    #not_n
+
     norm_activity_sorted = (activity_sorted - np.min(activity_sorted,1)[:, None]) / (np.max(activity_sorted,1)[:, None] - np.min(activity_sorted,1)[:, None])
     where_are_Nans = np.isnan(norm_activity_sorted)
     norm_activity_sorted[where_are_Nans] = 0

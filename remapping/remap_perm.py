@@ -42,10 +42,10 @@ def perm_test(firing_t1,firing_t2,n_perm):
     return p, p_max, x_max, activity_diff
   
     
-def remap(data,n_perm):
-    
-    y = data['DM']
-    x = data['Data']
+def remap(Data, DM, n_perm):
+   
+    y = DM
+    x = Data
     
     fg_n = 1
     fg_nr = 30
@@ -170,6 +170,9 @@ def remap(data,n_perm):
                 remapped_between_not_within += 1
                 
     return remapped_between_not_within, remapped_between, remapped_within, ns
+
+
+remapped_between_not_within, remapped_between, remapped_within, ns = remap(Data_HP, DM_HP, 50)
 
 
 
