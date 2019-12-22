@@ -26,23 +26,23 @@ import utility as ut
 def free_rewards(experiment):
     
     for s,session in enumerate(experiment):
-        #neurons_aligned = session.aligned_rates
-        #outcomes = session.trial_data['outcomes']  
-        #outcomes_non_forced = outcomes[np.where(session.trial_data['forced_trial'] == 0)[0]]
-        #reward_aligned = neurons_aligned[np.where(outcomes_non_forced==1)[0],:,:]
-        #spikes_port = HP_port_alinged[s]
-        #port = spikes_port[1::2]
-        #reward_poke = port[np.where(outcomes_non_forced==1)[0],:,:]
+#        neurons_aligned = session.aligned_rates
+#        outcomes = session.trial_data['outcomes']  
+#        outcomes_non_forced = outcomes[np.where(session.trial_data['forced_trial'] == 0)[0]]
+#        reward_aligned = neurons_aligned[np.where(outcomes_non_forced==1)[0],:,:]
+#        spikes_port = HP_poke_aligned[s]
+#        port = spikes_port[1::2]
+#        reward_poke = port[np.where(outcomes_non_forced==1)[0],:,:]
         neurons = np.unique(session.ephys[0])
         spikes = session.ephys[1]
-        window_to_plot = 4000 #Ω 1 second window around poke
+        window_to_plot = 4000 #Ω 2s window around poke
         smooth_sd_ms = 1
         bin_width_ms = 50
        
         bin_edges_trial = np.arange(-4050,window_to_plot, bin_width_ms)
-        # 10 for 0.5 second  
         events = [event for event in session.events if event.name in ['free_reward_trial', 'sound_b_reward','sound_a_reward']]
-
+        events_all_trials = [event.time for event in session.events if event.name in ['choice_state']]
+        
         free_reward = []
         poke_name = []
         poke_time = []
@@ -103,11 +103,37 @@ def free_rewards(experiment):
                 normalised_no_reward = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms)
                 normalised_no_reward_array.append(normalised_no_reward*20)
                 
+            
+            average_firing_rate = []
+            
+            for event in events_all_trials:
+                
+                period_min = event - window_to_plot
+                period_max = event + window_to_plot
+                spikes_ind = spikes_n[(spikes_n >= period_min) & (spikes_n<= period_max)]
+    
+                spikes_to_save = (spikes_ind - event)   
+                hist_task,edges_task = np.histogram(spikes_to_save, bins= bin_edges_trial)
+
+                ave_fr = gaussian_filter1d(hist_task.astype(float), smooth_sd_ms)
+                average_firing_rate.append(ave_fr*20)
+           
+            
+            average_firing_rate = np.asarray(average_firing_rate)
+            average_firing_rate_mean= np.mean(average_firing_rate, axis = 0)
+            
             normalised_no_reward_array = np.asarray(normalised_no_reward_array)
             normalised_no_reward_array_mean= np.mean(normalised_no_reward_array, axis = 0)
+            
+            
             fig.add_subplot(5,6, i+1)
             plt.plot(normalised_reward_array_mean[50:110],color = 'green', label = 'Task Reward')
             plt.plot(normalised_no_reward_array_mean[50:110],color = 'green', linestyle = 'dotted', label = 'Task No Reward')
             plt.plot(normalised_task_mean[50:110],color = 'black', label = 'Off Task Reward')
-            
+            plt.plot(average_firing_rate_mean[50:110],color = 'pink', label = 'Average')
+
         plt.legend()
+        
+        
+        
+        

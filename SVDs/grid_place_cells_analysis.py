@@ -18,7 +18,7 @@ file_EC = 'smthRm_grid_all_animals.mat'
 dict_HP = 'smthRm_place_all_animals'
 dict_EC = 'smthRm_grid_all_animals'
 
-def place_grid_cells_SVDs(file, dictionary):
+def place_grid_cells_SVDs(file, dictionary, c = 'green'):
     
     mat_place_cells = scipy.io.loadmat('/Users/veronikasamborska/Desktop/grid_and_place_cells/'+ file)
     
@@ -191,24 +191,118 @@ def place_grid_cells_SVDs(file, dictionary):
     cum_var_y_task_1_from_task_1 = np.cumsum(var_y_task_1_from_task_1)/np.sqrt(place_cells_trial_5_vector.shape[0])
     cum_var_y_task_1_from_task_1 = cum_var_y_task_1_from_task_1/cum_var_y_task_1_from_task_1[-1]
     
-    
-    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between EC Left', color = 'green', linestyle = '--', alpha = 0.7)
-    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within EC Left', color = 'green',alpha = 0.7)
+    plt.figure()
+
+    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between EC Left', color = c, linestyle = '--', alpha = 0.7)
+    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within EC Left', color = c,alpha = 0.7)
     #plt.plot(cum_var_y_task_2_from_task_1, label = 'Between Right Eigenvectors HP', color = 'black', linestyle = '--', alpha = 0.7)
     #plt.plot(cum_var_y_task_1_from_task_1, label = 'Within Right Eigenvectors HP', color = 'black',alpha = 0.7)
     
     plt.legend()
     
     plt.figure()
-    plt.plot(cum_sum_within, label = 'Full Within HP', color = 'green')
-    plt.plot(cum_sum, label = 'Full Between HP', color = 'green',linestyle = '--')
+    plt.plot(cum_sum_within, label = 'Full Within HP', color = c)
+    plt.plot(cum_sum, label = 'Full Between HP', color = c,linestyle = '--')
     
+    plt.figure()
+    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap = 'jet')
+    plt.figure()
+    plt.plot(t_v[:,5])
     
     fig = plt.figure(num = 11, figsize=(5,10))
     fig.add_subplot(10,2,1)
-    plt.imshow(-t_v[:,1].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v[:,0].reshape(50, 50).T, cmap = 'jet')
     plt.title('Arena 1')
     plt.ylabel('Eig 1')
+    
+    fig.add_subplot(10,2,2)
+    plt.imshow(t_v_t_2_1[:,0].reshape(50, 50).T, cmap = 'jet')
+    plt.title('Arena 2')
+    
+    
+    fig.add_subplot(10,2,3)
+    plt.imshow(t_v[:,1].reshape(50, 50).T, cmap = 'jet')
+    plt.ylabel('Eig 2')
+    
+    
+    fig.add_subplot(10,2,4)
+    plt.imshow(t_v_t_2_1[:,1].reshape(50, 50).T,cmap = 'jet')
+
+    
+    fig.add_subplot(10,2,5)
+    plt.imshow(t_v[:,2].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 3')
+    
+    
+    fig.add_subplot(10,2,6)
+    plt.imshow(t_v_t_2_1[:,2].reshape(50, 50).T, cmap = 'jet')
+    
+    
+    fig.add_subplot(10,2,7)
+    plt.imshow(t_v[:,3].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 4')
+    
+    fig.add_subplot(10,2,8)
+    plt.imshow(t_v_t_2_1[:,3].reshape(50, 50).T, cmap = 'jet')
+    
+    
+    
+    
+    fig.add_subplot(10,2,9)
+    plt.imshow(t_v[:,4].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 5')
+    
+    
+    fig.add_subplot(10,2,10)
+    plt.imshow(t_v_t_2_1[:,4].reshape(50, 50).T,cmap = 'jet')
+    
+    
+    
+    fig.add_subplot(10,2,11)
+    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 6')
+    
+    
+    fig.add_subplot(10,2,12)
+    plt.imshow(t_v_t_2_1[:,5].reshape(50, 50).T,cmap = 'jet')
+    
+    
+    fig.add_subplot(10,2,13)
+    plt.imshow(t_v[:,6].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 7')
+    
+    
+    fig.add_subplot(10,2,14)
+    plt.imshow(t_v_t_2_1[:,6].reshape(50, 50).T,cmap = 'jet')
+    
+    fig.add_subplot(10,2,15)
+    plt.imshow(t_v[:,7].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 8')
+    
+    
+    fig.add_subplot(10,2,16)
+    plt.imshow(t_v_t_2_1[:,7].reshape(50, 50).T,cmap = 'jet')
+    
+    
+    fig.add_subplot(10,2,17)
+    plt.imshow(t_v[:,8].reshape(50, 50).T,cmap = 'jet')
+    plt.ylabel('Eig 9')
+    
+    
+    fig.add_subplot(10,2,18)
+    plt.imshow(t_v_t_2_1[:,8].reshape(50, 50).T,cmap = 'jet')
+    
+    
+    
+    fig.add_subplot(10,2,19)
+    plt.imshow(t_v[:,9].reshape(50, 50).T,cmap = 'jet')
+    
+    
+    plt.ylabel('Eig 10')
+    fig.add_subplot(10,2,20)
+    plt.imshow(t_v_t_2_1[:,9].reshape(50, 50).T,cmap = 'jet')
+    
+    
     
     return cum_var_x_task_2_from_task_1, cum_var_x_task_1_from_task_1
 
