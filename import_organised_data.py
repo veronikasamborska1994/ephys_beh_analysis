@@ -19,7 +19,7 @@ HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(
 experiment_aligned_PFC = ha.all_sessions_aligment(PFC, all_sessions)
 experiment_aligned_HP = ha.all_sessions_aligment(HP, all_sessions)
 
-PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions )
+PFC_forced = ft.all_sessions_aligment_forced(PFC,all_sessions)
 PFC_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
 #
 #experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,\

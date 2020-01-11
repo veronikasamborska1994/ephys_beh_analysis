@@ -6,7 +6,7 @@ Created on Wed Apr 17 15:43:25 2019
 @author: veronikasamborska
 """
 # =============================================================================
-# Create data structures aligned to poke entry rather with a specified time window around
+# Create data structures aligned to poke entry rather with a specified time window around
 # =============================================================================
 
 from scipy.ndimage import gaussian_filter1d

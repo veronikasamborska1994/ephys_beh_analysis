@@ -20,27 +20,27 @@ from matplotlib import colors as mcolors
 from sklearn.linear_model import LinearRegression
 
 
-ols = LinearRegression(copy_X = True,fit_intercept = False)
-ols.fit(X_1,y_1)
-sse = np.sum((ols.predict(X_2) - y_2)**2, axis = 0)
-cpd = np.zeros([y.shape[1],X_2.shape[1]])
+# ols = LinearRegression(copy_X = True,fit_intercept = False)
+# ols.fit(X_1,y_1)
+# sse = np.sum((ols.predict(X_2) - y_2)**2, axis = 0)
+# cpd = np.zeros([y.shape[1],X_2.shape[1]])
 
-for i in range(X_1.shape[1]):
-    X_i = np.delete(X_1,i,axis=1)
-    X_i_1 = np.delete(X_2,i,axis=1)
-    ols.fit(X_i,y_1)
-    sse_X_i = np.sum((ols.predict(X_i_1) - y_2)**2, axis=0)
-    cpd[:,i]=(sse_X_i-sse)/sse_X_i
+# for i in range(X_1.shape[1]):
+#     X_i = np.delete(X_1,i,axis=1)
+#     X_i_1 = np.delete(X_2,i,axis=1)
+#     ols.fit(X_i,y_1)
+#     sse_X_i = np.sum((ols.predict(X_i_1) - y_2)**2, axis=0)
+#     cpd[:,i]=(sse_X_i-sse)/sse_X_i
     
-cpd = cpd.reshape(12,n_timepoints, n_predictors) 
-sse = sse.reshape(12,n_timepoints)
-plt.figure()
-for i in range(12):
-    plt.plot(sse[i,:])
+# cpd = cpd.reshape(12,n_timepoints, n_predictors) 
+# sse = sse.reshape(12,n_timepoints)
+# plt.figure()
+# for i in range(12):
+#     plt.plot(sse[i,:])
     
-c = np.mean(cpd, 0)
-for i in range(cpd.shape[2]):
-    plt.plot(c[:,i])
+# c = np.mean(cpd, 0)
+# for i in range(cpd.shape[2]):
+#     plt.plot(c[:,i])
 
 def _CPD_cross_task(X,X1, y, y1):
     
@@ -72,11 +72,10 @@ def regression_general(data):
     cpd_1_2 = []
     cpd_2_3 = []
 
-    dm = data['DM'][0]
+    dm = data['DM']
     #dm = dm[:-1]
-    firing = data['Data'][0]
+    firing = data['Data']
     #firing = firing[:-1]
-    session_trials_since_block = []
     
     for  s, sess in enumerate(dm):
         DM = dm[s]
@@ -84,6 +83,8 @@ def regression_general(data):
         n_trials, n_neurons, n_timepoints = firing_rates.shape
         
         if n_neurons > 10:
+            session_trials_since_block = []
+
         
             state = DM[:,0]
             choices = DM[:,1]
@@ -175,24 +176,24 @@ def regression_general(data):
     
             predictors_all = OrderedDict([('Reward', reward),
                                       ('Choice', choices),
-                                      ('Correct', correct),
-                                      ('A in Block', a_since_block),   
-                                      ('A in Block x Reward', int_a_reward),   
+                                      #('Correct', correct),
+                                      #('A in Block', a_since_block),   
+                                      #('A in Block x Reward', int_a_reward),   
                                       
                                       ('State', state),
                                       ('Trial in Block', trials_since_block),
-                                      ('Interaction State x Trial in Block', interaction_trial_latent),
-                                      ('Interaction State x A count', interaction_a_latent),
+                                      #('Interaction State x Trial in Block', interaction_trial_latent),
+                                      #('Interaction State x A count', interaction_a_latent),
     
                                       ('Choice x Trials in Block', interaction_trial_choice),
                                       ('Reward x Choice', reward_choice_int),
-                                      ('No Reward Count in a Block', negative_reward_count),
-                                      ('No Reward x Correct', negative_reward_count_st),
-                                      ('Reward Count in a Block', positive_reward_count),
-                                      ('Reward Count x Correct', positive_reward_count_st),
-                                      ('No reward Count x Choice',negative_reward_count_ch),
-                                      ('Reward Count x Choice',positive_reward_count_ch),
-                                      ('Reward x Trial in Block',reward_trial_in_block),
+                                      # ('No Reward Count in a Block', negative_reward_count),
+                                      # ('No Reward x Correct', negative_reward_count_st),
+                                      # ('Reward Count in a Block', positive_reward_count),
+                                      # ('Reward Count x Correct', positive_reward_count_st),
+                                      # ('No reward Count x Choice',negative_reward_count_ch),
+                                      # ('Reward Count x Choice',positive_reward_count_ch),
+                                      # ('Reward x Trial in Block',reward_trial_in_block),
         
                                       ('ones', ones)])
             
@@ -525,20 +526,41 @@ def svd_on_coefs():
    
 def plot_cpd_gen(data,fig_n,title):
     
-    C, cpd, C_1,C_2, C_3, cpd_1_2,cpd_2_3, predictors_all,session_trials_since_block = regression_general(PFC)
-    cpd = cpd_1_2[:,:-1]
+    C, cpd, C_1,C_2, C_3, cpd_1_2,cpd_2_3, predictors_all,session_trials_since_block = regression_general(data_HP)
+    cpd = cpd[:,:-1]
     colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-    c = [*colors]
-    #c =  ['violet', 'black', 'red','chocolate', 'green', 'blue', 'turquoise', 'grey', 'yellow', 'pink',\
-       #   'purple','orange', 'darkblue', 'darkred', 'darkgreen','darkyellow','lightgreen']
-    p = [*predictors]
-    plt.figure(fig_n)
+    #c = [*colors][2:]
+    c =  ['violet', 'black', 'red','chocolate', 'green', 'blue', 'turquoise', 'grey', 'yellow', 'pink',\
+          'purple','orange', 'darkblue', 'darkred', 'darkgreen','darkyellow','lightgreen']
+    p = [*predictors_all]
+    fig = plt.figure(1)
+    
+    fig.add_subplot(1,2,1)
     for i in np.arange(cpd.shape[1]):
         plt.plot(cpd[:,i], label =p[i], color = c[i])
-        plt.title(title)
+        #plt.title(title)
     plt.legend()
     plt.ylabel('Coefficient of Partial Determination')
     plt.xlabel('Time (ms)')
+    plt.title('HP')
+    
+    
+    C, cpd, C_1,C_2, C_3, cpd_1_2,cpd_2_3, predictors_all,session_trials_since_block = regression_general(data_PFC)
+    cpd = cpd[:,:-1]
+    colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+    #c = [*colors][2:]
+    c =  ['violet', 'black', 'red','chocolate', 'green', 'blue', 'turquoise', 'grey', 'yellow', 'pink',\
+          'purple','orange', 'darkblue', 'darkred', 'darkgreen','darkyellow','lightgreen']
+    p = [*predictors_all]
+    fig.add_subplot(1,2,2)
+
+    for i in np.arange(cpd.shape[1]):
+        plt.plot(cpd[:,i], label =p[i], color = c[i])
+        #plt.title(title)
+    plt.legend()
+    plt.ylabel('Coefficient of Partial Determination')
+    plt.xlabel('Time (ms)')
+    plt.title('PFC')
     
     firing = PFC['Data'][0]
     dm = PFC['DM'][0]

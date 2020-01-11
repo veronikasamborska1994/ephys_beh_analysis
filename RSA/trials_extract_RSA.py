@@ -5,7 +5,10 @@ Created on Wed Apr 17 15:26:20 2019
 
 @author: veronikasamborska
 """
-
+import sys
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/RSA')
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
 
 import regression_poke_based_include_a as re
 import ephys_beh_import as ep
@@ -1090,6 +1093,7 @@ def extract_trials(experiment, all_sessions, time_window = 1):
    
    return matrix_for_correlations
   
+HP_m = extract_trials(experiment_aligned_HP, all_sessions_HP, time_window = 30)
 
 def regression_RSA(matrix_for_correlations):
 # =============================================================================
@@ -1135,7 +1139,7 @@ def regression_RSA(matrix_for_correlations):
 
 
 def rsa_across_time(experiment,all_sessions):
-    matrix_for_correlations = extract_trials(experiment_aligned_HP,all_sessions_HP,time_window = 30)
+    matrix_for_correlations = extract_trials(experiment_aligned_HP,all_sessions_HP,time_window = 38)
     C,correlation_m,predictors = regression_RSA(matrix_for_correlations)
     
     #plt.imshow(correlation_m)
