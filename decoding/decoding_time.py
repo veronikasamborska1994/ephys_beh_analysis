@@ -15,11 +15,11 @@ import numpy as np
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis 
 from sklearn import svm
-
+from sklearn.naive_bayes import GaussianNB
 import seaborn as sns
 sns.set_style("white")
 import matplotlib.pyplot as plt
-from Neural_Decoding.decoders import LSTMDecoder 
+import scipy
 
 HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
 PFC = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')

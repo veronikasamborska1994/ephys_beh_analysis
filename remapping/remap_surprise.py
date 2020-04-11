@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import remapping_count as rc 
 from scipy.stats import norm
+from scipy import io
+from palettable import wesanderson as wes
 
 font = {'weight' : 'normal',
         'size'   : 5}
@@ -13,9 +15,20 @@ plt.rc('font', **font)
 
 
 
+def run():
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
+    data_plot = io.loadmat('/Users/veronikasamborska/Desktop/plotDat.mat')
+
+    plot_through_time(HP,PFC)
+
+def tim_matlab():
+    data_plot = io.loadmat('/Users/veronikasamborska/Desktop/plotDat.mat')
+
+    data = data_plot['plotDat']
+    data_t_1_
           
 def remap_surprise_block(data):
-    data = data_HP
     y = data['DM']
     x = data['Data']
     
@@ -389,7 +402,7 @@ def through_time_plot(data, task_1_2 = False, task_2_3 = False, task_1_3 = False
 
 
 
-def plot_through_time(data_HP,data_PFC):
+def plot_through_time(HP,PFC):
     
     mean_b_b_HP_1_2, mean_a_a_HP_1_2 = through_time_plot(HP, task_1_2 = True, task_2_3 = False, task_1_3 = False)
     mean_b_b_HP_2_3, mean_a_a_HP_2_3 = through_time_plot(HP, task_1_2 = False, task_2_3 = True, task_1_3 = False)
@@ -398,6 +411,103 @@ def plot_through_time(data_HP,data_PFC):
     mean_b_b_PFC_1_2, mean_a_a_PFC_1_2 = through_time_plot(PFC, task_1_2 = True, task_2_3 = False, task_1_3 = False)
     mean_b_b_PFC_2_3, mean_a_a_PFC_2_3 = through_time_plot(PFC, task_1_2 = False, task_2_3 = True, task_1_3 = False)
     mean_b_b_PFC_1_3, mean_a_a_PFC_1_3 = through_time_plot(PFC, task_1_2 = False, task_2_3 = False, task_1_3 = True)
+
+
+    # CA1
+    
+    # Different Space 
+    
+    within_diff_space_HP = np.diag((mean_b_b_HP_2_3[:,:63]+ mean_b_b_HP_1_2[:,:63])/2)
+    between_diff_space_HP = np.diag((mean_b_b_HP_2_3[:,63:]+ mean_b_b_HP_1_2[:,63:])/2)
+    
+    # Same Space 
+
+    within_same_space_a_HP =  np.diag(mean_a_a_HP_1_3[:,:63])
+    between_same_space_a_HP = np.diag(mean_a_a_HP_1_3[:,63:])
+
+    # Initiation moves to B
+    within_b_to_init_HP =  np.diag(mean_a_a_HP_2_3[:,:63])
+    between_b_to_init_HP = np.diag(mean_a_a_HP_2_3[:,63:])
+
+    # PFC
+
+   # Different Space 
+    
+    within_diff_space_PFC = np.diag((mean_b_b_PFC_2_3[:,:63]+ mean_b_b_HP_1_2[:,:63])/2)
+    between_diff_space_PFC = np.diag((mean_b_b_PFC_2_3[:,63:]+ mean_b_b_HP_1_2[:,63:])/2)
+    
+    # Same Space 
+
+    within_same_space_a_PFC =  np.diag(mean_a_a_PFC_1_3[:,:63])
+    between_same_space_a_PFC = np.diag(mean_a_a_PFC_1_3[:,63:])
+
+    # Initiation moves to B
+    within_b_to_init_PFC =  np.diag(mean_a_a_PFC_2_3[:,:63])
+    between_b_to_init_PFC = np.diag(mean_a_a_PFC_2_3[:,63:])
+    
+    
+    # Diff Space plots
+
+    isl = wes.Royal2_5.mpl_colors
+    It = 25
+    Ct = 36
+    Re = 42
+
+    plt.figure()
+    plt.plot(within_diff_space_HP, color = isl[0], label = 'HP Within Task')
+    plt.plot(between_diff_space_HP, color = isl[0], linestyle = '--', label = 'HP Between Tasks')
+
+    plt.plot(within_diff_space_PFC, color = isl[1], label = 'PFC Within Task')
+    plt.plot(between_diff_space_PFC, color = isl[1], linestyle = '--', label = 'PFC Between Task')
+    mmin  =np.min([within_diff_space_HP,between_diff_space_HP,within_diff_space_PFC,between_diff_space_PFC])
+    mmax  =np.max([within_diff_space_HP,between_diff_space_HP,within_diff_space_PFC,between_diff_space_PFC])
+           
+    plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Ct,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
+
+    plt.legend()
+    plt.title('Different Space')
+
+
+
+    # Same Space plots
+    plt.figure()
+    plt.plot(within_same_space_a_HP, color = isl[0],label = 'HP Within Task')
+    plt.plot(between_same_space_a_HP, color = isl[0], linestyle = '--',label = 'HP Between Tasks')
+
+    plt.plot(within_same_space_a_PFC, color = isl[1], label = 'PFC Within Task')
+    plt.plot(between_same_space_a_PFC, color = isl[1], linestyle = '--', label = 'PFC Between Task')
+    
+    mmin  =np.min([within_same_space_a_HP,between_same_space_a_HP,within_same_space_a_PFC,between_same_space_a_PFC])
+    mmax  =np.max([within_same_space_a_HP,between_same_space_a_HP,within_same_space_a_PFC,between_same_space_a_PFC])
+           
+    plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Ct,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
+
+    plt.legend()
+    plt.title('Same Space')
+
+    # Init becomes B
+    
+    plt.figure()
+    plt.plot(within_b_to_init_HP, color = isl[0],label = 'HP Within Task')
+    plt.plot(between_b_to_init_HP, color = isl[0], linestyle = '--', label = 'HP Between Tasks')
+
+    plt.plot(within_b_to_init_PFC, color = isl[1], label = 'PFC Within Task')
+    plt.plot(between_b_to_init_PFC, color = isl[1], linestyle = '--', label = 'PFC Between Task')
+    mmin  =np.min([within_b_to_init_HP,between_b_to_init_HP])
+    mmax  =np.max([within_b_to_init_HP,between_b_to_init_HP])
+           
+    plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Ct,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
+
+   
+    plt.legend()   
+    plt.title('Init Becomes B')
+
 
 
     fig, axes = plt.subplots(nrows = 2, ncols = 2)

@@ -54,7 +54,7 @@ plt.rc('font', **font)
 def import_data():
     ephys_path = '/Users/veronikasamborska/Desktop/neurons'
     beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
-    HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+#    HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
 #   HP = m484 + m479 + m483
 
     HP_LFP,PFC_LFP, m484_LFP, m479_LFP, m483_LFP, m478_LFP, m486_LFP, m480_LFP, m481_LFP, all_sessions_LFP = ep.import_code(ephys_path,beh_path, lfp_analyse = 'True') 

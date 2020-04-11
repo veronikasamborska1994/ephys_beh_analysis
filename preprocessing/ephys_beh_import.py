@@ -80,7 +80,7 @@ def import_code(ephys_path,beh_path, lfp_analyse = 'True'):
                                          date_lfp = datetime.strptime(match_lfp.group(), '%Y-%m-%d').date()
                                          date_lfp = match_lfp.group()
                                          if date_lfp == date_behaviour: 
-                                            lfp_path = subject_subfolder+'/'+'LFP''/'+subject_ephys+'_'+ date_lfp+ '.npy'
+                                            lfp_path = subject_subfolder+'/'+'LFP''/'+subject_ephys+'_'+ date_lfp+ '_LFP' +'.npy'
                                             lfp = np.load(lfp_path)
                                             lfp_time = lfp[0,:]
                                             lfp_signal = lfp[1:,:]

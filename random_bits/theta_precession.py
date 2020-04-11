@@ -15,7 +15,7 @@ from scipy.signal import filtfilt, hilbert, remez
 import numpy as np
 import scipy.io
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/remapping')
-import remapping_count as rc 
+#import remapping_count as rc 
 from scipy import stats
 import psutil
 from scipy.ndimage import gaussian_filter1d

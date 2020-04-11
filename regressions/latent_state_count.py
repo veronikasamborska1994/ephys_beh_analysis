@@ -15,26 +15,27 @@ from sklearn import svm
 from sklearn import metrics
 import sys
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/remapping')
+
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
 import remapping_count as rc 
 from scipy.ndimage import gaussian_filter1d
 from scipy import interpolate
 import utility as ut
+import latent_state_count as lt
 
-HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
-PFC = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
-#
-Data_HP = HP['Data'][0]
-DM_HP = HP['DM'][0]
-Data_PFC = PFC['Data'][0]
-DM_PFC = PFC['DM'][0]
-
-session_list_PFC = select_trials(Data_PFC, DM_PFC, 62, ind_time = np.arange(30,40))
-correct_A_A_PFC, correct_B_A_PFC, correct_A_B_PFC, correct_B_B_PFC = decode_time_in_block(session_list_PFC,'PFC')
-
-session_list_HP = select_trials(Data_HP, DM_HP, 62, ind_time = np.arange(30,40))
-
-correct_A_A_HP, correct_B_A_HP, correct_A_B_HP, correct_B_B_HP = decode_time_in_block(session_list_HP,'HP')
+def import_data():
+    
+    Data_HP = HP['Data'][0]
+    DM_HP = HP['DM'][0]
+    Data_PFC = PFC['Data'][0]
+    DM_PFC = PFC['DM'][0]
+    
+    session_list_PFC = select_trials(Data_PFC, DM_PFC, 62, ind_time = np.arange(30,40))
+    correct_A_A_PFC, correct_B_A_PFC, correct_A_B_PFC, correct_B_B_PFC = decode_time_in_block(session_list_PFC,'PFC')
+    
+    session_list_HP = select_trials(Data_HP, DM_HP, 62, ind_time = np.arange(30,40))
+    
+    correct_A_A_HP, correct_B_A_HP, correct_A_B_HP, correct_B_B_HP = decode_time_in_block(session_list_HP,'HP')
 
 def perm_test(firing_1,firing_2,n_perm):
     

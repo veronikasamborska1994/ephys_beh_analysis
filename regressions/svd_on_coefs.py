@@ -7,7 +7,7 @@ Created on Thu Nov  7 12:37:33 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
-
+import sys
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
 
 import regressions_general as reg_gen
@@ -50,7 +50,7 @@ def svd_on_coefs(data, title):
     
     return s_diag
 
-s_diag = svd_on_coefs(HP, 'HP')
-s_diag_PFC =  svd_on_coefs(data_PFC, 'PFC')
-HP = np.trapz(s_diag)
-PFC = np.trapz(s_diag_PFC)
+# s_diag = svd_on_coefs(HP, 'HP')
+# s_diag_PFC =  svd_on_coefs(data_PFC, 'PFC')
+# HP = np.trapz(s_diag)
+# PFC = np.trapz(s_diag_PFC)

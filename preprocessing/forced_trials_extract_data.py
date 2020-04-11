@@ -9,13 +9,14 @@ Created on Thu Jan 10 11:47:36 2019
 # Forced trials aligning 
 # =============================================================================
 
-import ephys_beh_import as ep
+import sys
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/plotting')
 import heatmap_aligned as ha 
-import regressions as re
-import neuron_firing_all_pokes as ne
 import copy 
 import numpy as np
 import align_activity as aa
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
+import ephys_beh_import as ep
 
 
 ## Target times for aligned rates of forced trials 

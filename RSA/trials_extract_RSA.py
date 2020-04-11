@@ -916,7 +916,53 @@ def plotting_correlations_all_time_points(experiment,all_sessions, figure_number
     plt.tight_layout()
     
     
+
+  
+#HP_m = extract_trials(experiment_aligned_HP, all_sessions_HP, time_window = 30)
+
+def regression_RSA(matrix_for_correlations):
+# =============================================================================
+#     Regression of RSA predictors on the actual data matrix
+# =============================================================================
+    C = [] 
+    correlation_m = np.corrcoef(matrix_for_correlations)
+    correlation_m_f = correlation_m.flatten()
+    physical_rsa = rs.RSA_physical_rdm()
+    physical_rsa  = 1*physical_rsa.flatten()
+    choice_ab_rsa = rs.RSA_a_b_initiation_rdm()
+    choice_ab_rsa = 1*choice_ab_rsa.flatten()
+    reward_no_reward = rs.reward_rdm()
+    reward_no_reward = 1*reward_no_reward.flatten()
+    reward_at_choices = rs.reward_choice_space()
+    reward_at_choices = 1*reward_at_choices.flatten()
+    #choice_initiation_rsa =  rsa.choice_vs_initiation()
+    #choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
+    #a_bs_task_specific_rsa = rsa.a_bs_task_specific()
+    #a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
+
+    ones = np.ones(len(choice_ab_rsa))
     
+
+    predictors = OrderedDict([('Space' , physical_rsa),
+                              ('A vs B', choice_ab_rsa),
+                              ('Reward',reward_no_reward),
+                              ('Reward at A vs B',reward_at_choices),
+                              #('Choice vs Initiation',choice_initiation_rsa),
+                              #('A and B Task Specific',a_bs_task_specific_rsa),
+                              ('constant', ones)])                                        
+           
+    X = np.vstack(predictors.values()).T[:len(physical_rsa),:].astype(float)
+    # Check if regression is rank deficient 
+    #print(X.shape[1])  
+    rank = matrix_rank(X) 
+    #print(rank)
+    y = correlation_m_f
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y)
+    C.append(ols.coef_) 
+    
+    return C,correlation_m,predictors
+
 def extract_trials(experiment, all_sessions, time_window = 1): 
 # =============================================================================
 #   This function separates pokes and finds firing rates of each neuron around the pokes.
@@ -1092,50 +1138,6 @@ def extract_trials(experiment, all_sessions, time_window = 1):
                                        session_list_poke_b_task_y_spikes_nr,session_list_poke_b_task_z_spikes_r,session_list_poke_b_task_z_spikes_nr])
    
    return matrix_for_correlations
-  
-HP_m = extract_trials(experiment_aligned_HP, all_sessions_HP, time_window = 30)
-
-def regression_RSA(matrix_for_correlations):
-# =============================================================================
-#     Regression of RSA predictors on the actual data matrix
-# =============================================================================
-    C = [] 
-    correlation_m = np.corrcoef(matrix_for_correlations)
-    correlation_m_f = correlation_m.flatten()
-    physical_rsa = rs.RSA_physical_rdm()
-    physical_rsa  = 1*physical_rsa.flatten()
-    choice_ab_rsa = rs.RSA_a_b_initiation_rdm()
-    choice_ab_rsa = 1*choice_ab_rsa.flatten()
-    reward_no_reward = rs.reward_rdm()
-    reward_no_reward = 1*reward_no_reward.flatten()
-    reward_at_choices = rs.reward_choice_space()
-    reward_at_choices = 1*reward_at_choices.flatten()
-    #choice_initiation_rsa =  rsa.choice_vs_initiation()
-    #choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
-    #a_bs_task_specific_rsa = rsa.a_bs_task_specific()
-    #a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
-
-    ones = np.ones(len(choice_ab_rsa))
-    
-
-    predictors = OrderedDict([('Space' , physical_rsa),
-                              ('A vs B', choice_ab_rsa),
-                              ('Reward',reward_no_reward),
-                              ('Reward at A vs B',reward_at_choices),
-                              #('Choice vs Initiation',choice_initiation_rsa),
-                              #('A and B Task Specific',a_bs_task_specific_rsa),
-                              ('constant', ones)])                                        
-           
-    X = np.vstack(predictors.values()).T[:len(physical_rsa),:].astype(float)
-    print(X.shape[1])  
-    rank = matrix_rank(X) 
-    print(rank)
-    y = correlation_m_f
-    ols = LinearRegression(copy_X = True,fit_intercept= False)
-    ols.fit(X,y)
-    C.append(ols.coef_) 
-    
-    return C,correlation_m,predictors
 
 
 def rsa_across_time(experiment,all_sessions):
@@ -1233,7 +1235,6 @@ def matrices_for_plots(experiment,all_sessions):
     return C_list,correlation_m_list
 
 #C_list_PFC,correlation_m_list_PFC = matrices_for_plots(experiment_aligned_PFC,all_sessions_PFC)
-
 #C_list_HP,correlation_m_list_HP = matrices_for_plots(experiment_aligned_HP,all_sessions_HP)
 
 def matrices_for_different_times(C_list,correlation_m_list, HP = True):
@@ -1357,5 +1358,4 @@ def matrices_for_different_times(C_list,correlation_m_list, HP = True):
 
     
    
-    
     

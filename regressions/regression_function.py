@@ -6,7 +6,6 @@ Created on Wed Jul 31 11:06:33 2019
 @author: veronikasamborska
 """
 import numpy as np
-import scipy
 
 
 def regression_code(data, design_matrix): 

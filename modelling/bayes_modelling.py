@@ -86,8 +86,8 @@ def run_script():
     bayes_prior_HP = bayes_prior_m484+bayes_prior_m479+bayes_prior_m483
     bayes_posterior_HP = bayes_posterior_m484+bayes_posterior_m479+bayes_posterior_m483
     
-    cpd_PFC, predictors_PFC, C_PFC = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
-    cpd_HP, predictors_HP, C_HP = regression_bayes(experiment_aligned_HP,bayes_prior_HP, bayes_posterior_HP)
+    cpd_PFC, predictors_PFC, C_PFC, C_sq_PFC = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
+    cpd_HP, predictors_HP, C_HP, C_sq_HP = regression_bayes(experiment_aligned_HP,bayes_prior_HP, bayes_posterior_HP)
     
     
 
@@ -203,7 +203,8 @@ class model():
         switch_choice = switch_choice*(-1)
         outcomes = outcomes[1:]
         
-        for i, (o, c) in enumerate(zip(outcomes, switch_choice)): # loop over trials.          
+        for i, (o, c) in enumerate(zip(outcomes, switch_choice)): # loop over trials.    
+            
             if c  == 1:
                 # Prior that the decision is correct if a switch occured; 
                 # Reversal P *  Posterior past choice  was correct + (1-Reversal P)* Posterior past choice was incorrect
@@ -487,7 +488,7 @@ def plotting_beta_sq():
     C_sq_all_mean_prior = C_sq_all_mean[:,3]
     C_sq_all_mean_prior = sorted(C_sq_all_mean_prior)
     
-    corr = np.correlate(C_sq_all_mean_prior)
+    #corr = np.correlate(C_sq_all_mean_prior)
     
     C_sq = C_sq[:,:-1]
     p = [*predictors]
@@ -513,7 +514,7 @@ def plotting_bayes():
     ind_choice = (np.abs(t_out-initiate_choice_t[-2])).argmin()
     ind_reward = (np.abs(t_out-reward_time)).argmin()
 
-    cpd, predictors, C_sq = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
+    cpd, predictors, C, C_sq = regression_bayes(experiment_aligned_PFC,bayes_prior_PFC, bayes_posterior_PFC)
     C_sq = C_sq[:,:-1]
     cpd = cpd[:,:-1]
 

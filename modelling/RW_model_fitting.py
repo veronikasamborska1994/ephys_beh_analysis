@@ -17,11 +17,12 @@ import math
 import scipy.optimize as op
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import regressions as re
 from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions/')
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
+import regressions as re
 import forced_trials_extract_data as ft
-
 
 def run(experiment_aligned_HP,experiment_aligned_PFC):
     fits_Q1_HP = fit_sessions(experiment_aligned_HP, Q1())
@@ -33,8 +34,8 @@ def run(experiment_aligned_HP,experiment_aligned_PFC):
     #fits_Q1 = fit_sessions(all_sessions, Q1())
     #fits_Q4 = fit_sessions(all_sessions, Q4())   
      
-    experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP =  simulate_Qtd_experiment(fits_Q1_HP, fits_Q4_HP, experiment_aligned_HP)  
-    experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
+    experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP, experiment_sim_Q1_prediction_error_chosen_HP =  simulate_Qtd_experiment(fits_Q1_HP, fits_Q4_HP, experiment_aligned_HP)  
+    experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC, experiment_sim_Q1_prediction_error_chosen_HP =  simulate_Qtd_experiment(fits_Q1_PFC, fits_Q4_PFC, experiment_aligned_PFC)  
     
     return experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP ,experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,\
     experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC
@@ -518,6 +519,7 @@ def simulate_Q1(session, params):
     #Variables.
     Q_td = np.zeros([n_trials + 1, 2])  # Model free action values.
     Q_chosen = [0]
+    prediction_error_chosen = []
     for i, (c, o) in enumerate(zip(choices_forced_unforced, outcomes)): # loop over trials.
         if i == ind_task_2 or i == ind_task_3: 
             nc = 1 - c # Not chosen action.
@@ -525,6 +527,7 @@ def simulate_Q1(session, params):
             Q_td[i+1, c] = 0
             Q_td[i+1,nc] = 0 
             Q_chosen.append(Q_td[i+1,c])
+            prediction_error_chosen.append((o - Q_td[i, c]))
 
         else:           
             nc = 1 - c # Not chosen action.           
@@ -532,6 +535,8 @@ def simulate_Q1(session, params):
             Q_td[i+1, c] = Q_td[i, c] + alpha*(o - Q_td[i, c])
             Q_td[i+1,nc] = Q_td[i,nc]
             Q_chosen.append(Q_td[i+1,c])
+            prediction_error_chosen.append((o - Q_td[i, c]))
+
 
                   
     # Evaluate choice probabilities
@@ -548,7 +553,7 @@ def simulate_Q1(session, params):
     
     choice_probs = array_softmax(Q_td, iTemp)
 
-    return choice_probs, Q_td, Q_chosen
+    return choice_probs, Q_td, Q_chosen, prediction_error_chosen
 
 
 def simulate_Q4(session, params):
@@ -721,7 +726,7 @@ def plotting(session):
    
     params_Q4 = session_fit_Q4['params']
 
-    choice_probs_Q1, Q_td_Q1, Q_chosen_1 = simulate_Q1(session, params_Q1)
+    choice_probs_Q1, Q_td_Q1, Q_chosen_1, prediction_error_chosen = simulate_Q1(session, params_Q1)
     
     choice_probs_Q4, Q_td_Q4 ,Q_chosen_4 = simulate_Q4(session, params_Q4)
 
@@ -773,24 +778,24 @@ def simulate_Qtd_experiment(fits_Q1, fits_Q4, experiment):
     experiment_sim_Q1_value_a = []
     experiment_sim_Q1_value_b = []
     experiment_sim_Q4_values = []
-
+    experiment_sim_Q1_prediction_error_chosen = []
     for s,session in enumerate(experiment):
         
         params_Q1 = fits_Q1['params'][s]
         params_Q4 = fits_Q4['params'][s]
 
-        choice_probs_Q1, Q_td_Q1, Q_chosen_Q1 = simulate_Q1(session, params_Q1)
+        choice_probs_Q1, Q_td_Q1, Q_chosen_Q1, prediction_error_chosen= simulate_Q1(session, params_Q1)
         choice_probs_Q4, Q_td_Q4, Q_chosen_Q4 = simulate_Q4(session, params_Q4)
         
         experiment_sim_Q1.append(Q_chosen_Q1)
         experiment_sim_Q4.append(Q_chosen_Q4)
         experiment_sim_Q1_value_a.append(Q_td_Q1[:,0])
         experiment_sim_Q1_value_b.append(Q_td_Q1[:,1])
-
         experiment_sim_Q4_values.append(Q_td_Q4[:,0])
-
         
-    return experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values
+        experiment_sim_Q1_prediction_error_chosen.append(prediction_error_chosen)
+        
+    return experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values,experiment_sim_Q1_prediction_error_chosen
 
 
 def regression_on_Q_values(experiment,experiment_sim_Q1_value_a,experiment_sim_Q1_value_b, experiment_sim_Q4_values):

@@ -11,9 +11,13 @@ from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import regression_function as reg_f
+from scipy.io import loadmat
 
 
+HP_mat = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+PFC_mat = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
 
+Q_4 = HP_mat['DM'][0]
 def regression_latent_state(experiment, experiment_sim_Q4_values):  
     
     C_1 = []
@@ -237,6 +241,44 @@ def regression_latent_state(experiment, experiment_sim_Q4_values):
     return C_1, C_2, C_3, C_coef,C_coef_2,C_coef_3,cpd_1,cpd_2,cpd_3,predictors
 
 
+
+
+def load_Q4s():
+    # predictors_all = OrderedDict([
+    #                           ('latent_state',state),
+    #                           ('choice',choices_forced_unforced ),
+    #                           ('reward', outcomes),
+    #                           ('forced_trials',forced_trials),
+    #                           ('block', block),
+    #                           ('task',task),
+    #                           ('A', a_pokes),
+    #                           ('B', b_pokes),
+    #                           ('Initiation', i_pokes),
+    #                           ('Chosen_Simple_RW',chosen_Q1),
+    #                           ('Chosen_Cross_learning_RW', chosen_Q4),
+    #                           ('Value_A_RW', Q1_value_a),
+    #                           ('Value_B_RW', Q1_value_b),
+    #                           ('Value_A_Cross_learning', Q4_value_a),
+    #                           ('ones', ones)])
+    
+    
+    data_PFC = loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
+    data_HP= loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+    
+    experiment_HP = data_HP['DM'][0]
+    experiment_PFC = data_PFC['DM'][0]
+    
+    experiment_sim_Q4_values_HP = []
+    
+    for exp in experiment_HP:
+        experiment_sim_Q4_values_HP.append(exp[:,13])
+        
+        
+    experiment_sim_Q4_values_PFC = []
+    
+    for exp in experiment_PFC:
+        experiment_sim_Q4_values_PFC.append(exp[:,13])
+        
 def plot():
     
     C_1_HP, C_2_HP, C_3_HP,  C_coef_HP ,C_coef_2_HP, C_coef_3_HP,cpd_1_HP,cpd_2_HP,cpd_3_HP,predictors = regression_latent_state(experiment_aligned_HP, experiment_sim_Q4_values_HP)
@@ -272,7 +314,7 @@ def plot():
     C_1_C2 = C_1_C2[~np.isnan(C_1_C2).any(axis=1)]
     cross_corr = np.corrcoef(np.transpose(C_1_C2))
     
-    plt.imshow(cross_corr)
+    #plt.imshow(cross_corr)
     
     task_1 = C_1_HP[4,:]
     task_2 = C_2_HP[4,:]

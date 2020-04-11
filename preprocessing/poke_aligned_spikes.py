@@ -26,7 +26,6 @@ def histogram_include_a(session,time_window_start = 50, time_window_end = 110):
     bin_width_ms = 50
    
     bin_edges_trial = np.arange(-4050,window_to_plot, bin_width_ms)
-    # 10 for 0.5 second  
     trial_length = 60
     aligned_rates = np.zeros([len(all_events), len(neurons), trial_length]) # Array to store trial aligned firing rates. 
 

@@ -12,7 +12,7 @@ import scipy.io
 import sys
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/remapping')
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
-import remapping_count as rc 
+#import remapping_count as rc 
 
 HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
 PFC = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')

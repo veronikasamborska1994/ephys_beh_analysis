@@ -11,6 +11,7 @@ from sklearn.decomposition import PCA
 from mpl_toolkits import mplot3d
 
 
+
 def trajectory_analysis(data_HP,data_PFC, experiment_aligned_HP,log=True, fig_no=1, PCs=[0,1,2], remove_nonspecific=True, task_plt = 1):
     '''Plot trajectories showing the average activity for each trial type defined by 
     choice, transition and outcome in a low dimensional space obtained by PCA on the
@@ -22,11 +23,11 @@ def trajectory_analysis(data_HP,data_PFC, experiment_aligned_HP,log=True, fig_no
     condition_ave_activity_HP = []
     condition_ave_activity_PFC = []
 
-    y_HP = data_HP['DM']
-    X_HP = data_HP['Data']
+    y_HP = data_HP['DM'][0]
+    X_HP = data_HP['Data'][0]
     
-    y_PFC = data_PFC['DM']
-    X_PFC = data_PFC['Data']
+    y_PFC = data_PFC['DM'][0]
+    X_PFC = data_PFC['Data'][]
     session = experiment_aligned_HP[0]
     
     for s,sess in enumerate(y_HP):
