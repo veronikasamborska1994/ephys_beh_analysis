@@ -27,7 +27,7 @@ import scipy
 import neuron_firing_all_pokes as nef 
 
 
-def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
+def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, experiment_sim_Q1_prediction_error_chosen, title):
     
     all_sessions_list = []
     firing_rates = []
@@ -197,7 +197,8 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         Q1_value_a = experiment_sim_Q1_value_a[s][:len(choices)]
         Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
         Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
-#            
+        
+        Q1_prediction_error_chosen = experiment_sim_Q1_prediction_error_chosen[s][:len(choices)]
         predictors_all = OrderedDict([
                           ('latent_state',state),
                           ('choice',choices_forced_unforced ),
@@ -213,6 +214,7 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
                           ('Value_A_RW', Q1_value_a),
                           ('Value_B_RW', Q1_value_b),
                           ('Value_A_Cross_learning', Q4_value_a),
+                          ('Prediction_Error_Q',Q1_prediction_error_chosen),
                           ('ones', ones)])
             
         X = np.vstack(predictors_all.values()).T[:len(choices),:].astype(float)

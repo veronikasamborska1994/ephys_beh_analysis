@@ -910,7 +910,7 @@ def simulate_data(data_HP, data_PFC,experiment_aligned_HP, \
     
                  diff_perm.append(distance_perm)
                         
-         perm_mean.append(np.percentile(diff_perm,95))
+         perm_mean.append(np.percentile(diff_perm,99))
    
    
      ind_above_chance = np.where(np.abs(np.array(distance_mean_neuron)) > np.abs(np.array(perm_mean)))[0]
@@ -1081,7 +1081,7 @@ def simulate_data_optimise(data_HP, data_PFC,experiment_aligned_HP, \
                    
               diff_perm.append(distance_perm)
                         
-          perm_mean.append(np.percentile(diff_perm,95,0))
+          perm_mean.append(np.percentile(diff_perm,99))
     
     
       ind_above_chance = np.abs(np.array(distance)) > np.abs(np.array(perm_mean))[0]*1
@@ -1210,7 +1210,7 @@ def perm_test_time_fft(data_HP, data_PFC,experiment_aligned_HP, \
 
                 diff_perm.append(distance_perm)
                     
-        perm_mean.append(np.percentile(diff_perm,95))
+        perm_mean.append(np.percentile(diff_perm,99))
    
     # grand_bud = wes.GrandBudapest1_4.mpl_colors
     # plt.ion()
@@ -1230,6 +1230,7 @@ def perm_test_time_fft(data_HP, data_PFC,experiment_aligned_HP, \
     #     plt.title('HP')
     # elif HP == False:
     #     plt.title('PFC')
+    
     return ind_above_chance,percentage
 
 

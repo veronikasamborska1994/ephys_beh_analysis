@@ -145,11 +145,11 @@ def regression_cross_validate_perseverance(data):
                 y_train = y[train_ix]; y_test = y[test_ix] #get train and test indices for activity
                     
                 #get train and test DM without time in block interactions
-                x_train_no_choice_int = X[:,:2][train_ix]; x_test_no_choice_int = X[:,:2][test_ix]
+                x_train_no_choice_int = X[:,0][train_ix]; x_test_no_choice_int = X[:,0][test_ix]
                
                 #get train and test DM with time in block interactions
-                x_train_choice_int = X[:,:3][train_ix]; x_test_choice_int = X[:,:3][test_ix]
-                x_train_rew_int = X[train_ix]; x_test_rew_int = X[test_ix]
+                x_train_choice_int = X[:,1][train_ix]; x_test_choice_int = X[:,1][test_ix]
+                x_train_rew_int = X[train_ix,2:3]; x_test_rew_int = X[test_ix,2:3]
 
                 #fit linear model with regularisation. Ideally would do nested K-fold
                 #to select optimal hyper-parameter
@@ -171,8 +171,9 @@ def regression_cross_validate_perseverance(data):
             ccs.append(np.nanmean(ccx))
             ccs_ch.append(np.nanmean(ccx_ch))
             ccs_rew.append(np.nanmean(ccx_rew))
+            
     c1  = np.array(ccs)**2
-    c2  = np.array(ccs_rew)**2
+    c2  = np.array(ccs_ch)**2
 
     ixs = np.logical_and.reduce([np.isfinite(c1),
                              np.isfinite(c2)])
@@ -180,4 +181,4 @@ def regression_cross_validate_perseverance(data):
     print('Variance explained \nwithout time in block: {:.5f}\nwith time in block: {:.5f}'.format(np.nanmean(c1),np.nanmean(c2)))
     print('t:{:.3f}\np:{:.3e}'.format(t,p))
 
-                    
+                  

@@ -80,15 +80,13 @@ def raw_data_time_warp_beh(data, experiment_aligned_data):
     trials_since_block_list = []
     state_list = []
     task_list = []
-    choice_list = []
-    reward_list = []
+   
     for  s, sess in enumerate(dm):
         
         
         DM = dm[s]
         state = DM[:,0]
         choices = DM[:,1]
-        reward = DM[:,2]
      
         task = DM[:,5]
         task_ind = np.where(np.diff(task)!=0)[0]
@@ -156,24 +154,20 @@ def raw_data_time_warp_beh(data, experiment_aligned_data):
             state = state[all_ind_triggered_on_beh]
             task = task[all_ind_triggered_on_beh]
             
-            choices = choices[all_ind_triggered_on_beh]
-            reward = reward[all_ind_triggered_on_beh]
-  
+           
     
             res_list.append(firing_rates)
             trials_since_block_list.append(trials_since_block)
             list_block_changes.append(ind_blocks)
             state_list.append(state)
             task_list.append(task)
-            choice_list.append(choices)
-            reward_list.append(reward)
-  
-    return res_list, list_block_changes, trials_since_block_list, state_list,task_list,reward_list,choice_list
+           
+    return res_list, list_block_changes, trials_since_block_list, state_list,task_list
 
 
 def raw_data_align(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC):
-    res_list_HP, list_block_changes_HP, trials_since_block_list_HP, state_list_HP,task_list_HP,reward_list_HP,choice_list_HP = raw_data_time_warp_beh(data_HP,experiment_aligned_HP)
-    res_list_PFC, list_block_changes_PFC, trials_since_block_list_PFC, state_list_PFC,task_list_PFC,reward_list_PFC,choice_list_PFC = raw_data_time_warp_beh(data_PFC,experiment_aligned_PFC)
+    res_list_HP, list_block_changes_HP, trials_since_block_list_HP, state_list_HP,task_list_HP = raw_data_time_warp_beh(data_HP,experiment_aligned_HP)
+    res_list_PFC, list_block_changes_PFC, trials_since_block_list_PFC, state_list_PFC,task_list_PFC = raw_data_time_warp_beh(data_PFC,experiment_aligned_PFC)
     target_trials = np.median([np.median(list_block_changes_HP),np.median(list_block_changes_PFC)])
     
     
@@ -698,17 +692,10 @@ def align_activity(activity, frame_times, trial_times, target_times, smooth_SD =
             t1 = np.insert(t1,0,-2)
             t1 = np.append(t1,(t1[-1]+1))
             t1 = np.append(t1,(t1[-1]+1))
-            #t1+=2
-            # t1 = np.insert(t1,1,t1[1]/2) 
-            # t1 = np.insert(t1,1,t1[1]/2) 
-              
-            # t1 = np.insert(t1,-1,(t1[-1]-t1[-2])/2+t1[-2])
-            # t1 = np.insert(t1,-1,(t1[-1]-t1[-2])/2+t1[-2])
-            
+           
             # # Calculate aligned activity using analytical solution to overlap integral between
             # linearly interpolated activity and gaussian around output timepoints.
             
-              
             
             aligned_activity[i,:,:] = (np.sum(_int_norm_lin_prod(trial_activity[:,:-1],
                 trial_activity[:,1:],t1[:-1],t1[1:],t_out[:,None,None],s=smooth_SD),2).T)
@@ -740,6 +727,7 @@ def align_activity(activity, frame_times, trial_times, target_times, smooth_SD =
                 plt.pause(0.05)
                 if input("Press enter for next trial, 'x' to stop plotting:") == 'x':
                     plot_warp  = False
+                    
     aligned_activity = aligned_activity[:,:,edge:-edge] 
 
     return aligned_activity

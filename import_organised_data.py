@@ -28,6 +28,6 @@ PFC_forced = ft.all_sessions_aligment_forced(HP,all_sessions)
 
 #experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC = mfit.run(experiment_aligned_HP,experiment_aligned_PFC)
 #
-#data_PFC = cda.tim_create_mat(experiment_aligned_PFC,experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC,bayes_prior_PFC, bayes_posterior_PFC, 'PFC') 
-#data_HP = cda.tim_create_mat(experiment_aligned_HP, experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,bayes_prior_HP, bayes_posterior_HP,  'HP')
+data_PFC = cda.tim_create_mat(experiment_aligned_PFC,experiment_sim_Q1_PFC, experiment_sim_Q4_PFC, experiment_sim_Q1_value_a_PFC, experiment_sim_Q1_value_b_PFC, experiment_sim_Q4_values_PFC,experiment_sim_Q1_prediction_error_chosen_PFC, 'PFC_RPE') 
+data_HP = cda.tim_create_mat(experiment_aligned_HP, experiment_sim_Q1_HP, experiment_sim_Q4_HP, experiment_sim_Q1_value_a_HP, experiment_sim_Q1_value_b_HP, experiment_sim_Q4_values_HP,bayes_prior_HP,experiment_sim_Q1_prediction_error_chosen_HP,  'HP_RPE')
 
