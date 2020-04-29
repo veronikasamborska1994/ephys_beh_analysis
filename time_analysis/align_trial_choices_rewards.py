@@ -14,6 +14,8 @@ import pylab as plt
 import sys
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/plotting')
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
+
 
 import utility as ut 
 from palettable import wesanderson as wes
