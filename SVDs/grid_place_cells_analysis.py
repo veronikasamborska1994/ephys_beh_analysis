@@ -12,11 +12,13 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.ndimage import gaussian_filter
 from scipy import stats
-
+import seaborn as sns
+import palettable
 file_HP = 'smthRm_place_all_animals.mat'
 file_EC = 'smthRm_grid_all_animals.mat'
 dict_HP = 'smthRm_place_all_animals'
 dict_EC = 'smthRm_grid_all_animals'
+cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
 
 def place_grid_cells_SVDs(file, dictionary, c = 'green'):
     
@@ -191,84 +193,89 @@ def place_grid_cells_SVDs(file, dictionary, c = 'green'):
     cum_var_y_task_1_from_task_1 = np.cumsum(var_y_task_1_from_task_1)/np.sqrt(place_cells_trial_5_vector.shape[0])
     cum_var_y_task_1_from_task_1 = cum_var_y_task_1_from_task_1/cum_var_y_task_1_from_task_1[-1]
     
-    plt.figure()
+    plt.figure(1)
 
-    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between EC Left', color = c, linestyle = '--', alpha = 0.7)
-    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within EC Left', color = c,alpha = 0.7)
-    #plt.plot(cum_var_y_task_2_from_task_1, label = 'Between Right Eigenvectors HP', color = 'black', linestyle = '--', alpha = 0.7)
-    #plt.plot(cum_var_y_task_1_from_task_1, label = 'Within Right Eigenvectors HP', color = 'black',alpha = 0.7)
+    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between Left', color = c, linestyle = '--', alpha = 0.7)
+    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within Left', color = c,alpha = 0.7)
+     
+    plt.legend()
+    
+    plt.figure(2)
+    plt.plot(cum_sum_within, label = 'Full Within', color = c)
+    plt.plot(cum_sum, label = 'Full Between ', color = c,linestyle = '--')
+    
     
     plt.legend()
     
+    plt.figure(3)
+    plt.plot(cum_var_y_task_2_from_task_1, label = 'Between Right', color = c, linestyle = '--', alpha = 0.7)
+    plt.plot(cum_var_y_task_1_from_task_1, label = 'Within Right', color = c, alpha = 0.7)
+   
     plt.figure()
-    plt.plot(cum_sum_within, label = 'Full Within HP', color = c)
-    plt.plot(cum_sum, label = 'Full Between HP', color = c,linestyle = '--')
-    
-    plt.figure()
-    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap = cmap)
     plt.figure()
     plt.plot(t_v[:,5])
     
     fig = plt.figure(num = 11, figsize=(5,10))
     fig.add_subplot(10,2,1)
-    plt.imshow(t_v[:,0].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v[:,0].reshape(50, 50).T, cmap = cmap)
     plt.title('Arena 1')
     plt.ylabel('Eig 1')
     
     fig.add_subplot(10,2,2)
-    plt.imshow(t_v_t_2_1[:,0].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,0].reshape(50, 50).T, cmap = cmap)
     plt.title('Arena 2')
     
     
     fig.add_subplot(10,2,3)
-    plt.imshow(t_v[:,1].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v[:,1].reshape(50, 50).T, cmap = cmap)
     plt.ylabel('Eig 2')
     
     
     fig.add_subplot(10,2,4)
-    plt.imshow(t_v_t_2_1[:,1].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,1].reshape(50, 50).T,cmap = cmap)
 
     
     fig.add_subplot(10,2,5)
-    plt.imshow(t_v[:,2].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,2].reshape(50, 50).T,cmap = cmap)
     plt.ylabel('Eig 3')
     
     
     fig.add_subplot(10,2,6)
-    plt.imshow(t_v_t_2_1[:,2].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,2].reshape(50, 50).T, cmap = cmap)
     
     
     fig.add_subplot(10,2,7)
-    plt.imshow(t_v[:,3].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,3].reshape(50, 50).T,cmap = cmap)
     plt.ylabel('Eig 4')
     
     fig.add_subplot(10,2,8)
-    plt.imshow(t_v_t_2_1[:,3].reshape(50, 50).T, cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,3].reshape(50, 50).T, cmap = cmap)
     
     
     
     
     fig.add_subplot(10,2,9)
-    plt.imshow(t_v[:,4].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,4].reshape(50, 50).T,cmap = cmap)
     plt.ylabel('Eig 5')
     
     
     fig.add_subplot(10,2,10)
-    plt.imshow(t_v_t_2_1[:,4].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,4].reshape(50, 50).T,cmap = cmap)
     
     
     
     fig.add_subplot(10,2,11)
-    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,5].reshape(50, 50).T,cmap =cmap)
     plt.ylabel('Eig 6')
     
     
     fig.add_subplot(10,2,12)
-    plt.imshow(t_v_t_2_1[:,5].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v_t_2_1[:,5].reshape(50, 50).T,cmap = cmap)
     
     
     fig.add_subplot(10,2,13)
-    plt.imshow(t_v[:,6].reshape(50, 50).T,cmap = 'jet')
+    plt.imshow(t_v[:,6].reshape(50, 50).T,cmap = cmap)
     plt.ylabel('Eig 7')
     
     
@@ -309,9 +316,9 @@ def place_grid_cells_SVDs(file, dictionary, c = 'green'):
 
 
 def area_under_curve():
-    between_HP,within_HP = place_grid_cells_SVDs(file_HP, dict_HP)
+    between_HP,within_HP = place_grid_cells_SVDs(file_HP, dict_HP, c = 'black')
     
-    between_EC,within_EC = place_grid_cells_SVDs(file_EC, dict_EC)
+    between_EC,within_EC = place_grid_cells_SVDs(file_EC, dict_EC, c = 'green')
     HP_area = (np.trapz(within_HP) - np.trapz(between_HP))#/within_HP.shape[0]
     EC_area = (np.trapz(within_EC) - np.trapz(between_EC))#/within_EC.shape[0]
     sns.barplot(data=[HP_area,EC_area], capsize=.1, ci="sd",  palette="Blues_d")

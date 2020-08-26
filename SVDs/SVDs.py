@@ -7,13 +7,16 @@ Created on Mon Jan  7 13:14:22 2019
 """
 
 #SVDs script for finding SVDs based on A and B (rewarded and unrewarded) in trials split in halfs
+import sys
 
 import ephys_beh_import as ep
 import regressions as re
 import numpy as np
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
+
 import matplotlib.pyplot as plt
-import heatmap_aligned as ha
-import forced_trials_extract_data as ft
+#import heatmap_aligned as ha
+#import forced_trials_extract_data as ft
 import svds_u_only as svdu
 
 

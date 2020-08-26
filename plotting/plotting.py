@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+p#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jan 22 11:36:22 2018
 
 @author: veronikasamborska
 """
-# =============================================================================
+index_which_incorr_ignore# =============================================================================
 # Behavioural analysis plots
 # =============================================================================
 
@@ -13,13 +13,188 @@ import numpy as np
 import pylab as plt
 import matplotlib.pyplot as plot
 import sys 
-sys.path.append('/Users/veronikasamborska/Desktop/2018-12-12-Reversal_learning/code/reversal_learning/')
-import utility as ut
-#import seaborn as sns
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
+from matplotlib.cbook import flatten
+#import utility as ut
+import seaborn as sns
 import pandas as pd
+import data_import as di
 
 # Reversals Plot -------------------------------------------------------------------------
+#exp = di.Experiment('/Users/veronikasamborska/Desktop/Veronika Backup/2018-12-12-Reversal_learning/data_pilot3')
 
+
+
+    
+def runs_length(experiment, subject_IDs ='all'):
+    
+    if subject_IDs == 'all':
+        subject_IDs = experiment.subject_IDs
+        
+    run_length_list_task_subj = []
+    run_length_list_correct_task_subj = []
+    run_length_list_incorrect_task_subj = []
+    
+    
+    for n_subj, subject_ID in enumerate(subject_IDs):
+        subject_sessions = experiment.get_sessions(subject_IDs=[subject_ID])
+        run_length_list_task = []
+        run_length_correct_list_task = []
+        run_length_incorrect_list_task = []
+        previous_session_config = 25
+        run_length_list = []
+        
+        for j, session in enumerate(subject_sessions):
+            choices = session.trial_data['choices']
+            state = session.trial_data['state']
+            correct = np.where(state == choices)[0]
+            incorrect = np.where(state != choices)[0]
+            configuration = session.trial_data['configuration_i'] 
+            runs_list = []
+            runs_list.append(0)
+            runs_list_corr = []
+            runs_list_incorr = []
+            runs_list_incorr_after_correct = []
+            block = session.trial_data['block']
+            state_ch = np.where(np.diff(block)!=0)[0]+1
+    
+           
+            run = 0
+            for c, ch in enumerate(choices):
+                if c > 0:
+                    if choices[c] == choices[c-1]:
+                        run += 1
+                    elif choices[c] != choices[c-1]:
+                        run = 0
+                    runs_list.append(run)
+            corr_run = 0
+            run_ind_c =[]
+            for c, ch in enumerate(choices):
+                if c > 0  and c in correct:
+                    if choices[c] == choices[c-1]:
+                        if corr_run == 0:
+                            run_ind_c.append(c)
+                        corr_run +=1
+                    elif choices[c] != choices[c-1]:
+                        corr_run = 0
+                else:
+                    corr_run = 0
+                runs_list_corr.append(corr_run)
+             
+            incorr_run = 0
+            run_ind_inc = []
+            for c, ch in enumerate(choices):
+                if c > 0  and c in incorrect:
+                    if choices[c] == choices[c-1]:
+                        if incorr_run ==0:
+                            run_ind_inc.append(c)
+                        incorr_run +=1
+                    elif choices[c] != choices[c-1]:
+                        incorr_run = 0
+                else:
+                    incorr_run = 0
+                    
+                runs_list_incorr.append(incorr_run)
+                
+            inc = []
+            co =[]
+            for st in state_ch:
+                inc_ind = [i for i in run_ind_inc if i > st]
+                if len(inc_ind) > 0:
+                    inc.append(min(inc_ind))
+                co_ind = [i for i in run_ind_c if i > st]
+                if len(co_ind) > 0:
+                    co.append(min(co_ind))
+                    
+            if len(np.asarray(co)) == len(np.asarray(inc)):
+                index_which_incorr_ignore = np.asarray(co) > np.asarray(inc)    
+            elif len(np.asarray(co)) > len(np.asarray(inc)):
+                index_which_incorr_ignore = np.asarray(co)[:len(np.asarray(inc)  )] > np.asarray(inc)    
+              
+            if len(inc)> len(index_which_incorr_ignore):
+                inc = inc[:len(index_which_incorr_ignore)]
+            elif len(index_which_incorr_ignore)> len(inc):
+                index_which_incorr_ignore = index_which_incorr_ignore[:len(inc)]
+       
+            starts_to_ignore = np.asarray(inc)[index_which_incorr_ignore]
+            all_ends = np.where(np.diff(runs_list_incorr) < 0)[0]
+            ends_to_ignore =[]
+            runs_list_incorr = np.asarray(runs_list_incorr)
+            for st in starts_to_ignore:
+                ends = [i for i in all_ends if i > st]
+                if len(ends)>0:
+                    ends_to_ignore.append(min(ends))
+             
+            for i, ii in enumerate(starts_to_ignore):
+                if len(starts_to_ignore) == len(ends_to_ignore):
+                    runs_list_incorr[starts_to_ignore[i]: ends_to_ignore[i]] = 0
+                else:
+                    runs_list_incorr[starts_to_ignore[i]:] = 0
+                   
+                
+            
+            if j == 0:
+               previous_session_config = configuration[0]
+       
+            elif configuration[0]!= previous_session_config:
+                # run_length_list_task.append(np.mean(list(flatten(run_length_list))))
+                run_length_list_task.append((list(flatten(runs_list))))
+
+                # run_length_correct_list_task.append(np.mean(list(flatten(corr_list))))
+                run_length_correct_list_task.append((list(flatten(runs_list_corr))))
+
+                # run_length_incorrect_list_task.append(np.mean(list(flatten(incorr_list))))
+                run_length_incorrect_list_task.append((list(flatten(runs_list_incorr))))
+
+                previous_session_config = configuration[0]  
+               
+                
+        run_length_list_task_subj.append(run_length_list_task)
+        run_length_list_correct_task_subj.append(run_length_correct_list_task)
+        run_length_list_incorrect_task_subj.append(run_length_incorrect_list_task)
+    
+    _1 = [];  _2 = []; _3 = []; _4 = []; _5 = []; _6 = []; _7 = []; _8 = []; _9 = []
+    _1_c = [];  _2_c = []; _3_c = []; _4_c = []; _5_c = []; _6_c = []; _7_c = []; _8_c = []; _9_c = []
+    _1_i = [];  _2_i  = []; _3_i  = []; _4_i  = []; _5_i  = []; _6_i  = []; _7_i  = []; _8_i  = []; _9_i  = []
+
+    for s,subj in enumerate(run_length_list_task_subj):
+        _1.append(run_length_list_task_subj[s][0]);  _1_c.append(run_length_list_correct_task_subj[s][0]);  _1_i.append(run_length_list_incorrect_task_subj[s][0])
+        _2.append(run_length_list_task_subj[s][1]);  _2_c.append(run_length_list_correct_task_subj[s][1]);  _2_i.append(run_length_list_incorrect_task_subj[s][1])
+        _3.append(run_length_list_task_subj[s][2]);  _3_c.append(run_length_list_correct_task_subj[s][2]);  _3_i.append(run_length_list_incorrect_task_subj[s][2])
+        _4.append(run_length_list_task_subj[s][3]);  _4_c.append(run_length_list_correct_task_subj[s][3]);  _4_i.append(run_length_list_incorrect_task_subj[s][3])
+        _5.append(run_length_list_task_subj[s][4]);  _5_c.append(run_length_list_correct_task_subj[s][4]);  _5_i.append(run_length_list_incorrect_task_subj[s][4])
+        _6.append(run_length_list_task_subj[s][5]);  _6_c.append(run_length_list_correct_task_subj[s][5]);  _6_i.append(run_length_list_incorrect_task_subj[s][5])
+        _7.append(run_length_list_task_subj[s][6]);  _7_c.append(run_length_list_correct_task_subj[s][6]);  _7_i.append(run_length_list_incorrect_task_subj[s][6])
+        _8.append(run_length_list_task_subj[s][7]);  _8_c.append(run_length_list_correct_task_subj[s][7]);  _8_i.append(run_length_list_incorrect_task_subj[s][7])
+        _9.append(run_length_list_task_subj[s][8]);  _9_c.append(run_length_list_correct_task_subj[s][8]);  _9_i.append(run_length_list_incorrect_task_subj[s][8])
+        # _10.append(run_length_list_task_subj[s][9]);  _10_c.append(run_length_list_correct_task_subj[s][9]);  _10_i.append(run_length_list_incorrect_task_subj[s][9])
+   
+    all_runs = np.vstack((_1, _2 , _3, _4, _5, _6,  _7, _8, _9))
+    corr_runs = np.vstack((_1_c, _2_c , _3_c, _4_c, _5_c, _6_c,  _7_c, _8_c, _9_c))
+    incorr_runs = np.vstack((_1_i, _2_i , _3_i, _4_i, _5_i, _6_i,  _7_i, _8_i, _9_i))
+
+    plt.figure(figsize = (10,5))
+    for i in range(9):
+        plt.subplot(2,9,i+1)
+        all_hist = np.asarray(list(flatten(all_runs[i])))
+        all_hist = all_hist[np.nonzero(all_hist)]
+        plt.hist(all_hist,10, color = 'grey', label = 'all')
+        #plt.xlim(0,50)
+
+        plt.subplot(2,9,i+1+9)
+        inc_hist = np.asarray(list(flatten(incorr_runs[i])))
+        incorr_all_hist = inc_hist[np.nonzero(inc_hist)]
+
+        #plt.hist((list(flatten(corr_runs[i]))),10,  color = 'black', label = 'correct')
+        plt.hist(incorr_all_hist,10, color = 'green', label = 'incorrect')
+        #plt.xlim(0,50)
+    #plt.tight_layout()
+    plt.legend()
+    sns.despine()
+
+
+            
+        
 def trials_till_reversal_plot(experiment, subject_IDs ='all' , fig_no=1):    
 #   Define variables
     FT = True # True if the experiment included Forced Choice Trials 

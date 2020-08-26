@@ -188,27 +188,27 @@ def regression_time_choices_rewards_a_blocks_reward(data_HP, data_PFC,experiment
                 C_perm_a = sm.OLS(y_a, X_a).fit()  
                 
                 if anti_corr:
-                    if C_perm_a.params[0] < 0:
-                        if C_perm_a.pvalues[0] < 0.05:
-                            if C_perm_b.params[0] > 0:
-                                if C_perm_b.pvalues[0] < 0.05:
+                    if C_perm_a.params[pred] < 0:
+                        if C_perm_a.pvalues[pred] < 0.05:
+                            if C_perm_b.params[pred] > 0:
+                                if C_perm_b.pvalues[pred] < 0.05:
                                     perm_count += 1
-                    elif C_perm_a.params[0] > 0:
-                        if C_perm_a.pvalues[0] < 0.05:
-                            if C_perm_b.params[0] < 0:
-                                if C_perm_b.pvalues[0] < 0.05:
+                    elif C_perm_a.params[pred] > 0:
+                        if C_perm_a.pvalues[pred] < 0.05:
+                            if C_perm_b.params[pred] < 0:
+                                if C_perm_b.pvalues[pred] < 0.05:
                                     perm_count += 1
                         
                 else:
-                   if C_perm_a.params[0] < 0:
-                        if C_perm_a.pvalues[0] < 0.05:
-                            if C_perm_b.params[0] < 0:
-                                if C_perm_b.pvalues[0] < 0.05:
+                   if C_perm_a.params[pred] < 0:
+                        if C_perm_a.pvalues[pred] < 0.05:
+                            if C_perm_b.params[pred] < 0:
+                                if C_perm_b.pvalues[pred] < 0.05:
                                     perm_count += 1
-                   elif C_perm_a.params[0] > 0:
-                        if C_perm_a.pvalues[0] < 0.05:
-                            if C_perm_b.params[0] > 0:
-                                if C_perm_b.pvalues[0] < 0.05:
+                   elif C_perm_a.params[pred] > 0:
+                        if C_perm_a.pvalues[pred] < 0.05:
+                            if C_perm_b.params[pred] > 0:
+                                if C_perm_b.pvalues[pred] < 0.05:
                                     perm_count += 1
                         
                         
@@ -436,7 +436,7 @@ def plot():
 
     plt.subplot(2,2,4)
     plt.hist(count_perm_same_hp_raw, 10,color = 'pink')      
-    plt.vlines(neuron_count_same_pfc_raw, 0, np.max(np.histogram(count_perm_same_hp_raw,10)[0]), color = 'black', label = 'data')
+    plt.vlines(neuron_count_same_hp_raw, 0, np.max(np.histogram(count_perm_same_hp_raw,10)[0]), color = 'black', label = 'data')
     plt.vlines(np.percentile(count_perm_same_hp_raw,99), 0, np.max(np.histogram(count_perm_same_hp_raw,10)[0]), color = 'grey', linestyle  = 'dotted', label =  '<.001')
     plt.vlines(np.percentile(count_perm_same_hp_raw,95), 0, np.max(np.histogram(count_perm_same_hp_raw,10)[0]), color = 'grey', linestyle  = '--', label =  '<.05')
     plt.legend()
@@ -444,12 +444,26 @@ def plot():
     plt.ylabel('Count')
     plt.title('HP Same Sign')
     sns.despine()
-    
+    plt.tight_layout()
+
     plt.figure()
-    sns.regplot(C_a_anti_pfc,C_b_anti_pfc)
-    corr = np.corrcoef(C_a_anti_pfc,C_b_anti_pfc)[0,1]
+    plt.subplot(1,2,1)
+    sns.regplot(C_a_anti_hp_raw,C_b_anti_hp_raw, color = 'pink')
+    corr = np.corrcoef(C_a_anti_hp_raw,C_b_anti_hp_raw)[0,1]
     plt.xlabel('Block in Reg without Reward or Choice' + ' ' + 'A')
     plt.ylabel('Block in Reg without Reward or Choice' + ' ' + 'B')
-    plt.annotate('r = ' + str(np.around(corr,3)), [np.max(C_a_anti_pfc),np.max(C_b_anti_pfc)])
+    plt.annotate('r = ' + str(np.around(corr,3)), [np.max(C_a_anti_hp_raw),np.max(C_b_anti_hp_raw)])
     sns.despine()
+    plt.title('HP')
+
+    plt.subplot(1,2,2)
+    sns.regplot(C_a_anti_pfc_raw,C_b_anti_pfc_raw, color = 'lightblue')
+    corr = np.corrcoef(C_a_anti_pfc_raw,C_b_anti_pfc_raw)[0,1]
+    plt.xlabel('Block in Reg without Reward or Choice' + ' ' + 'A')
+    plt.ylabel('Block in Reg without Reward or Choice' + ' ' + 'B')
+    plt.annotate('r = ' + str(np.around(corr,3)), [np.max(C_b_anti_pfc_raw),np.max(C_a_anti_pfc_raw)])
+    sns.despine()
+    plt.title('PFC')
+
+
 

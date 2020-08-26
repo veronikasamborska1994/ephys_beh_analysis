@@ -115,14 +115,14 @@ class Session():
            # self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
                            #'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
                            #'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B, 'forced_trial': forced_trial}
-        #elif 'Task' in trial_lines[0]: 
-        self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
+        if 'Task' in trial_lines[0]: 
+            self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
                            'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
-                           'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B, 'forced_trial': forced_trial, 'task':task}
-       #else:
-           #self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
-                           #'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
-                           #'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B}
+                          'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B, 'forced_trial': forced_trial, 'task':task}
+        else:
+            self.trial_data = {'choices': choices,'outcomes':outcomes, 'state':state, 'trials':trial,
+                           'pre-reversal trials': number_of_trials_pre_reversal, 'block': blocks, 'n_trials': n_trials, 
+                          'configuration_i':configuration_i, 'poke_A':poke_A, 'poke_B':poke_B, 'forced_trial': forced_trial}
         #self.n_trials = len(stimuli)
 
     def plot(self, fig_no=1):

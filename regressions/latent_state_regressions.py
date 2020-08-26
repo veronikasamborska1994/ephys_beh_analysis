@@ -17,7 +17,7 @@ from scipy.io import loadmat
 HP_mat = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
 PFC_mat = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
 
-Q_4 = HP_mat['DM'][0]
+
 def regression_latent_state(experiment, experiment_sim_Q4_values):  
     
     C_1 = []

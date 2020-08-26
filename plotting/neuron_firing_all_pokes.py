@@ -8,16 +8,20 @@ Created on Tue Nov  6 12:12:15 2018
 # =============================================================================
 # Making plots with tuning curves above where the pokes are located as scatter plot
 # =============================================================================
+import sys
+
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
 
 import numpy as np
 import ephys_beh_import as ep
-import heatmap_aligned as ha
+#import heatmap_aligned as ha
 from scipy.ndimage import gaussian_filter1d
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 import regressions as re
 import matplotlib.pyplot as plt
-
+import palettable
 
 def make_consistent_poke_names(session):
 # Function to make A pokes to be in the same spatial position in three tasks 
@@ -765,13 +769,15 @@ def session_spikes_vs_trials_plot(raw_spikes,pyControl_choice):
     return spikes_list, session_duration_ms
        
 
+plotting_no_hist(PFC,experiment_aligned_PFC, area = 'PFC')
+plotting_no_hist(HP,experiment_aligned_HP, area = 'HP')
 
-
-def plotting(experiment,experiment_aligned):
+def plotting(experiment,experiment_aligned, area = 'PFC'):
     
     bin_width_ms = 1000
     smooth_sd_ms = 4000
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/PFC.pdf')
+    pdf = PdfPages('/Users/veronikasamborska/Desktop/'+ area+'.pdf')
+    cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
 
     for s,session in zip(experiment, experiment_aligned):     
         # Get raw spike data across the task 
@@ -945,19 +951,20 @@ def plotting(experiment,experiment_aligned):
                 normalised = (heatplot - np.min(heatplot,1)[:, None]) / (np.max(heatplot,1)[:, None]+1e-08 - np.min(heatplot,1)[:, None])
                 heatplot_con = np.concatenate([normalised,task_arrays], axis = 1)
     
-                plt.imshow(heatplot_con,aspect = 'auto')
+                plt.imshow(heatplot_con,cmap= cmap,aspect = 'auto')
                 plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'O'))
                 plt.title('{}'.format(ID))
                 
                 pdf.savefig()
                 plt.clf()
     pdf.close()
-            
-def plotting_no_hist(experiment,experiment_aligned):
+ 
+      
+def plotting_no_hist(experiment,experiment_aligned,area = 'HP'):
     
     bin_width_ms = 1000
     smooth_sd_ms = 4000
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/HP_spikes.pdf')
+    pdf = PdfPages('/Users/veronikasamborska/Desktop/'+ area+'.pdf')
 
     for s,session in zip(experiment, experiment_aligned):     
         # Get raw spike data across the task 
@@ -1109,10 +1116,12 @@ def plotting_no_hist(experiment,experiment_aligned):
                 # Heatmap  
                 fig.add_subplot(grid[1]) 
                 heatplot = aligned_spikes[:,neuron,:]
+                cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
+
                 normalised = (heatplot - np.min(heatplot,1)[:, None]) / (np.max(heatplot,1)[:, None]+1e-08 - np.min(heatplot,1)[:, None])
                 heatplot_con = np.concatenate([normalised,task_arrays], axis = 1)
     
-                plt.imshow(heatplot_con,aspect = 'auto')
+                plt.imshow(heatplot_con,aspect = 'auto', cmap = cmap)
                 plt.xticks([ind_init, ind_choice, ind_reward], ('I', 'C', 'O'))
                 #plt.title('{}'.format(ID))
                 plt.title('{}'.format(session.file_name))

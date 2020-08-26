@@ -23,8 +23,8 @@ sns.set_style("white")
 def classifier_pseudo_simultaneous_a_b_reward_no_reward(data, session, color, title):    
     
      
-    y = data['DM']
-    X = data['Data']
+    y = data['DM'][0]
+    X = data['Data'][0]
 
     all_sessions_1_1 = []
     all_sessions_1_2 = []
@@ -45,7 +45,7 @@ def classifier_pseudo_simultaneous_a_b_reward_no_reward(data, session, color, ti
         min_trials_in_task = 26
         
         choices =  DM[:,1]
-        task = DM[:,4]
+        task = DM[:,5]
         reward = DM[:,2]
 
 
@@ -72,7 +72,6 @@ def classifier_pseudo_simultaneous_a_b_reward_no_reward(data, session, color, ti
         min_trials_in_task  = 10
         
         if np.min(length) >= 20:
-    
             # Select  Non-Rewarded B trials in all tasks 
             firing_rates_mean_task_1_1_nR_B = firing_rates_all_time[task_1_b_NR]
             firing_rates_mean_task_1_1_nR_B = firing_rates_mean_task_1_1_nR_B[:min_trials_in_task,:]

@@ -34,8 +34,9 @@ plt.rc('font', **font)
 
 # Scipt for extracting data for RSAs 
 
-#all_sessions_HP = pos.raster_plot_save(experiment_aligned_HP)
-#all_sessions_PFC = pos.raster_plot_save(experiment_aligned_PFC)
+def extract():
+    all_sessions_HP = pos.raster_plot_save(experiment_aligned_HP)
+    all_sessions_PFC = pos.raster_plot_save(experiment_aligned_PFC)
 
 def make_pokes_consistent(session):
 # =============================================================================

@@ -183,6 +183,7 @@ def all_sessions_align_beh_raw_data(data_HP, data_PFC,experiment_aligned_HP, exp
     smooth_SD = 1
     edge  = 2
     # HP
+    ends_sessions = []
     for res,residuals in enumerate(res_list_HP):
         trials_since_block = trials_since_block_list_HP[res]
         ends = np.where(np.diff(trials_since_block)!=1)[0]
@@ -193,6 +194,7 @@ def all_sessions_align_beh_raw_data(data_HP, data_PFC,experiment_aligned_HP, exp
         frame_times = np.arange(len(trials_since_block))
         trial_times = np.vstack((starts,ends)).T
         target_times = np.vstack((starts,starts+int(target_trials))).T
+        ends_sessions.append(np.diff(trial_times).flatten())
 
         aligned_activity = align_activity(activity, frame_times, trial_times, target_times,  smooth_SD = smooth_SD, plot_warp = False, edge = edge)
 
@@ -202,6 +204,7 @@ def all_sessions_align_beh_raw_data(data_HP, data_PFC,experiment_aligned_HP, exp
     for res,residuals in enumerate(res_list_PFC):
         trials_since_block = trials_since_block_list_PFC[res]
         ends = np.where(np.diff(trials_since_block)!=1)[0]
+
         activity = np.mean(res_list_PFC[res][:,:,start:end],axis = 2).T # Find mean acrosss the trial 
         starts = np.sort(np.append(ends[:-1:1],0))    
         starts = np.append(starts,ends[-1])
@@ -210,9 +213,11 @@ def all_sessions_align_beh_raw_data(data_HP, data_PFC,experiment_aligned_HP, exp
         trial_times = np.vstack((starts,ends)).T
         target_times = np.vstack((starts,starts+int(target_trials))).T
         
-        
+        ends_sessions.append(np.diff(trial_times).flatten())
+
         aligned_activity = align_activity(activity, frame_times, trial_times, target_times,  smooth_SD = smooth_SD, plot_warp = False, edge = edge)
         PFC_aligned_time.append(aligned_activity)
+        
         
     return HP_aligned_time, PFC_aligned_time, state_list_HP, state_list_PFC,trials_since_block_list_HP,trials_since_block_list_PFC,task_list_HP, task_list_PFC
             

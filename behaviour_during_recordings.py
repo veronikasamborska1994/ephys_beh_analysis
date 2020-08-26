@@ -11,20 +11,25 @@ import pylab as plt
 import pandas as pd
 import seaborn as sns
 sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/remapping')
-import remapping_count as rc 
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
 
+import remapping_count as rc 
+import ephys_beh_import as ep
+from scipy import io
+      
 # Script for plotting behavior during recordings
 
-#HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
 
 
 def import_data():
     ephys_path = '/Users/veronikasamborska/Desktop/neurons'
     beh_path = '/Users/veronikasamborska/Desktop/data_3_tasks_ephys'
 
-    HP_LFP,PFC_LFP, m484_LFP, m479_LFP, m483_LFP, m478_LFP, m486_LFP, m480_LFP, m481_LFP, all_sessions_LFP = ep.import_code(ephys_path,beh_path, lfp_analyse = 'True') 
-    HP = scipy.io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
-    PFC = scipy.io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
+    #HP_LFP,PFC_LFP, m484_LFP, m479_LFP, m483_LFP, m478_LFP, m486_LFP, m480_LFP, m481_LFP, all_sessions_LFP = ep.import_code(ephys_path,beh_path, lfp_analyse = 'True') 
+    HP,PFC, m484, m479, m483, m478, m486, m480, m481, all_sessions = ep.import_code(ephys_path,beh_path,lfp_analyse = 'False')
+
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
     
     Data_HP = HP['Data'][0]
     DM_HP = HP['DM'][0]
@@ -123,11 +128,11 @@ def reversals_during_recordings(m484, m479, m483, m478, m486, m480, m481):
 
 
     
-def out_of_sequence(data_HP, data_PFC):
+def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
     #HP = m484 + m479 + m483
     #PFC = m478 + m486 + m480 + m481
     all_subjects = [data_HP['DM'][0][:16], data_HP['DM'][0][16:24],data_HP['DM'][0][24:],data_PFC['DM'][0][:9], data_PFC['DM'][0][9:26],data_PFC['DM'][0][26:40],data_PFC['DM'][0][40:]]
-    subj = [m484, m479, m483, m478, m486, m480, m481]
+    subj = [m484, m479, m483, m478, m486, m480, m481[:-1]]
     all_subj_mean = []
     all_subj_std = []
 
@@ -145,7 +150,7 @@ def out_of_sequence(data_HP, data_PFC):
         sessions_beh_event = s[ind_sort]
         sess_count = 0
         all_sessions_wrong_ch = [] # Get the list with only trials that were treated as trials in task programme
-        reversal_number =0
+        reversal_number = 0
         task_number = 0 
 
                     
@@ -384,15 +389,15 @@ def out_of_sequence(data_HP, data_PFC):
          plt.plot(i * reversals + x, all_rev[i])
          plt.fill_between(i * reversals + x, all_rev[i]-std_err[i], all_rev[i]+std_err[i], alpha=0.2)
     
-    rev_1 = np.mean(all_rev[:,0])
-    rev_2 = np.mean(all_rev[:,1])
-    rev_3 = np.mean(all_rev[:,2])
-    rev_4 = np.mean(all_rev[:,3])
+    rev_1 = np.nanmean(all_rev[:,0])
+    rev_2 = np.nanmean(all_rev[:,1])
+    rev_3 = np.nanmean(all_rev[:,2])
+    rev_4 = np.nanmean(all_rev[:,3])
     
-    st_1 = np.mean(std_err[:,0])
-    st_2 = np.mean(std_err[:,1])
-    st_3 = np.mean(std_err[:,2])
-    st_4 = np.mean(std_err[:,3])
+    st_1 = np.nanmean(std_err[:,0])
+    st_2 = np.nanmean(std_err[:,1])
+    st_3 = np.nanmean(std_err[:,2])
+    st_4 = np.nanmean(std_err[:,3])
     
     xs = [1,2,3,4]
     rev = [rev_1,rev_2,rev_3,rev_4]

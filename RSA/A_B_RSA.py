@@ -27,7 +27,7 @@ import palettable
 from palettable import wesanderson as wes
 from celluloid import Camera
 from matplotlib.animation import FFMpegWriter
-
+import seaborn as sns
 import RSAs as rs_in
 font = {'family' : 'normal',
         'weight' : 'normal',
@@ -35,6 +35,7 @@ font = {'family' : 'normal',
 
 plt.rc('font', **font)
 import poke_aligned_spikes as pos
+
 
 def raster_process(experiment_aligned_HP,experiment_aligned_PFC):
     
@@ -118,36 +119,28 @@ def extract_trials(experiment, all_sessions, t_start, t_end):
 #       B choices in tasks y and z. These are combined into a big matrix which is the output of the function. 
 # =============================================================================    
 
-   session_list_poke_a_task_x_r_spikes = []
-   session_list_poke_a_task_x_nr_spikes = []
+   session_list_poke_a_task_x_r_spikes = []; session_list_poke_a_task_x_nr_spikes = []
 
-   session_list_poke_a_task_y_r_spikes = []
-   session_list_poke_a_task_y_nr_spikes = []
+   session_list_poke_a_task_y_r_spikes = []; session_list_poke_a_task_y_nr_spikes = []
 
-   session_list_poke_a_task_z_r_spikes = []
-   session_list_poke_a_task_z_nr_spikes = []
+   session_list_poke_a_task_z_r_spikes = []; session_list_poke_a_task_z_nr_spikes = []
 
-   session_list_poke_initiation_task_x_spikes = []
-   session_list_poke_initiation_task_y_spikes = []
+   session_list_poke_initiation_task_x_spikes = []; session_list_poke_initiation_task_y_spikes = []
    
    session_list_poke_initiation_b_task_z_spikes = []
    
-   session_list_poke_choice_b_task_x_spikes_r = []
-   session_list_poke_choice_b_task_x_spikes_nr = []
+   session_list_poke_choice_b_task_x_spikes_r = []; session_list_poke_choice_b_task_x_spikes_nr = []
    
-   session_list_poke_b_task_y_spikes_r = []
-   session_list_poke_b_task_y_spikes_nr = []
+   session_list_poke_b_task_y_spikes_r = []; session_list_poke_b_task_y_spikes_nr = []
    
-   session_list_poke_b_task_z_spikes_r = []
-   session_list_poke_b_task_z_spikes_nr = []
-   
-
+   session_list_poke_b_task_z_spikes_r = [];  session_list_poke_b_task_z_spikes_nr = []
    for s,session in enumerate(experiment):
         
         session = experiment[s]
         all_neurons_all_spikes_raster_plot_task = all_sessions[s]
         all_neurons_all_spikes_raster_plot_task = np.asarray(all_neurons_all_spikes_raster_plot_task)
         average_time_spikes = np.mean(all_neurons_all_spikes_raster_plot_task[:,:,t_start:t_end],axis = 2)
+
         if  all_neurons_all_spikes_raster_plot_task.shape[1] > 0: 
             
             poke_a_task_x,poke_a_task_y,poke_a_task_z,outcomes,poke_initiation_task_x,poke_initiation_task_y,poke_initiation_b_task_z,\
@@ -171,7 +164,7 @@ def extract_trials(experiment, all_sessions, t_start, t_end):
             poke_a_task_z_r_spikes = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 1)),:]
             poke_a_task_z_nr_spikes  = average_time_spikes[np.where((poke_a_task_z == 1) & (outcomes == 0)),:]
            
-            # Extract spikes for A in three tasks (rewarded and non-rewarded)
+            # Extract spikes for I in three tasks (rewarded and non-rewarded)
             poke_initiation_task_x_spikes = average_time_spikes[np.where(poke_initiation_task_x == 1),:]
             
             poke_initiation_task_y_spikes = average_time_spikes[np.where(poke_initiation_task_y == 1),:]
@@ -273,14 +266,48 @@ def extract_trials(experiment, all_sessions, t_start, t_end):
 def _cpd(X,y):
     
     '''Evaluate coefficient of partial determination for each predictor in X'''
-    ols = LinearRegression(copy_X = True,fit_intercept= False)
-    ols.fit(X,y)
-    sse = np.sum((ols.predict(X) - y)**2, axis=0)
+    
+    pdes = np.linalg.pinv(X)
+    pe = np.matmul(pdes,y)
+  
+    Y_predict = np.matmul(X,pe)
+    sse = np.sum((Y_predict - y)**2, axis=0)
+
+    #sse = np.sum((ols.predict(X) - y)**2, axis=0)
     cpd = np.zeros([X.shape[1]])
     for i in range(X.shape[1]):
         X_i = np.delete(X,i,axis=1)
-        ols.fit(X_i,y)
-        sse_X_i = np.sum((ols.predict(X_i) - y)**2, axis=0)
+        pdes_i = np.linalg.pinv(X_i)
+        pe_i = np.matmul(pdes_i,y)
+
+        Y_predict_i = np.matmul(X_i,pe_i)
+        sse_X_i = np.sum((Y_predict_i- y)**2, axis=0)
+
+        #sse_X_i = np.sum((ols.predict(X_i) - y)**2, axis=0)
+        cpd[i]=(sse_X_i-sse)/sse_X_i
+    return cpd
+
+def _cpd_swap(X,y,ind):
+    
+    '''Evaluate coefficient of partial determination for each predictor in X perm test'''
+    
+    pdes = np.linalg.pinv(X)
+    pe = np.matmul(pdes,y)
+  
+    Y_predict = np.matmul(X,pe)
+    sse = np.sum((Y_predict - y)**2, axis=0)
+
+    #sse = np.sum((ols.predict(X) - y)**2, axis=0)
+    cpd = np.zeros([X.shape[1]])
+    for i in range(X.shape[1]):
+        X_i = np.delete(X,i,axis=1)
+        pdes_i = np.linalg.pinv(X_i)
+        pe_i = np.matmul(pdes_i,y)
+
+        Y_predict_i = np.matmul(X_i,pe_i)
+        sse_X_i = np.sum((Y_predict_i- y)**2, axis=0)
+
+        #sse_X_i = np.sum((ols.predict(X_i) - y)**2, axis=0)
         cpd[i]=(sse_X_i-sse)/sse_X_i
     return cpd
 
@@ -308,7 +335,7 @@ def regression_RSA_perm_labels(all_sessions_HP,all_sessions_PFC, experiment_alig
     choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
     a_bs_task_specific_rsa = rs_in.a_bs_task_specific()
     a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
-
+    remapping_a_to_b = 1*(rs_in.remapping_a_to_b()).flatten()
     ones = np.ones(len(choice_ab_rsa))
     
 
@@ -387,7 +414,7 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
     choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
     a_bs_task_specific_rsa = rs_in.a_bs_task_specific()
     a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
-
+    
     ones = np.ones(len(choice_ab_rsa))
     
 
@@ -408,7 +435,8 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
     ols = LinearRegression(copy_X = True,fit_intercept= False)
     ols.fit(X,y_HP)
     cpd_HP = _cpd(X,y_HP)
-    
+    C_HP = ols.coef_
+
     matrix_for_correlations_PFC = extract_trials(experiment_aligned_PFC, all_sessions_PFC, t_start, t_end)
     correlation_m_PFC = np.corrcoef(matrix_for_correlations_PFC)
     correlation_m_f_PFC = correlation_m_PFC.flatten()
@@ -416,7 +444,8 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
     ols = LinearRegression(copy_X = True,fit_intercept= False)
     ols.fit(X,y_PFC)
     cpd_PFC = _cpd(X,y_PFC)
-    
+    C_PFC = ols.coef_
+
     #diff_real = abs(cpd_PFC - cpd_HP)
 
     
@@ -428,8 +457,7 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
    # more_extreme = np.zeros(len(predictors))
     num_rounds = factorial(m + n) / (factorial(m)*factorial(n))
     diff_perm = np.zeros((int(num_rounds),len(predictors)))
-
-    activity_max = np.zeros(int(num_rounds))
+    diff_perm_C = np.zeros((int(num_rounds),len(predictors)))
     
     if perm:
         nn = 0
@@ -454,39 +482,415 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
             y_perm_PFC = np.corrcoef(matrix_for_correlations_perm_PFC).flatten()
             ols.fit(X,y_perm_PFC)
             cpd_PFC_perm = _cpd(X,y_perm_PFC)
-             
+            C_PFC_perm = ols.coef_
+ 
             matrix_for_correlations_perm_HP = extract_trials(HP_permute_aligned, HP_permute_all_sessions,t_start, t_end)
             y_perm_HP = np.corrcoef(matrix_for_correlations_perm_HP).flatten()
             ols.fit(X,y_perm_HP)
             cpd_HP_perm = _cpd(X,y_perm_HP)
+            C_HP_perm = ols.coef_
 
             
             diff_perm[nn,:] = abs(cpd_PFC_perm - cpd_HP_perm)
+            diff_perm_C[nn,:] = abs(C_PFC_perm - C_HP_perm)
+
             nn += 1
             
     #         if len(np.where(diff_perm > diff_real)[0])> 0:
     #             more_extreme[np.where(diff_perm > diff_real)] = more_extreme[np.where(diff_perm > diff_real)]+1
 
     p = np.percentile(diff_perm,95, axis = 0)
-
+    p_C = np.percentile(diff_perm_C,95, axis = 0)
     # num_rounds = factorial(m + n) / (factorial(m)*factorial(n))
     # p_value = more_extreme / num_rounds
     
         
-    return cpd_PFC,cpd_HP, correlation_m_PFC,correlation_m_HP, p
-    #p_value, correlation_m_PFC,correlation_m_HP
-   
- 
+    return cpd_PFC,cpd_HP, correlation_m_PFC,correlation_m_HP, p, p_C, C_PFC, C_HP
 
-def rsa_across_time(experiment,all_sessions):
+def _CPD(X,y):
+    '''Evaluate coefficient of partial determination for each predictor in X'''
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y)
+    sse = np.sum((ols.predict(X) - y)**2, axis=0)
+    cpd = np.zeros([X.shape[1]])
+
+    for i in range(X.shape[1]):
+        X_i = np.delete(X,i,axis=1)
+        ols.fit(X_i,y)
+        sse_X_i = np.sum((ols.predict(X_i) - y)**2, axis=0)
+        cpd[i]=(sse_X_i-sse)/sse_X_i
+    return cpd
+
+def regression_RSA_perm_against_flip(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP, experiment_aligned_PFC,\
+                                                                                              t_start, t_end,m484,m479,m478,m486,m480):
+    '''Regression of RSA predictors on the actual data matrix'''
     
-    cpd_PFC,cpd_HP, p_value, correlation_m_PFC,correlation_m_HP = regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP, experiment_aligned_PFC,\
-                                                                                              m484,m479,m478,m486,m480,30,perm = True)
-        
+    HP_all_sessions_1, HP_all_sessions_2, HP_all_sessions_3, HP_aligned_1,\
+    HP_aligned_2, HP_aligned_3, PFC_all_sessions_1, PFC_all_sessions_2, PFC_all_sessions_3,\
+    PFC_all_sessions_4, PFC_aligned_1, PFC_aligned_2, PFC_aligned_3, PFC_aligned_4 = animal_exp(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP, experiment_aligned_PFC,\
+                m484,m479,m478,m486,m480)
+     
+    all_sessions_perm_HP_PFC = [HP_all_sessions_1,HP_all_sessions_2, HP_all_sessions_3,PFC_all_sessions_1,PFC_all_sessions_2, PFC_all_sessions_3,PFC_all_sessions_4]
+    aligned_perm_HP_PFC = [HP_aligned_1,HP_aligned_2,HP_aligned_3,PFC_aligned_1,PFC_aligned_2,PFC_aligned_3,PFC_aligned_4]
 
+    cpd_PFC_perm = []
+    cpd_HP_perm = []
+   
+
+    physical_rsa = rs_in.RSA_physical_rdm()
+    physical_rsa  = 1*physical_rsa.flatten()
+    choice_ab_rsa = rs_in.RSA_a_b_initiation_rdm()
+    choice_ab_rsa = 1*choice_ab_rsa.flatten()
+    reward_no_reward = rs_in.reward_rdm()
+    reward_no_reward = 1*reward_no_reward.flatten()
+    reward_at_choices = rs_in.reward_choice_space()
+    reward_at_choices = 1*reward_at_choices.flatten()
+    choice_initiation_rsa =  rs_in.choice_vs_initiation()
+    choice_initiation_rsa = 1*choice_initiation_rsa.flatten()
+    a_bs_task_specific_rsa = rs_in.a_bs_task_specific()
+    a_bs_task_specific_rsa = 1*a_bs_task_specific_rsa.flatten()
+    
+    ones = np.ones(len(choice_ab_rsa))
+    
+
+    predictors = OrderedDict([('Space' , physical_rsa),
+                              ('A vs B', choice_ab_rsa),
+                              ('Reward',reward_no_reward),
+                              ('Reward at A vs B',reward_at_choices),
+                              ('Choice vs Initiation',choice_initiation_rsa),
+                              ('A and B Task Specific',a_bs_task_specific_rsa),
+                              ('constant', ones)])                                        
+           
+    X = np.vstack(predictors.values()).T[:len(physical_rsa),:].astype(float)
+ 
+    # HP animals
+    matrix_for_correlations_HP_1 = np.corrcoef(extract_trials( HP_aligned_1,HP_all_sessions_1, t_start, t_end)).flatten()
+    matrix_for_correlations_HP_2 =  np.corrcoef(extract_trials( HP_aligned_2,HP_all_sessions_2, t_start, t_end)).flatten()
+    matrix_for_correlations_HP_3 =  np.corrcoef(extract_trials( HP_aligned_3,HP_all_sessions_3, t_start, t_end)).flatten()
+
+    y_HP = matrix_for_correlations_HP_1
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y_HP)
+    C_HP_1 = ols.coef_
+
+    y_HP = matrix_for_correlations_HP_2
+    ols.fit(X,y_HP)
+    C_HP_2 = ols.coef_
+
+    y_HP = matrix_for_correlations_HP_3
+    ols.fit(X,y_HP)
+    C_HP_3 = ols.coef_
+    C_HP_flip = []
+    C_HP = np.mean([C_HP_1,C_HP_2,C_HP_3],0)
+    perms_HP =  np.arange(0,3)
+    for perm in perms_HP:
+        HP = np.asarray([C_HP_1,C_HP_2,C_HP_3])
+        HP[perm] = HP[perm]* (-1)
+        C_HP_flip.append(np.mean(HP,0))
+
+
+
+    matrix_for_correlations_PFC_1 = np.corrcoef(extract_trials( PFC_aligned_1,PFC_all_sessions_1, t_start, t_end)).flatten()
+    matrix_for_correlations_PFC_2 = np.corrcoef(extract_trials( PFC_aligned_2,PFC_all_sessions_2, t_start, t_end)).flatten()
+    matrix_for_correlations_PFC_3 = np.corrcoef(extract_trials( PFC_aligned_3,PFC_all_sessions_3, t_start, t_end)).flatten()
+    matrix_for_correlations_PFC_4 = np.corrcoef(extract_trials( PFC_aligned_3,PFC_all_sessions_3, t_start, t_end)).flatten()
+
+    y_PFC = matrix_for_correlations_PFC_1
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y_PFC)
+    C_PFC_1 = ols.coef_
+     
+    y_PFC = matrix_for_correlations_PFC_2
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y_PFC)
+    C_PFC_2 = ols.coef_
+     
+    y_PFC = matrix_for_correlations_PFC_3
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y_PFC)
+    C_PFC_3 = ols.coef_
+
+    y_PFC = matrix_for_correlations_PFC_4
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+    ols.fit(X,y_PFC)
+    C_PFC_4 = ols.coef_
+    C_PFC = np.mean([C_PFC_1,C_PFC_2,C_PFC_3,C_PFC_4],0)
+    perms_PFC = list(permutations(range(4)))
+    
+    C_PFC_flip = []
+    perms_PFC = np.arange(0,4)
+    for perm in perms_PFC:
+        PFC = np.asarray([C_PFC_1,C_PFC_2,C_PFC_3,C_PFC_4])
+        PFC[perm] = PFC[perm]*(-1)
+        C_PFC_flip.append(np.mean(PFC,0))
+
+
+    return C_PFC,C_HP,C_HP_flip,C_PFC_flip
+
+     
+    
+def rsa_across_time(experiment,all_sessions):
+   
+    cue = np.arange(28,50) #100 ms before choice poke entry
+    reward =np.arange(29,51) #500 ms after choice poke entry
+    
+    ind_PFC = []
+    ind_HP = []
+    C_PFC_list = []
+    C_HP_list = []
+    p_val_HP_all = []
+    p_val_PFC_all = []
+
+    for start,end in zip(cue, reward):
+  
+        C_PFC,C_HP,C_HP_flip,C_PFC_flip =  regression_RSA_perm_against_flip(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP, experiment_aligned_PFC,\
+                                                                                               start, end, m484,m479,m478,m486,m480)
+        C_PFC_list.append(C_PFC)
+        C_HP_list.append(C_HP)
+
+        C_HP_flip = np.asarray(C_HP_flip)
+        C_PFC_flip = np.asarray(C_PFC_flip)
+        
+        p_val_PFC = []
+        for p, pred in enumerate(C_PFC):
+            C_PFC_flip_p = C_PFC_flip[:,p]
+            p_val_PFC.append(np.percentile(C_PFC_flip_p,95))
+        p_val_HP = []
+        for p, pred in enumerate(C_HP):
+            C_HP_flip_p = C_HP_flip[:,p]
+            p_val_HP.append(np.percentile(C_HP_flip_p,95))
+        ind_PFC.append(np.where(C_PFC > p_val_PFC)[0])
+        ind_HP.append(np.where(C_HP > p_val_HP)[0])
+        p_val_HP_all.append(p_val_HP)
+        p_val_PFC_all.append(p_val_PFC)
+
+    space_HP_flip = []; a_b_HP_flip = []; rew_HP_flip = []; rew_a_b_HP_flip = []; ch_init_HP_flip  = []; a_spec_HP_flip = []
+    space_PFC_flip = []; a_b_PFC_flip = []; rew_PFC_flip = []; rew_a_b_PFC_flip = []; ch_init_PFC_flip = []; a_spec_PFC_flip = []
+                                                        
+    for i, ind in enumerate(ind_PFC):
+        if 0 in ind_HP[i]:
+            space_HP_flip.append(i);
+        if 0 in ind_PFC[i]:
+            space_PFC_flip.append(i);
+        if 1 in ind_HP[i]:
+            a_b_HP_flip.append(i);
+        if 1 in ind_PFC[i]:
+            a_b_PFC_flip.append(i);
+        if 2 in ind_HP[i]:
+            rew_HP_flip.append(i);
+        if 2 in ind_PFC[i]:
+            rew_PFC_flip.append(i);
+        if 3 in ind_HP[i]:
+            rew_a_b_HP_flip.append(i);
+        if 3 in ind_PFC[i]:
+            rew_a_b_PFC_flip.append(i);
+        if 4 in ind_HP[i]:
+            ch_init_HP_flip.append(i);
+        if 4 in ind_PFC[i]:
+            ch_init_PFC_flip.append(i);
+        if 5 in ind_HP[i]:
+            a_spec_HP_flip.append(i);
+        if 5 in ind_PFC[i]:
+            a_spec_PFC_flip.append(i);
+       
+         
+    cpd_PFC_list = []
+    cpd_HP_list = []
+    correlation_m_PFC_list = []
+    correlation_m_HP_list = []
+    p_C_list = []
+    C_PFC_list = []
+    C_HP_list = []
+    
+    p_value_list = []
+    for start,end in zip(cue, reward):
+        
+        cpd_PFC,cpd_HP, correlation_m_PFC,correlation_m_HP, p, p_C, C_PFC, C_HP = regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP, experiment_aligned_PFC,\
+                                                                                              m484,m479,m478,m486,m480,t_start = start, t_end = end ,perm = True)
+        p_value_list.append(p)
+        p_C_list.append(p_C)
+        C_PFC_list.append(C_PFC)
+        C_HP_list.append(C_HP)
+        cpd_PFC_list.append(cpd_PFC)
+        cpd_HP_list.append(cpd_HP)
+        correlation_m_PFC_list.append(correlation_m_PFC)
+   
     cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
     fig_n = 1
     
+    p_value_multiple_comparisons = np.max(p_C_list,0)
+
+    difference_space = []; space_HP = []; space_PFC = []
+    
+    a_b_HP = []; a_b_PFC = []; difference_a_b = []
+
+    rew_HP = []; rew_PFC= []; difference_rew= []
+    
+    rew_a_b_HP = []; rew_a_b_PFC = []; difference_rew_a_b = []
+
+    ch_init_HP = []; ch_init_PFC = []; difference_ch_init = []
+
+    a_spec_HP = []; a_spec_PFC = []; difference_a_spec = []
+    
+    
+    for i in range(len(cpd_PFC_list)):
+        
+        difference_space.append((abs(cpd_HP_list[i][0]- cpd_PFC_list[i][0])))
+        space_HP.append(cpd_HP_list[i][0])
+        space_PFC.append(cpd_PFC_list[i][0])
+        
+        # difference_space.append((abs(C_HP_list[i][0]- C_PFC_list[i][0])))
+        # space_HP.append(C_HP_list[i][0])
+        # space_PFC.append(C_PFC_list[i][0])
+        
+        a_b_HP.append(cpd_HP_list[i][1])
+        a_b_PFC.append(cpd_PFC_list[i][1])
+        difference_a_b.append((abs(cpd_HP_list[i][1]- cpd_PFC_list[i][1])))
+
+        # a_b_HP.append(C_HP_list[i][1])
+        # a_b_PFC.append(C_PFC_list[i][1])
+        # difference_a_b.append((abs(C_HP_list[i][1]- C_PFC_list[i][1])))
+
+        rew_HP.append(cpd_HP_list[i][2])
+        rew_PFC.append(cpd_PFC_list[i][2])
+        difference_rew.append((abs(cpd_HP_list[i][2]- cpd_PFC_list[i][2])))
+        
+        # rew_HP.append(C_HP_list[i][2])
+        # rew_PFC.append(C_PFC_list[i][2])
+        # difference_rew.append((abs(C_HP_list[i][2]- C_PFC_list[i][2])))
+       
+        rew_a_b_HP.append(cpd_HP_list[i][3])
+        rew_a_b_PFC.append(cpd_PFC_list[i][3])
+        difference_rew_a_b.append((abs(cpd_HP_list[i][3]- cpd_PFC_list[i][3])))
+
+        # rew_a_b_HP.append(C_HP_list[i][3])
+        # rew_a_b_PFC.append(C_PFC_list[i][3])
+        # difference_rew_a_b.append((abs(C_HP_list[i][3]- C_PFC_list[i][3])))
+
+        ch_init_HP.append(cpd_HP_list[i][4])
+        ch_init_PFC.append(cpd_PFC_list[i][4])
+        difference_ch_init.append((abs(cpd_HP_list[i][4]- cpd_PFC_list[i][4])))
+
+        # ch_init_HP.append(C_HP_list[i][4])
+        # ch_init_PFC.append(C_PFC_list[i][4])
+        # difference_ch_init.append((abs(C_HP_list[i][4]- C_PFC_list[i][4])))
+
+        a_spec_HP.append(cpd_HP_list[i][5])
+        a_spec_PFC.append(cpd_PFC_list[i][5])
+        difference_a_spec.append((abs(cpd_HP_list[i][5]- cpd_PFC_list[i][5])))
+        
+        # a_spec_HP.append(C_HP_list[i][5])
+        # a_spec_PFC.append(C_PFC_list[i][5])
+        # difference_a_spec.append((abs(C_HP_list[i][5]- C_PFC_list[i][5])))
+    
+    
+         
+        
+    #annotate sig 
+        
+    space_sig = np.where(difference_space >= p_value_multiple_comparisons[0])[0]
+    a_b_sig = np.where(difference_a_b >= p_value_multiple_comparisons[1])[0]
+    rew_sig = np.where(difference_rew >= p_value_multiple_comparisons[2])[0]
+    rew_a_b_sig = np.where(difference_rew_a_b >= p_value_multiple_comparisons[3])[0]
+    ch_init_sig = np.where(difference_ch_init >= p_value_multiple_comparisons[4])[0]
+    a_b_spec_sig = np.where(difference_a_spec >= p_value_multiple_comparisons[5])[0]
+    x = np.arange(22)
+    plt.figure(figsize = (10,2))
+    plt.subplot(1,6,1)
+    isl = wes.Royal2_5.mpl_colors
+
+    plt.plot(np.asarray(space_HP)*100, color = isl[0])
+    plt.plot(np.asarray(space_PFC)*100, color = isl[3])
+    plt.title('Space')
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    for s in space_sig:
+        plt.annotate('*',xy = [s, (np.max([space_HP,space_PFC])+0.01)*100])    
+    # for s in space_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([space_HP,space_PFC])+0.02)], color = 'pink')
+    # for s in space_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([space_HP,space_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([space_HP,space_PFC])-0.03)*100,(np.max([space_HP,space_PFC])+0.03)*100)
+   
+    plt.ylabel('CPD %')
+    
+   
+    plt.subplot(1,6,2)
+
+    plt.plot(np.asarray(a_b_HP)*100, color = isl[0])
+    plt.plot(np.asarray(a_b_PFC)*100, color = isl[3])
+    plt.title('Choice A vs B')
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    for s in a_b_sig:
+        plt.annotate('*',xy = [s, (np.max([a_b_HP,a_b_PFC])+0.01)*100])
+    # for s in a_b_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([a_b_HP,a_b_PFC])+0.02)], color = 'pink')
+    # for s in a_b_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([a_b_HP,a_b_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([a_b_HP,a_b_PFC])-0.03)*100,(np.max([a_b_HP,a_b_PFC])+0.03)*100)
+
+
+    plt.subplot(1,6,3)
+
+    plt.plot(np.asarray(rew_HP)*100, color = isl[0])
+    plt.plot(np.asarray(rew_PFC)*100, color = isl[3])
+    plt.title('Reward')
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    for s in rew_sig:
+        plt.annotate('*',xy = [s, (np.max([rew_HP,rew_PFC])+0.01)*100])
+    # for s in rew_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([rew_HP,rew_PFC])+0.02)], color = 'pink')
+    # for s in rew_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([rew_HP,rew_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([rew_HP,rew_PFC])-0.03)*100,(np.max([rew_HP,rew_PFC])+0.03)*100)
+
+  
+    plt.subplot(1,6,4)
+
+    plt.plot(np.asarray(rew_a_b_HP)*100, color = isl[0])
+    plt.plot(np.asarray(rew_a_b_PFC)*100, color = isl[3])
+    plt.title('Reward at A vs B')
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    for s in rew_a_b_sig:
+        plt.annotate('*',xy = [s, (np.max([rew_a_b_HP,rew_a_b_PFC])+0.01)*100]) 
+    # for s in rew_a_b_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([rew_a_b_HP,rew_a_b_PFC])+0.02)], color = 'pink')
+    # for s in rew_a_b_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([rew_a_b_HP,rew_a_b_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([rew_a_b_HP,rew_a_b_PFC])-0.03)*100,(np.max([rew_a_b_HP,rew_a_b_PFC])+0.03)*100)
+ 
+       
+    plt.subplot(1,6,5)
+
+    plt.plot(np.asarray(ch_init_HP)*100, color = isl[0])
+    plt.plot(np.asarray(ch_init_PFC)*100, color = isl[3])
+    plt.title('Choice vs Init')
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    for s in ch_init_sig:
+        plt.annotate('*',xy = [s, (np.max([ch_init_HP,ch_init_PFC])+0.01)*100])
+    # for s in ch_init_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([ch_init_HP,ch_init_PFC])+0.02)], color = 'pink')
+    # for s in ch_init_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([ch_init_HP,ch_init_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([ch_init_HP,ch_init_PFC])-0.03)*100,(np.max([ch_init_HP,ch_init_PFC])+0.03)*100)
+
+ 
+    plt.subplot(1,6,6)
+
+    plt.plot(np.asarray(a_spec_HP)*100, color = isl[0], label = 'HP')
+    plt.plot(np.asarray(a_spec_PFC)*100, color = isl[3], label = 'PFC')
+    plt.title('A Task Specific')
+    for s in a_b_spec_sig:
+        plt.annotate('*',xy = [s, (np.max([a_spec_HP,a_spec_PFC])+0.01)*100])
+    # for s in a_spec_HP_flip:
+    #     plt.annotate('*',xy = [s, (np.max([a_spec_HP,a_spec_PFC])+0.02)], color = 'pink')
+    # for s in a_spec_PFC_flip:
+    #     plt.annotate('*',xy = [s, (np.max([a_spec_HP,a_spec_PFC])+0.03)], color = 'grey')
+    plt.ylim((np.min([a_spec_HP,a_spec_PFC])-0.03)*100,(np.max([a_spec_HP,a_spec_PFC])+0.03)*100)
+    sns.despine()
+    plt.legend()
+    plt.xticks([0,2,4,7,10,12,14,16,18,20,22],['-0.1','C','0.1','O','0.3','0.4','0.5', '0.6','0.8','0.9','1'])
+    plt.tight_layout()
+
     for i in range(len(cpd_PFC_list)):
         # Predictor RSA Matrices 
         physical_rsa = rs_in.RSA_physical_rdm()
@@ -606,8 +1010,8 @@ def rsa_across_time(experiment,all_sessions):
         reward_at_choices_plt.imshow(reward_at_choices,aspect = 'auto',cmap = cmap)
         choice_initiation_plt.imshow(choice_initiation_rsa,aspect = 'auto',cmap = cmap)
         a_bs_task_specific_rsa_plt.imshow(a_bs_task_specific_rsa,aspect = 'auto',cmap = cmap)
-        trial_corr_plot_PFC.imshow(correlation_m_PFC, aspect = 1,cmap = cmap)
-        trial_corr_plot_HP.imshow(correlation_m_HP, aspect = 1,cmap = cmap)
+        trial_corr_plot_PFC.imshow(correlation_m_PFC_list[i], aspect = 1,cmap = cmap)
+        trial_corr_plot_HP.imshow(correlation_m_HP_list[i], aspect = 1,cmap = cmap)
 
         
         
@@ -657,8 +1061,8 @@ def rsa_across_time(experiment,all_sessions):
     #start = [30,35]
     #end =[50,50]
 
-    cue = np.arange(30,59)
-    reward =np.arange(31,60)
+    cue = np.arange(30,60)
+    reward =np.arange(31,61)
     
     p_value_list = []
     for start,end in zip(cue, reward):
@@ -702,7 +1106,7 @@ def rsa_across_time(experiment,all_sessions):
         bar_plot.legend()
         camera.snap()        
 
-    #p_value_multiple_comparisons = np.max(p_value_list,0)
+    p_value_multiple_comparisons = np.max(p_value_list,0)
     animation = camera.animate(interval = 200)
     FFwriter = FFMpegWriter(fps = 1, bitrate=2000) 
     animation.save('/Users/veronikasamborska/Desktop/HP_PFC_rsa.mp4', writer=FFwriter)

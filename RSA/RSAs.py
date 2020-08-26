@@ -257,7 +257,14 @@ def reward_choice_space():
     reward_at_choices = reward_no_reward & choice_ab_rsa 
  
     return reward_at_choices
-    
+  
+def reward_choice_space_specific():
+    reward_no_reward = reward_rdm()
+    space_rdm = RSA_physical_rdm()
+    reward_at_space = reward_no_reward & space_rdm 
+ 
+    return reward_at_space
+
 def remapping_a_to_b():
     
     

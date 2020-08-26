@@ -317,15 +317,15 @@ def regression_time_choices_rewards_b_blocks(data_HP, data_PFC,experiment_aligne
 
 def run():
     
-    HP_aligned_time, HP_aligned_choices, HP_aligned_rewards, PFC_aligned_time, PFC_aligned_choices, PFC_aligned_rewards = all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,start, end)    
+    HP_aligned_time, HP_aligned_choices, HP_aligned_rewards, PFC_aligned_time, PFC_aligned_choices, PFC_aligned_rewards = all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC)    
 
 
 
-def hieararchies_extract_rewards_choices(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,start = 0, end = 20, HP = True):
+def hieararchies_extract_rewards_choices(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,HP = True):
    
     HP_aligned_time, HP_aligned_choices, HP_aligned_rewards, PFC_aligned_time,\
         PFC_aligned_choices, PFC_aligned_rewards,state_list_HP,\
-            state_list_PFC,task_list_HP, task_list_PFC = all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,start, end)    
+            state_list_PFC,task_list_HP, task_list_PFC = all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC)    
         
     if HP == True:
         exp = HP_aligned_time
@@ -708,7 +708,7 @@ def raw_data_align_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, expe
         reward_list_HP,reward_list_PFC, choice_list_HP,choice_list_PFC
 
 
-def all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,start, end):
+def all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC):
     
     ''' Trial warp data aligned to behaviour '''
 
@@ -728,9 +728,23 @@ def all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment
     
     # HP
     for res,residuals in enumerate(res_list_HP):
+
         trials_since_block = trials_since_block_list_HP[res]
         ends = np.where(np.diff(trials_since_block)!=1)[0]
-        activity = np.mean(res_list_HP[res][:,:,start:end],axis = 2).T # Find mean acrosss the trial 
+        ind_start = []
+        ind_end = []
+        activity = []
+        for neuron in range(res_list_HP[res].shape[1]):
+            all_trials_time = np.mean(res_list_HP[res][:,neuron,:],0)
+            ind_start.append(np.where(all_trials_time == np.max(all_trials_time))[0][0])
+            ind_end.append(np.where(all_trials_time == np.max(all_trials_time))[0][0]+2)
+        
+        for a in range(res_list_HP[res].shape[1]):
+            start = ind_start[a]
+            end = ind_end[a]
+            activity.append(np.mean(res_list_HP[res][:,a,start:end],axis = 1).T) # Find mean acrosss the trial 
+            
+        activity = np.asarray(activity)
         starts = np.sort(np.append(ends[:-1:1],0))    
         starts = np.append(starts,ends[-1])
         ends = np.append(ends,len(trials_since_block))
@@ -752,6 +766,21 @@ def all_sessions_align_beh_raw_data_choices_rewards(data_HP, data_PFC,experiment
     for res,residuals in enumerate(res_list_PFC):
         trials_since_block = trials_since_block_list_PFC[res]
         ends = np.where(np.diff(trials_since_block)!=1)[0]
+        
+        ind_start = []
+        ind_end = []
+        activity = []
+        for neuron in range(res_list_PFC[res].shape[1]):
+            all_trials_time = np.mean(res_list_PFC[res][:,neuron,:],0)
+            ind_start.append(np.where(all_trials_time == np.max(all_trials_time))[0][0])
+            ind_end.append(np.where(all_trials_time == np.max(all_trials_time))[0][0]+2)
+        
+        for a in range(res_list_PFC[res].shape[1]):
+            start = ind_start[a]
+            end = ind_end[a]
+            activity.append(np.mean(res_list_PFC[res][:,a,start:end],axis = 1).T) # Find mean acrosss the trial 
+     
+        
         activity = np.mean(res_list_PFC[res][:,:,start:end],axis = 2).T # Find mean acrosss the trial 
         starts = np.sort(np.append(ends[:-1:1],0))    
         starts = np.append(starts,ends[-1])
