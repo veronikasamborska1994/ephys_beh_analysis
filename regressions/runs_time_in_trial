@@ -1,0 +1,506 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 15 17:13:57 2020
+
+@author: veronikasamborska
+"""
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep  7 22:39:22 2020
+
+@author: veronikasamborska
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import sys
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
+import regression_function as reg_f
+from collections import OrderedDict
+import regressions as re
+import palettable.wesanderson as wes
+from matplotlib.backends.backend_pdf import PdfPages
+import scipy
+from scipy import io
+
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 6}
+
+plt.rc('font', **font)
+
+
+def load():
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
+    ## Longer trial
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/HP_RPE.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC_RPE.mat')
+  
+  
+def task_ind(task, a_pokes, b_pokes):
+    
+    """ Create Task IDs for that are consistent: in Task 1 A and B at left right extremes, in Task 2 B is one of the diagonal ones, 
+    in Task 3  B is top or bottom """
+    
+    taskid = np.zeros(len(task));
+    taskid[b_pokes == 10 - a_pokes] = 1     
+    taskid[np.logical_or(np.logical_or(b_pokes == 2, b_pokes == 3), np.logical_or(b_pokes == 7, b_pokes == 8))] = 2  
+    taskid[np.logical_or(b_pokes ==  1, b_pokes == 9)] = 3
+         
+  
+    return taskid
+
+
+def sequence_rewards_errors_regression_generalisation_rew(data, area = 'HP_'):
+    
+    dm = data['DM'][0]
+    firing = data['Data'][0]
+    C_1 = []; C_2 = []; C_3 = []
+      
+      
+    for  s, sess in enumerate(dm):
+        runs_list = []
+        runs_list.append(0)
+        DM = dm[s]
+        firing_rates = firing[s]
+       # firing_rates = firing_rates[:,:,:63]
+        n_trials, n_neurons, n_timepoints = firing_rates.shape
+
+        choices = DM[:,1]
+       # choices[np.where(choices ==0)[0]] = -1
+
+        reward = DM[:,2]    
+
+        task =  DM[:,5]
+        a_pokes = DM[:,6]
+        b_pokes = DM[:,7]
+        
+        taskid = task_ind(task, a_pokes, b_pokes)
+
+        task_1 = np.where(taskid == 1)[0]
+        task_2 = np.where(taskid == 2)[0]
+        task_3 = np.where(taskid == 3)[0]
+        state = DM[:,0]
+
+        cum_error = []
+        err = 0
+        for r,rew in enumerate(reward):
+            if reward[r] == 0 and reward[r-1] == 0:
+                err+=1
+            else:
+                err = 0
+            cum_error.append(err)
+        
+        cum_reward = []
+        for r,rew in enumerate(reward):
+            if reward[r] == 1 and reward[r-1] == 1:
+                err+=1
+            else:
+                err = 0
+            cum_reward.append(err)
+  
+         
+        cum_reward_orth = np.vstack([reward, np.ones(len(reward))])
+        xt = np.linalg.pinv(cum_reward_orth.T)
+        identity = np.identity(len(cum_reward))
+        id_x = (identity- np.matmul(cum_reward_orth.T, xt))
+        cum_error_o = np.matmul(id_x, np.asarray(cum_error))
+        cum_reward_o = np.matmul(id_x, np.asarray(cum_reward))
+        #reward_o = np.matmul(id_x, np.asarray(reward))
+
+        
+        ones = np.ones(len(reward))
+        reward_1 = reward[task_1]
+        choices_1 = choices[task_1]
+     #   cum_error_1 =  np.asarray(cum_error_o)[task_1]
+        cum_reward_1 = np.asarray(cum_reward_o)[task_1]
+
+        ones_1 = ones[task_1]
+        firing_rates_1 = firing_rates[task_1]
+        
+        
+        predictors_all = OrderedDict([('Reward', reward_1),
+                                    #  ('Choice', choices_1),                                    
+                                  #    ('Errors', cum_error_1),
+                                      ('Rewards', cum_reward_1),
+                                      #('Reward Diff', diff_rewards_1),
+                                      #('Choice x Reward',int_rew_ch_1),
+                                      ('ones', ones_1)])   
+            
+        X_1 = np.vstack(predictors_all.values()).T[:len(choices_1),:].astype(float)
+        # rank = np.linalg.matrix_rank(X_1)
+        # print(rank)
+        # print(X_1.shape[1])
+        n_predictors = X_1.shape[1]
+        y_1 = firing_rates_1.reshape([len(firing_rates_1),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+        tstats = reg_f.regression_code(y_1, X_1)
+        C_1.append(tstats.reshape(n_predictors,n_neurons,n_timepoints)) # Predictor loadings
+        
+        
+        
+        reward_2 = reward[task_2]
+        choices_2 = choices[task_2]
+      #  cum_error_2 = np.asarray(cum_error_o)[task_2]
+        cum_reward_2 = np.asarray(cum_reward_o)[task_2]
+        ones_2 = ones[task_2]
+
+      
+        firing_rates_2 = firing_rates[task_2]
+        
+        predictors_all = OrderedDict([('Reward', reward_2),
+                                    #  ('Choice', choices_2),
+                                 #     ('Errors', cum_error_2),
+                                      ('Rewards', cum_reward_2),
+                                      #('Reward Diff', diff_rewards_2),
+                                 #     ('Choice x Reward',int_rew_ch_2),
+                                      ('ones', ones_2)])
+         
+               
+        X_2 = np.vstack(predictors_all.values()).T[:len(choices_2),:].astype(float)
+        y_2 = firing_rates_2.reshape([len(firing_rates_2),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+        tstats = reg_f.regression_code(y_2, X_2)
+        
+        C_2.append(tstats.reshape(n_predictors,n_neurons,n_timepoints)) # Predictor loadings
+        
+        reward_3 = reward[task_3]
+        choices_3 = choices[task_3]
+    #    cum_error_3 = np.asarray(cum_error_o)[task_3]
+        cum_reward_3 = np.asarray(cum_reward_o)[task_3]
+        ones_3 = ones[task_3]
+
+
+        firing_rates_3 = firing_rates[task_3]
+        predictors_all = OrderedDict([('Reward', reward_3),
+                                  #    ('Choice', choices_3),                                     
+                                    #  ('Errors', cum_error_3),
+                                      ('Rewards', cum_reward_3),
+                                      #('Reward Diff', diff_rewards_3),
+
+                                    #  ('Choice x Reward',int_rew_ch_3),                                   
+                                      ('ones', ones_3)])
+            
+        X_3 = np.vstack(predictors_all.values()).T[:len(choices_3),:].astype(float)
+        y_3 = firing_rates_3.reshape([len(firing_rates_3),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+        tstats = reg_f.regression_code(y_3, X_3)
+        C_3.append(tstats.reshape(n_predictors,n_neurons,n_timepoints))# Predictor loadings
+
+       
+
+    C_1 = np.concatenate(C_1,1)
+    
+    C_2 = np.concatenate(C_2,1)
+    
+    C_3 = np.concatenate(C_3,1)
+    
+    C_2_inf = [~np.isinf(C_2[0]).any(axis=1)]; C_2_nan = [~np.isnan(C_2[0]).any(axis=1)]
+    C_3_inf = [~np.isinf(C_3[0]).any(axis=1)];  C_3_nan = [~np.isnan(C_3[0]).any(axis=1)]
+    C_1_inf = [~np.isinf(C_1[0]).any(axis=1)];  C_1_nan = [~np.isnan(C_1[0]).any(axis=1)]
+    
+    nans = np.asarray(C_1_inf) & np.asarray(C_1_nan) & np.asarray(C_3_inf) & np.asarray(C_3_nan) & np.asarray(C_2_inf)& np.asarray(C_2_nan)
+    C_1 = C_1[:,nans[0],:]; C_2 = C_2[:,nans[0],:];  C_3 = C_3[:,nans[0],:]
+   
+    C = np.mean([np.abs(C_1),np.abs(C_2),np.abs(C_3)],0)
+    C_mean = np.mean(C,1)
+    pal_c = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95)
+    c =  wes.Darjeeling2_5.mpl_colors + wes.Mendl_4.mpl_colors +wes.GrandBudapest1_4.mpl_colors+wes.Moonrise1_5.mpl_colors
+    
+    j = 0
+    plt.figure()
+    for i in C_mean[:-1]:
+        plt.plot(i, color = c[j],label = list(predictors_all.keys())[j])
+        j+=1
+    plt.legend()
+    sns.despine()
+        
+    plt.title( area +'t-values')
+    
+    
+    
+    C_1_rew = C_1[0]; C_2_rew = C_2[0]; C_3_rew = C_3[0]
+    C_1_rew_count = C_1[1]; C_2_rew_count = C_2[1]; C_3_rew_count = C_3[1]
+   # C_1_err_count = C_1[2]; C_2_err_count = C_2[2]; C_3_err_count = C_3[2]
+
+    reward_times_to_choose = np.asarray([20,24,35,41])
+    #reward_times_to_choose = np.arange(0,63,10)
+    # reward_times_to_choose = np.arange(0,80,10)
+
+    ones = np.ones(len(C_1_rew))
+    C_1_rew_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+    C_2_rew_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+    C_3_rew_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+   
+    j = 0
+    for i in reward_times_to_choose:
+        if i ==reward_times_to_choose[0]:
+            C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i-20:i],1)
+            C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i-20:i],1)
+            C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i-20:i],1)
+        elif i ==reward_times_to_choose[1] or i == reward_times_to_choose[2]:
+            C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i-5:i+5],1)
+            C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i-5:i+5],1)
+            C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i-5:i+5],1)
+        elif i == reward_times_to_choose[3]:
+            C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i:i+5],1)
+            C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i:i+5],1)
+            C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i:i+5],1)
+        # elif i == reward_times_to_choose[4]:
+        #     C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i:i+5],1)
+        #     C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i:i+5],1)
+        #     C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i:i+5],1)
+       
+        j +=1
+    
+    # for i in reward_times_to_choose:
+    #     C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i:i+10],1)
+    #     C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i:i+10],1)
+    #     C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i:i+10],1)
+        
+    #     j +=1
+   
+    C_1_rew_count_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+    C_2_rew_count_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+    C_3_rew_count_proj  = np.ones((C_1_rew.shape[0],reward_times_to_choose.shape[0]+1))
+    j = 0
+    for i in reward_times_to_choose:
+        if i ==reward_times_to_choose[0]:
+            C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i-20:i],1)
+            C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i-20:i],1)
+            C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i-20:i],1)
+        elif i ==reward_times_to_choose[1] or i == reward_times_to_choose[2]:
+            C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i-5:i+5],1)
+            C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i-5:i+5],1)
+            C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i-5:i+5],1)
+        elif i == reward_times_to_choose[3]:
+            C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i:i+5],1)
+            C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i:i+5],1)
+            C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i:i+5],1)
+        # elif i == reward_times_to_choose[4]:
+        #     C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i:i+5],1)
+        #     C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i:i+5],1)
+        #     C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i:i+5],1)
+      
+        j +=1
+        
+    # for i in reward_times_to_choose:
+        
+    #     C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i:i+10],1)
+    #     C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i:i+10],1)
+    #     C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i:i+10],1)
+    #     j +=1
+
+ 
+    # cpd_1_2_rew = re._CPD(C_1_rew_proj,C_2_rew_count); cpd_3_2_rew = re._CPD(C_3_rew_proj,C_2_rew_count)
+           
+    # cpd_1_3_rew = re._CPD(C_1_rew_proj,C_3_rew_count); cpd_2_3_rew = re._CPD(C_2_rew_proj,C_3_rew_count)
+            
+    # cpd_2_1_rew = re._CPD(C_2_rew_proj,C_1_rew_count); cpd_3_1_rew = re._CPD(C_3_rew_proj,C_1_rew_count)
+      
+
+    cpd_1_2_rew = reg_f.regression_code(C_2_rew_count, C_1_rew_proj);   cpd_3_2_rew = reg_f.regression_code(C_2_rew_count,C_3_rew_proj)
+    
+    cpd_1_3_rew = reg_f.regression_code(C_3_rew_count, C_1_rew_proj);   cpd_2_3_rew = reg_f.regression_code(C_3_rew_count,C_2_rew_proj)
+    
+    cpd_2_1_rew = reg_f.regression_code(C_1_rew_count, C_2_rew_proj);   cpd_3_1_rew = reg_f.regression_code(C_1_rew_count,C_3_rew_proj)
+
+    rew_to_count_cpd = np.mean([cpd_1_2_rew,cpd_1_3_rew,cpd_2_1_rew, cpd_3_2_rew,cpd_2_3_rew,cpd_3_1_rew],0)
+    
+    # cpd_1_rew = re._CPD(C_1_rew_proj,C_1_rew_count)
+    # cpd_2_rew = re._CPD(C_2_rew_proj,C_2_rew_count)
+    # cpd_3_rew = re._CPD(C_3_rew_proj,C_3_rew_count)
+    
+    
+    cpd_1_rew = reg_f.regression_code(C_1_rew_count,C_1_rew_proj)
+    cpd_2_rew = reg_f.regression_code(C_2_rew_count,C_2_rew_proj)
+    cpd_3_rew = reg_f.regression_code(C_3_rew_count,C_3_rew_proj)
+    
+    # cpd_1_2_rew_count = re._CPD(C_1_rew_count_proj,C_2_rew_count);     cpd_count_3_2_rew_count = re._CPD(C_3_rew_count_proj,C_2_rew_count)
+    # cpd_1_3_rew_count = re._CPD(C_1_rew_count_proj,C_3_rew_count);      cpd_count_2_3_rew_count = re._CPD(C_2_rew_count_proj,C_3_rew_count)
+    # cpd_2_1_rew_count = re._CPD(C_2_rew_count_proj,C_1_rew_count);       cpd_count_3_1_rew_count = re._CPD(C_3_rew_count_proj,C_1_rew_count)
+    
+    cpd_1_2_rew_count = reg_f.regression_code(C_2_rew_count, C_1_rew_count_proj);     cpd_count_3_2_rew_count = reg_f.regression_code(C_2_rew_count, C_3_rew_count_proj)
+    cpd_1_3_rew_count = reg_f.regression_code(C_3_rew_count, C_1_rew_count_proj);      cpd_count_2_3_rew_count = reg_f.regression_code(C_3_rew_count, C_2_rew_count_proj)
+    cpd_2_1_rew_count = reg_f.regression_code(C_1_rew_count, C_2_rew_count_proj);       cpd_count_3_1_rew_count = reg_f.regression_code(C_1_rew_count, C_3_rew_count_proj)
+    
+    within_cpd = np.mean([cpd_1_rew,cpd_2_rew,cpd_3_rew],0)
+    
+    # cpd_1_rew_bias = re._CPD(C_1_rew_proj,C_1_rew)
+    # cpd_2_rew_bias = re._CPD(C_2_rew_proj,C_2_rew)
+    # cpd_3_rew_bias = re._CPD(C_3_rew_proj,C_3_rew)
+   
+    cpd_1_rew_bias = reg_f.regression_code(C_1_rew, C_1_rew_proj)
+    cpd_2_rew_bias = reg_f.regression_code(C_2_rew, C_2_rew_proj)
+    cpd_3_rew_bias = reg_f.regression_code(C_3_rew, C_3_rew_proj)
+   
+    bias_cpd = np.mean([cpd_1_rew_bias,cpd_2_rew_bias,cpd_3_rew_bias],0)
+  
+    count_to_count_cpd = np.mean([cpd_1_2_rew_count,cpd_1_3_rew_count,cpd_2_1_rew_count, cpd_count_3_2_rew_count,cpd_count_2_3_rew_count,cpd_count_3_1_rew_count],0)
+    
+    c =  wes.Darjeeling2_5.mpl_colors + wes.Mendl_4.mpl_colors +wes.GrandBudapest1_4.mpl_colors+wes.Moonrise1_5.mpl_colors+wes.Moonrise6_5.mpl_colors
+    plt.figure(figsize = (20,3))
+    
+    
+    plt.subplot(2,4,1)   
+  
+    j = 0
+    for i in bias_cpd[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    sns.despine()
+    plt.title('Vectors within Task Rewards to Rewards Biased')
+    plt.ylabel(' T-stats')
+    # plt.ylabel('cpd')
+
+    
+    plt.subplot(2,4,2)   
+  
+    j = 0
+    for i in within_cpd[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    sns.despine()
+    plt.title(' Vectors within Task Rewards to Reward Counts ')
+    plt.ylabel(' T-stats')
+    # plt.ylabel('cpd')
+
+    plt.subplot(2,4,3)   
+   
+    j = 0
+    for i in count_to_count_cpd[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    plt.title('Vectors between Tasks ')
+    sns.despine()
+    plt.ylabel(' T-stats')
+    # plt.ylabel('cpd')
+
+    
+    plt.subplot(2,4,4)   
+
+    j = 0
+    for i in rew_to_count_cpd[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    plt.title('Vectors from Rewards to Reward Counts Tasks ')
+    sns.despine()
+    # plt.ylabel('cpd')
+
+    
+    plt.ylabel(' T-stats')
+ 
+    # cpd_1_2_rew_rev = re._CPD(C_1_rew_count_proj,C_2_rew); cpd_3_2_rew_rev  = re._CPD(C_3_rew_count_proj,C_2_rew)
+           
+    # cpd_1_3_rew_rev  = re._CPD(C_1_rew_count_proj,C_3_rew); cpd_2_3_rew_rev  = re._CPD(C_2_rew_count_proj,C_3_rew)
+            
+    # cpd_2_1_rew_rev  = re._CPD(C_2_rew_count_proj,C_1_rew); cpd_3_1_rew_rev  = re._CPD(C_3_rew_count_proj,C_1_rew)
+     
+    cpd_1_2_rew_rev = reg_f.regression_code(C_2_rew, C_1_rew_count_proj); cpd_3_2_rew_rev  = reg_f.regression_code(C_2_rew, C_3_rew_count_proj)
+           
+    cpd_1_3_rew_rev  = reg_f.regression_code(C_3_rew, C_1_rew_count_proj); cpd_2_3_rew_rev  = reg_f.regression_code(C_3_rew, C_2_rew_count_proj)
+            
+    cpd_2_1_rew_rev  = reg_f.regression_code(C_1_rew, C_2_rew_count_proj); cpd_3_1_rew_rev  = reg_f.regression_code(C_1_rew, C_3_rew_count_proj)
+          
+    count_to_rew_cpd = np.mean([cpd_1_2_rew_rev,cpd_1_3_rew_rev,cpd_2_1_rew_rev, cpd_3_2_rew_rev,cpd_2_3_rew_rev,cpd_3_1_rew_rev],0)
+   
+    # cpd_1_rew = re._CPD(C_1_rew_count_proj, C_1_rew)
+    # cpd_2_rew = re._CPD(C_2_rew_count_proj,C_2_rew)
+    # cpd_3_rew = re._CPD(C_3_rew_count_proj,C_3_rew)
+   
+    cpd_1_rew = reg_f.regression_code(C_1_rew, C_1_rew_count_proj)
+    cpd_2_rew = reg_f.regression_code(C_2_rew, C_2_rew_count_proj)
+    cpd_3_rew = reg_f.regression_code(C_3_rew, C_3_rew_count_proj)
+    
+    # cpd_1_2_rew_within = re._CPD(C_1_rew_proj,C_2_rew);     cpd_count_3_2_rew_count = re._CPD(C_3_rew_proj,C_2_rew)
+    # cpd_1_3_rew_within = re._CPD(C_1_rew_proj,C_3_rew);      cpd_count_2_3_rew_count = re._CPD(C_2_rew_proj,C_3_rew)
+    # cpd_2_1_rew_within = re._CPD(C_2_rew_proj,C_1_rew);       cpd_count_3_1_rew_count = re._CPD(C_3_rew_proj,C_1_rew)
+    
+    cpd_1_2_rew_within = reg_f.regression_code(C_2_rew,C_1_rew_proj);     cpd_count_3_2_rew_count = reg_f.regression_code(C_2_rew, C_3_rew_proj)
+    cpd_1_3_rew_within = reg_f.regression_code(C_3_rew, C_1_rew_proj);      cpd_count_2_3_rew_count = reg_f.regression_code(C_3_rew, C_2_rew_proj)
+    cpd_2_1_rew_within = reg_f.regression_code(C_1_rew,C_2_rew_proj);       cpd_count_3_1_rew_count = reg_f.regression_code(C_1_rew, C_3_rew_proj)
+   
+    within_cpd_rev = np.mean([cpd_1_rew,cpd_2_rew,cpd_3_rew],0)
+    
+    # cpd_1_rew_bias = re._CPD(C_1_rew_count_proj,C_1_rew_count)
+    # cpd_2_rew_bias = re._CPD(C_2_rew_count_proj,C_2_rew_count)
+    # cpd_3_rew_bias = re._CPD(C_3_rew_count_proj,C_3_rew_count)
+   
+    cpd_1_rew_bias = reg_f.regression_code(C_1_rew_count, C_1_rew_count_proj)
+    cpd_2_rew_bias = reg_f.regression_code(C_2_rew_count, C_2_rew_count_proj)
+    cpd_3_rew_bias = reg_f.regression_code(C_3_rew_count, C_3_rew_count_proj)
+   
+    bias_cpd_rev = np.mean([cpd_1_rew_bias,cpd_2_rew_bias,cpd_3_rew_bias],0)
+  
+    rew_to_count_rew = np.mean([cpd_1_2_rew_within,cpd_1_3_rew_within,cpd_2_1_rew_within,\
+                             cpd_count_3_2_rew_count,cpd_count_2_3_rew_count,cpd_count_3_1_rew_count],0)
+    c =  wes.Darjeeling2_5.mpl_colors + wes.Mendl_4.mpl_colors +wes.GrandBudapest1_4.mpl_colors+wes.Moonrise1_5.mpl_colors+wes.Moonrise6_5.mpl_colors
+
+    plt.subplot(2,4,5)   
+  
+    j = 0
+    for i in bias_cpd_rev[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    sns.despine()
+    plt.title('Vectors within Task Reward Counts to Counts Biased Rev')
+    plt.ylabel(' T-stats')
+    #plt.ylabel('cpd')
+
+    
+    plt.subplot(2,4,6)   
+  
+    j = 0
+    for i in within_cpd_rev[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    sns.despine()
+    plt.title(' Vectors within Task Rewards Counts to Reward  ')
+    plt.ylabel(' T-stats')
+    #plt.ylabel('cpd')
+
+    plt.subplot(2,4,7)   
+   
+    j = 0
+    for i in rew_to_count_rew[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    plt.title('Vectors between Tasks ')
+    sns.despine()
+    plt.ylabel(' T-stats')
+    #plt.ylabel('cpd')
+
+    
+    plt.subplot(2,4,8)   
+
+    j = 0
+    for i in count_to_rew_cpd[:-1]:
+        plt.plot(i, color = c[j], label = str(j))
+        j+=1
+    plt.legend()  
+    plt.title('Vectors from Rewards Counts to Reward Tasks ')
+    sns.despine()
+    plt.ylabel(' T-stats')
+    #plt.ylabel('cpd')
+
+    
+    
+    plt.tight_layout()
+
+def run():
+    
+    sequence_rewards_errors_regression_generalisation_rew(PFC, area = 'PFC' + ' ')
+    sequence_rewards_errors_regression_generalisation_rew(HP, area = 'HP' + ' ')
+
+    
+    
+ 

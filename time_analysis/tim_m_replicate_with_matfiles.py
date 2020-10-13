@@ -21,9 +21,9 @@ import statsmodels.api as sm
 import seaborn as sns
 from itertools import combinations 
 
-pfc = io.loadmat('/Users/veronikasamborska/Desktop/code_for_data_session/data/trial_warped_data/PFC/aligned_on_behaviour/all_trial/PFC_aligned_on_beh_time_all_trial_time_raw_firing.mat')
+#pfc = io.loadmat('/Users/veronikasamborska/Desktop/code_for_data_session/data/trial_warped_data/PFC/aligned_on_behaviour/all_trial/PFC_aligned_on_beh_time_all_trial_time_raw_firing.mat')
 
-hp = io.loadmat('/Users/veronikasamborska/Desktop/code_for_data_session/data/trial_warped_data/HP/aligned_on_behaviour/all_trial/HP_aligned_on_beh_time_all_trial_time_raw_firing.mat')
+#hp = io.loadmat('/Users/veronikasamborska/Desktop/code_for_data_session/data/trial_warped_data/HP/aligned_on_behaviour/all_trial/HP_aligned_on_beh_time_all_trial_time_raw_firing.mat')
 
 def _make_all_blocks(data_HP, data_PFC,experiment_aligned_HP, experiment_aligned_PFC,start = 0, end = 63, HP = True):
     a_a_matrix_t_1_list, b_b_matrix_t_1_list,\

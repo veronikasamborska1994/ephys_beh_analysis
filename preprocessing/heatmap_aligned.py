@@ -26,17 +26,54 @@ def target_times_f(all_experiments):
     # target_times is the reference times to warp all trials to. Shape: [n_ref_points]
     # Here we are finding the median timings for a whole experiment 
     trial_times_all_trials  = []
+    j = 0
+
     for session in all_experiments:
-        init_times = session.times['choice_state']
-        inits_and_choices = [ev for ev in session.events if ev.name in 
-                        ['choice_state', 'sound_a_reward', 'sound_b_reward',
-                         'sound_a_no_reward','sound_b_no_reward']]
-        choice_times = np.array([ev.time for i, ev in enumerate(inits_and_choices) if 
-                             i>0 and inits_and_choices[i-1].name == 'choice_state'])
-        if len(choice_times) != len(init_times):
-            init_times  =(init_times[:len(choice_times)])
+        #j+=1
+
+        #print(j)
+         
+        trials = session.trial_data['n_trials']
+        
+      
+        itis_and_choices = [ev for ev in session.events if ev.name in 
+                         [ 'free_reward_trial','a_forced_state', 'b_forced_state','choice_state','sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward','inter_trial_interval','init_trial']]
+      
+       
+        init_cue_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices)-2 and
+                         itis_and_choices[i].name == 'init_trial' and
+                         itis_and_choices[i+1].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i+2].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+        
+        init_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices)-1 and
+                         itis_and_choices[i-1].name == 'init_trial' and
+                         itis_and_choices[i].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i+1].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+       
+        ch_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices) and
+                         itis_and_choices[i-2].name == 'init_trial' and
+                         itis_and_choices[i-1].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+     
+        inter_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if 
+                        i < len(itis_and_choices) and
+                         itis_and_choices[i-3].name == 'init_trial' and
+                         itis_and_choices[i-2].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i-1].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward'] and itis_and_choices[i].name =='inter_trial_interval'])
+     
+        if len(inter_t)-1 == trials:
+            ch_t = ch_t[:trials]
+            inter_t = inter_t[:trials]
+            init_t = init_t[:trials]
+        if len(ch_t) !=trials:
+            ch_t = inter_t[:trials]
+            init_t = init_t[:trials]
+        if len(init_cue_t) != trials:
+            init_cue_t  = init_cue_t[:trials]
             
-        trial_times = np.array([init_times-1000, init_times, choice_times, choice_times+1000]).T
+        
+        trial_times = np.array([init_cue_t, init_t, ch_t, inter_t, inter_t+1750]).T
         trial_times_all_trials.append(trial_times)
 
     trial_times_all_trials  =np.asarray(trial_times_all_trials)
@@ -44,28 +81,179 @@ def target_times_f(all_experiments):
         
     return target_times
 
+      
 ## Target times for aligned rates of non-forced trials 
-def all_sessions_aligment(experiment, all_experiments,  fs=25):
+def all_sessions_aligment(experiment, all_experiments,  fs = 50):
+   
     target_times  = target_times_f(all_experiments)
     experiment_aligned = []
     for session in experiment:
+       
         spikes = session.ephys
         spikes = spikes[:,~np.isnan(spikes[1,:])] 
-        init_times = session.times['choice_state']
-        inits_and_choices = [ev for ev in session.events if ev.name in 
-                        ['choice_state', 'sound_a_reward', 'sound_b_reward',
-                         'sound_a_no_reward','sound_b_no_reward']]
-        choice_times = np.array([ev.time for i, ev in enumerate(inits_and_choices) if 
-                             i>0 and inits_and_choices[i-1].name == 'choice_state'])
-        if len(choice_times) != len(init_times):
-            init_times  =(init_times[:len(choice_times)])
-            
-        trial_times = np.array([init_times-1000, init_times, choice_times, choice_times+1000]).T
+        trials = session.trial_data['n_trials']
+        
+        itis_and_choices = [ev for ev in session.events if ev.name in 
+                         [ 'free_reward_trial','a_forced_state', 'b_forced_state','choice_state','sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward','inter_trial_interval','init_trial']]
+      
+       
+        init_cue_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices)-2 and
+                         itis_and_choices[i].name == 'init_trial' and
+                         itis_and_choices[i+1].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i+2].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+        
+        init_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices)-1 and
+                         itis_and_choices[i-1].name == 'init_trial' and
+                         itis_and_choices[i].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i+1].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+       
+        ch_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if i < len(itis_and_choices) and
+                         itis_and_choices[i-2].name == 'init_trial' and
+                         itis_and_choices[i-1].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward']])
+     
+        inter_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if 
+                        i < len(itis_and_choices) and
+                         itis_and_choices[i-3].name == 'init_trial' and
+                         itis_and_choices[i-2].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i-1].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward'] and itis_and_choices[i].name =='inter_trial_interval'])
+     
+        if len(inter_t)-1 == trials:
+            ch_t = ch_t[:trials]
+            inter_t = inter_t[:trials]
+            init_t = init_t[:trials]
+        if len(ch_t) !=trials:
+            ch_t = ch_t[:trials]
+            init_t = init_t[:trials]
+        if len(init_cue_t) != trials:
+            init_cue_t  = init_cue_t[:trials]
+        
+        trial_times = np.array([init_cue_t, init_t, ch_t,inter_t, inter_t+1750]).T
+    
+        if len(np.where((trial_times[:,2]- trial_times[:,3]) > 0)[0]) >1 :
+         #   print(j)
+            inter_t = np.array([ev.time for i, ev in enumerate(itis_and_choices) if 
+                        i < len(itis_and_choices) and
+                         itis_and_choices[i-3].name == 'init_trial' and
+                         itis_and_choices[i-2].name in ['choice_state' ,'a_forced_state', 'b_forced_state'] and itis_and_choices[i-1].name in ['sound_a_reward', 'sound_b_reward',
+                         'sound_a_no_reward','sound_b_no_reward'] and itis_and_choices[i].name =='inter_trial_interval'])
+     
+            if len(inter_t)-1 == trials:
+                inter_t = inter_t[1:]
+
+       
+        trial_times = np.array([init_cue_t, init_t, ch_t,inter_t, inter_t+1750]).T
+         
         aligned_rates, t_out, min_max_stretch = aa.align_activity(trial_times, target_times, spikes, fs = fs)
         session.aligned_rates = aligned_rates
         session.t_out = t_out
         session.target_times = target_times
+
+        init_cue_t = init_cue_t[1:]
+        init_t = init_t[1:]
+        inter_t = inter_t[:-1]
+        events_iti_to_cue =  []
+        events_cue_to_init = []
+        for i,ii in enumerate(init_t):
+            events_iti_to_cue.append([ev for ev in session.events if ev.time in np.arange(inter_t[i],init_cue_t[i])])
+        
+        for i,ii in enumerate(init_t):
+            events_cue_to_init.append([ev for ev in session.events if ev.time in np.arange(init_cue_t[i],init_t[i])])
+            
+        task = np.where(np.diff(session.trial_data['task']) ==1)[0]+1
+        task = np.insert(task,0,0)
+        a_pokes = session.trial_data['poke_A'][task]
+        b_pokes = session.trial_data['poke_B'][task]
+        
+        
+        ## Find when they make pokes into the prev choice port
+        choice_count_iti_to_cue = []
+        for i,ii in enumerate(events_iti_to_cue):
+            if i < task[1]:
+                choice_a = 'poke_'+str(a_pokes[0])
+                choice_b = 'poke_'+str(b_pokes[0])
+           
+                choice_a_ex = 'poke_'+str(a_pokes[0])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[0])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+
+            if i > task[1] and i < task[2]:
+                choice_a = 'poke_'+str(a_pokes[1])
+                choice_b = 'poke_'+str(b_pokes[1])
+               
+                choice_a_ex = 'poke_'+str(a_pokes[1])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[1])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+            if i > task[2]:
+                choice_a = 'poke_'+str(a_pokes[2])
+                choice_b = 'poke_'+str(b_pokes[2])
+               
+                choice_a_ex = 'poke_'+str(a_pokes[2])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[2])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+            choice_count_iti_to_cue.append(ch)
+            
+        choice_re_entry_iti_to_cue = []
+        for ii,i in enumerate(choice_count_iti_to_cue):
+            if len(i) > 0:
+                choice_re_entry_iti_to_cue.append(ii)
+       
+        choice_count_cue_to_init = []
+        for i,ii in enumerate(events_cue_to_init):
+            if i < task[1]:
+                choice_a = 'poke_'+str(a_pokes[0])
+                choice_b = 'poke_'+str(b_pokes[0])
+           
+                choice_a_ex = 'poke_'+str(a_pokes[0])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[0])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+
+            if i > task[1] and i < task[2]:
+                choice_a = 'poke_'+str(a_pokes[1])
+                choice_b = 'poke_'+str(b_pokes[1])
+               
+                choice_a_ex = 'poke_'+str(a_pokes[1])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[1])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+            if i > task[2]:
+                choice_a = 'poke_'+str(a_pokes[2])
+                choice_b = 'poke_'+str(b_pokes[2])
+               
+                choice_a_ex = 'poke_'+str(a_pokes[2])+'_out'
+                choice_b_ex = 'poke_'+str(b_pokes[2])+'_out'
+                ch = []
+                for j in ii:
+                    if j.name in [choice_a,choice_b, choice_a_ex,choice_b_ex]:
+                        ch.append(j.name)
+            choice_count_cue_to_init.append(ch)
+            
+        choice_re_entry_cue_to_init = []
+        
+        for ii,i in enumerate(choice_count_cue_to_init):
+            if len(i) > 0:
+                choice_re_entry_cue_to_init.append(ii)
+                
+        session.cue_init = np.asarray(choice_re_entry_cue_to_init)+1
+        session.iti_cue = np.asarray(choice_re_entry_iti_to_cue)+1
+
         experiment_aligned.append(session)
+       
         
     return experiment_aligned 
 

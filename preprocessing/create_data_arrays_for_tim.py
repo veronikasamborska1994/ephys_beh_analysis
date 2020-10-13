@@ -27,27 +27,22 @@ import scipy
 import neuron_firing_all_pokes as nef 
 
 
-def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, experiment_sim_Q1_prediction_error_chosen, title):
+def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
     
     all_sessions_list = []
     firing_rates = []
     for s,session in enumerate(experiment):
+        
+        index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
+        index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
 
-        firing_rate_non_forced = session.aligned_rates
-        firing_rate_forced = session.aligned_rates_forced
+        firing_rate_non_forced = session.aligned_rates[index_non_forced]
+        firing_rate_forced = session.aligned_rates[index_forced]
         
         choices = session.trial_data['choices']
         trials, neurons, time = firing_rate_non_forced.shape
         firing_rate = np.zeros((len(choices), neurons, time))
         
-        events = session.events
-        forced_a_b = []
-        for event in events:
-            if 'a_forced_state' in event:
-                forced_a_b.append(1)
-            elif 'b_forced_state' in event:
-                forced_a_b.append(0)
-        forced_a_b = np.asarray(forced_a_b)
   
         index_non_forced = np.where(session.trial_data['forced_trial'] == 0)[0]
         index_forced = np.where(session.trial_data['forced_trial'] == 1)[0]
@@ -198,7 +193,7 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
         Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
         
-        Q1_prediction_error_chosen = experiment_sim_Q1_prediction_error_chosen[s][:len(choices)]
+       # Q1_prediction_error_chosen = experiment_sim_Q1_prediction_error_chosen[s][:len(choices)]
         predictors_all = OrderedDict([
                           ('latent_state',state),
                           ('choice',choices_forced_unforced ),
@@ -214,7 +209,7 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
                           ('Value_A_RW', Q1_value_a),
                           ('Value_B_RW', Q1_value_b),
                           ('Value_A_Cross_learning', Q4_value_a),
-                          ('Prediction_Error_Q',Q1_prediction_error_chosen),
+                        #  ('Prediction_Error_Q',Q1_prediction_error_chosen),
                           ('ones', ones)])
             
         X = np.vstack(predictors_all.values()).T[:len(choices),:].astype(float)

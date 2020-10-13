@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Aug 21 12:17:51 2020
-
+X_3.s
 @author: veronikasamborska
 """
 import numpy as np
@@ -57,7 +57,7 @@ def switch_number_of_rewards(HP,PFC):
                     else:
                         switch = 0
                     switch_list.append(switch)
-            ew_uniq = np.arange(11)
+            rew_uniq = np.arange(11)
             
             probability = np.zeros(len(rew_uniq))
             probability[:] = np.NaN
@@ -68,7 +68,9 @@ def switch_number_of_rewards(HP,PFC):
                 probability[i] = np.sum(np.asarray(switch_list)[trials])/len(np.asarray(switch_list)[trials])
             session.append(probability)
     plt.scatter(np.arange(len(np.nanmean(session,0))),np.nanmean(session,0))    
- 
+    plt.scatter(np.arange(len(np.nanstd(session,0))),np.nanmean(session,0)+np.nanstd(session,0))    
+    plt.scatter(np.arange(len(np.nanstd(session,0))),np.nanmean(session,0)-np.nanstd(session,0))    
+
 def rrrnrrnn(data):
 
     dm = data['DM'][0]
@@ -77,9 +79,9 @@ def rrrnrrnn(data):
     for s in firing:
         neurons += s.shape[1]
     tr_runs = 5
-    errors_1 = np.zeros((neurons,63,2));  
-    errors_2 = np.zeros((neurons,63,2));  
-    errors_3 = np.zeros((neurons,63,2));  
+    errors_1 = np.zeros((neurons,121,2));  
+    errors_2 = np.zeros((neurons,121,2));  
+    errors_3 = np.zeros((neurons,121,2));  
 
     n_neurons_cum = 0
     mean_pre_explore = []
@@ -118,7 +120,7 @@ def rrrnrrnn(data):
                 err = 0
             cum_reward.append(err)
             
-        no_rewards = np.where(np.asarray(cum_error)==0)[0]
+        no_rewards = np.where(np.asarray(cum_reward)==0)[0]
             
         more_than_1 = []
         just_1 = []
@@ -128,16 +130,16 @@ def rrrnrrnn(data):
         last_rew_run_3 = []
         
         for ind in no_rewards: 
-            if ind > 0 and ind < (len(cum_error)-3):
-                if cum_error[ind-1] >2 and cum_error[ind+1] == 0 and cum_error[ind+2] > 0:
+            if ind > 0 and ind < (len(cum_reward)-3):
+                if cum_reward[ind-1] >1 and cum_reward[ind+1] == 0 and cum_reward[ind+2] > 0:
                    more_than_1.append(ind+2)
                    last_rew_run_2.append(ind-1)
     
-                elif cum_error[ind-1] >2 and cum_error[ind+1] > 0:
+                elif cum_reward[ind-1] >1 and cum_reward[ind+1] > 0:
                     just_1.append(ind+1)
                     last_rew_run_1.append(ind-1)
                     
-                if cum_error[ind-1] > 2 and cum_error[ind+1] == 0 and cum_error[ind+2] == 0 and cum_error[ind+3] > 0:
+                elif cum_reward[ind-1] > 1 and cum_reward[ind+1] == 0 and cum_reward[ind+2] == 0 and cum_reward[ind+3] > 0:
                     just_3.append(ind+3)
                     last_rew_run_3.append(ind-1)
                     
@@ -187,8 +189,8 @@ def errors_before_switch(data):
     for s in firing:
         neurons += s.shape[1]
     tr_runs = 5
-    errors = np.zeros((neurons,63,tr_runs));  
-    rewardS = np.zeros((neurons,63,tr_runs));  
+    errors = np.zeros((neurons,121,tr_runs));  
+    rewardS = np.zeros((neurons,121,tr_runs));  
 
     n_neurons_cum = 0
     mean_pre_explore = []
@@ -291,7 +293,7 @@ def errors_before_switch(data):
         runs_er.append(np.mean(errors[:,:,i],0))
         runs_rew.append(np.mean(rewardS[:,:,i],0))
 
-    plt.figure(figsize = (7,3))
+    #plt.figure(figsize = (7,3))
     pal_c = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95)
     pal = sns.cubehelix_palette(8)
 
@@ -301,15 +303,15 @@ def errors_before_switch(data):
     # plt.ylabel('FR')
     # plt.xlabel('Time in Trial')
 
-    plt.legend()
-    sns.despine()
+    # plt.legend()
+    # sns.despine()
     mean_r  =[]; mean_er  =[]
 
     for r in runs_rew:
         mean_r.append(np.mean(r[:20],0))
     for r in runs_er:
-        print(r)
         mean_er.append(np.mean(r[:20],0))
+   
     plt.figure(figsize = (7,3))
 
     # plt.subplot(1,2,2)
@@ -325,6 +327,33 @@ def errors_before_switch(data):
     plt.tight_layout()
     plt.xticks([0,1,2,3,4,5,6,7,8,9],[1,2,3,4,5,1,2,3,4,5])
     
+    # rewardS_svd = np.transpose(rewardS,[0,2,1]); rewardS_svd = rewardS_svd.reshape(rewardS_svd.shape[0], rewardS_svd.shape[1]*rewardS_svd.shape[2])
+    # errors_svd = np.transpose(errors,[0,2,1]); errors_svd = errors_svd.reshape(errors_svd.shape[0], errors_svd.shape[1]*errors_svd.shape[2])
+   
+    rewardS_svd = np.mean(rewardS[:,:25,:],1)
+    errors_svd = np.mean(errors[:,:25,:],1)
+    
+    all_err_rew =np.concatenate((rewardS_svd, errors_svd),1)
+    all_err_rew = all_err_rew[~np.isnan(all_err_rew).any(axis=1)]
+
+    u,s,v = np.linalg.svd(all_err_rew)
+    #v = v.reshape((v.shape[0],a_ind_error.shape[1], a_ind_error.shape[2]*2))
+    pal = sns.cubehelix_palette(10)
+    pal_c = sns.cubehelix_palette(20, start=2, rot=0, dark=0, light=.95)
+    
+    ind = 10
+    plt.figure(figsize = [5,10])
+    
+    for i in range(10):
+        
+        plt.subplot(5,2,i+1)
+        plt.scatter(np.arange(len(v[i,:5])),v[i,5:], color = pal_c[:5],label = 'Errors')
+        plt.scatter(np.arange(len(v[i,5:]))+5,v[i,:5], color = pal[:5], label =  'Rewards')
+
+    sns.despine()
+    plt.legend()
+   
+
     
     
 def errors_training(experiment,subject_IDs ='all'):

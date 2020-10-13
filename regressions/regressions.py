@@ -6,6 +6,9 @@ Created on Tue Dec  4 16:01:30 2018
 
 @author: veronikasamborska
 """
+import sys
+
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
 
 import copy 
 import numpy as np

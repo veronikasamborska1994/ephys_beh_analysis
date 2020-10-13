@@ -18,6 +18,9 @@ from matplotlib.cbook import flatten
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.decomposition import PCA
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/regressions')
+from collections import OrderedDict
+
 font = {'family' : 'normal',
         'weight' : 'normal',
         'size'   : 6}
@@ -29,47 +32,107 @@ def run():
     
     HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
     PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
-  
-def extract_error_count(data):
-    
+
+def residuals(data):
     dm = data['DM'][0]
     firing = data['Data'][0]
-    neurons = 0
-    for s in firing:
-        neurons += s.shape[1]
-    tr_runs = 4
-    a_ind_error = np.zeros((neurons,63,tr_runs));  b_ind_error = np.zeros((neurons,63,tr_runs))
-    n_neurons_cum = 0
+    C_1 = []; C_2 = []; C_3 = []
+    res_list = []
+    counts_l = []
     for  s, sess in enumerate(dm):
         runs_list = []
         runs_list.append(0)
         DM = dm[s]
         firing_rates = firing[s]
+       # firing_rates = firing_rates[:,:,:63]
         n_trials, n_neurons, n_timepoints = firing_rates.shape
-        n_neurons_cum += n_neurons
+
         choices = DM[:,1]
-        reward = DM[:,2]    
-        task = DM[:,5]
-        #correct = np.where(state == choices)[0]
-        #incorrect = np.where(state != choices)[0]
-      
         
-        task[np.where(task ==2)[0]]=1
+        reward = DM[:,2]    
+
+        task =  DM[:,5]
+        a_pokes = DM[:,6]
+        b_pokes = DM[:,7]
+        
+        task = task[3:]
+        a_pokes = a_pokes[3:]
+        b_pokes = b_pokes[3:]
+        
+        
+        reward_2_ago = reward[1:-2]
+        reward_3_ago = reward[:-3]
+        reward_prev = reward[2:-1]
+        reward_current = reward[3:]
+        
+        ones = np.ones(len(reward_2_ago))
+        
         error_count = []
         err = 0
-        for r in reward:
-            if r == 0:
+        for r,run in enumerate(reward_current):
+            if reward_current[r] == 0 and reward_current[r-1] == 0:
                 err+=1
             else:
                 err = 0
             error_count.append(err)
- 
+            
+        reward_count = []
+        err = 0
+        for r,run in enumerate(reward_current):
+            if reward_current[r] == 1 and reward_current[r-1] == 1:
+                err+=1
+            else:
+                err = 0
+            reward_count.append(err)
+        counts_l.append([reward_count,error_count])
+        
+        firing_rates = firing_rates[3:]
+        predictors_all = OrderedDict([#('Reward', reward_current),
+                                      ('1 ago Outcome', reward_prev),
+                                      ('2 ago Outcome', reward_2_ago),
+                                      ('3 ago Outcome', reward_3_ago),                                 
+                                      ('ones', ones)])   
+            
+        X = np.vstack(predictors_all.values()).T[:len(reward),:].astype(float)
+       
+        Y = firing_rates.reshape([len(firing_rates),-1]) # Activity matrix [n_trials, n_neurons*n_timepoints]
+
+        pdes = np.linalg.pinv(X)
+        pe = np.matmul(pdes,Y)
+        res = Y - np.matmul(X,pe)
+        res_list.append(res.reshape(firing_rates.shape[0],firing_rates.shape[1],firing_rates.shape[2])) # Predictor loadings
+    return res_list,counts_l
+
+
+def extract_error_count(data):
+    
+    firing = data['Data'][0]
+    neurons = 0
+    for s in firing:
+        neurons += s.shape[1]
+    tr_runs = 4
+    error_counts = np.zeros((neurons,121,tr_runs));  reward_counts = np.zeros((neurons,121,tr_runs))
+    n_neurons_cum = 0
+    res_list,counts_l = residuals(data)
+
+    for  s, sess in enumerate(res_list):
+        
+        firing_rates  = res_list[s]
+        n_trials, n_neurons, n_timepoints = firing_rates.shape
+
+        counts_s = counts_l[s]
+        error_count = counts_s[1]
+        reward_count = counts_s[0]
+        n_neurons_cum += n_neurons
+
         for i in range(tr_runs):
          
-            a_ind_error[n_neurons_cum-n_neurons:n_neurons_cum ,:,i] = np.mean(firing_rates[np.where((np.asarray(error_count) == i+1) & (choices == 1))[0]],0)
-            b_ind_error[n_neurons_cum-n_neurons:n_neurons_cum ,:,i] = np.mean(firing_rates[np.where((np.asarray(error_count) == i+1) & (choices == 0))[0]],0)
+            error_counts[n_neurons_cum-n_neurons:n_neurons_cum ,:,i] = np.mean(firing_rates[np.where((np.asarray(error_count) == i+1))[0]],0)
+            reward_counts[n_neurons_cum-n_neurons:n_neurons_cum ,:,i] = np.mean(firing_rates[np.where((np.asarray(reward_count) == i+1))[0]],0)
 
-    return a_ind_error,b_ind_error
+    return error_counts,reward_counts
+ 
+    
  
 def tim_extract(data):
     
@@ -538,146 +601,8 @@ def svd_runs(data):
     sns.despine()
     plt.legend()
    
-    correct_all, incorrect_all, correct_all_rew,incorrect_all_rew = tim_extract(data)
-    all_runs = np.concatenate((correct_all,incorrect_all,correct_all_rew,incorrect_all_rew),1)
-    all_runs = all_runs[~np.isnan(all_runs).any(axis=1)]
-
-    u,s,v = np.linalg.svd(all_runs)
-    pca = PCA(n_components=20, svd_solver='full')
-    pca.fit(all_runs)
-    print(pca.explained_variance_ratio_)
-    pal = sns.cubehelix_palette(8)
-    pal_c = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95)
-
-    plt.figure(figsize = (10,20))
-
-    for i in range(20):
-        
-        plt.subplot(5,4,i+1)
-        
-        plt.plot(pca.components_[i,:int(v.shape[1]/20)], color = pal[0],linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20):int(v.shape[1]/20)*2], color = pal[1],linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*2: int(v.shape[1]/20)*3], color = pal[2],linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*3: int(v.shape[1]/20)*4], color = pal[3],linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*4: int(v.shape[1]/20)*5], color = pal[4],linestyle = '--', label = 'correct no reward 5')
-
-
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*5: int(v.shape[1]/20)*6], color = pal_c[0], linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*6: int(v.shape[1]/20)*7], color = pal_c[1], linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*7: int(v.shape[1]/20)*8], color = pal_c[2], linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*8: int(v.shape[1]/20)*9], color = pal_c[3], linestyle = '--')
-        plt.plot(pca.components_[i,int(v.shape[1]/20)*9: int(v.shape[1]/20)*10], color = pal_c[4], linestyle = '--', label = 'incorrect no reward 5')
-
-
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*10:int(v.shape[1]/20)*11], color = pal[0])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*11:int(v.shape[1]/20)*12], color = pal[1])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*12: int(v.shape[1]/20)*13], color = pal[2])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*13: int(v.shape[1]/20)*14], color = pal[3])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*14: int(v.shape[1]/20)*15], color = pal[4],label = 'correct reward 5')
-
-
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*15: int(v.shape[1]/20)*16], color = pal_c[0])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*16: int(v.shape[1]/20)*17], color = pal_c[1])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*17: int(v.shape[1]/20)*18], color = pal_c[2])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*18: int(v.shape[1]/20)*19], color = pal_c[3])
-        # plt.plot(pca.components_[i,int(v.shape[1]/20)*19: int(v.shape[1]/20)*20], color = pal_c[4], label = 'incorrect reward 5')
-
-
-        
-    sns.despine()
-    plt.legend()
-    area = 'HP_runs'
-    pdf = PdfPages('/Users/veronikasamborska/Desktop/'+ area+'.pdf')
-
-    plt.figure()
-    neuron = all_runs.shape[0]
-    plt.ioff()
-
-    subplot = 0
-    for i in range(neuron):
-        subplot += 1 
-        if subplot == 20:
-            pdf.savefig()
-            plt.clf()
-            subplot -= 19
-            
-        plt.subplot(4,5,subplot)
-        
-        plt.plot(all_runs[i,:int(v.shape[1]/20)], color = pal[0])
-        plt.plot(all_runs[i,int(v.shape[1]/20):int(v.shape[1]/20)*2], color = pal[1],linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*2: int(v.shape[1]/20)*3], color = pal[2],linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*3: int(v.shape[1]/20)*4], color = pal[3],linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*4: int(v.shape[1]/20)*5], color = pal[4],linestyle = '--', label = 'correct no reward 5')
-
-
-        plt.plot(all_runs[i,int(v.shape[1]/20)*5: int(v.shape[1]/20)*6], color = pal_c[0], linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*6: int(v.shape[1]/20)*7], color = pal_c[1], linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*7: int(v.shape[1]/20)*8], color = pal_c[2], linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*8: int(v.shape[1]/20)*9], color = pal_c[3], linestyle = '--')
-        plt.plot(all_runs[i,int(v.shape[1]/20)*9: int(v.shape[1]/20)*10], color = pal_c[4], linestyle = '--', label = 'incorrect no reward 5')
-
-               
-        plt.plot(all_runs[i,:int(v.shape[1]/20)*10: int(v.shape[1]/20)*11], color = pal[0])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*11: int(v.shape[1]/20)*12], color = pal[1])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*12: int(v.shape[1]/20)*13], color = pal[2])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*13: int(v.shape[1]/20)*14], color = pal[3])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*14: int(v.shape[1]/20)*15], color = pal[4],label = 'correct reward 5')
-
-
-        plt.plot(all_runs[i,int(v.shape[1]/20)*15: int(v.shape[1]/20)*16], color = pal_c[0])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*16: int(v.shape[1]/20)*17], color = pal_c[1])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*17: int(v.shape[1]/20)*18], color = pal_c[2])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*18: int(v.shape[1]/20)*19], color = pal_c[3])
-        plt.plot(all_runs[i,int(v.shape[1]/20)*19: int(v.shape[1]/20)*20], color = pal_c[4], label = 'incorrect reward 5')
-       
-        
-    pdf.close()
- 
-
-    sns.despine()
-    plt.legend()
-    
-
    
-    
-    # Average reward
-     
-    correct_all, incorrect_all, correct_all_rew,incorrect_all_rew = tim_extract(data)
-    all_runs_corr = np.nanmean((correct_all,correct_all_rew),0)
-    all_runs_incorr = np.nanmean((incorrect_all,incorrect_all_rew),0)
-    all_runs = np.concatenate((all_runs_corr,all_runs_incorr),1)
-    all_runs = all_runs[~np.isnan(all_runs).any(axis=1)]
-    pca = PCA(n_components=20, svd_solver='full')
-    pca.fit(all_runs)
-    
-    print(pca.explained_variance_ratio_)
-    u,s,v = np.linalg.svd(all_runs)
 
-    pal = sns.cubehelix_palette(8)
-    pal_c = sns.cubehelix_palette(8, start=2, rot=0, dark=0, light=.95)
-
-    plt.figure(figsize = (10,20))
-    for i in range(20):
-        
-        plt.subplot(5,4,i+1)
-        
-        plt.plot(v[i,:int(v.shape[1]/10)], color = pal[0])
-        plt.plot(v[i,int(v.shape[1]/10):int(v.shape[1]/10)*2], color = pal[1])
-        plt.plot(v[i,int(v.shape[1]/10)*2: int(v.shape[1]/10)*3], color = pal[2])
-        plt.plot(v[i,int(v.shape[1]/10)*3: int(v.shape[1]/10)*4], color = pal[3])
-        plt.plot(v[i,int(v.shape[1]/10)*4: int(v.shape[1]/10)*5], color = pal[4], label = 'correct 5')
-
-
-        plt.plot(v[i,int(v.shape[1]/10)*5: int(v.shape[1]/10)*6], color = pal_c[0])
-        plt.plot(v[i,int(v.shape[1]/10)*6: int(v.shape[1]/10)*7], color = pal_c[1])
-        plt.plot(v[i,int(v.shape[1]/10)*7: int(v.shape[1]/10)*8], color = pal_c[2])
-        plt.plot(v[i,int(v.shape[1]/10)*8: int(v.shape[1]/10)*9], color = pal_c[3])
-        plt.plot(v[i,int(v.shape[1]/10)*9: int(v.shape[1]/10)*10], color = pal_c[4], label = 'incorrect 5')
-
-    
-    sns.despine()
-    plt.legend()
-    
     
     a_ind_rew, b_ind_rew,\
     a_ind_no_rew, b_ind_no_rew, a_ind_right, b_ind_right, a_ind_wr, b_ind_wr,ind_right,ind_wrong,ind_right_std,ind_wrong_std = tim_extract_ones_skip(data)
@@ -901,19 +826,19 @@ def svd_runs(data):
     plt.ion()
     plt.figure(figsize = (10,20))
     ind = 8
-    for i in range(20):
+    for i in range(5):
         
-        plt.subplot(5,4,i+1)
+        plt.subplot(5,1,i+1)
         
-        plt.plot(v[i,:int(v.shape[1]/ind)], color = pal[0])
-        plt.plot(v[i,int(v.shape[1]/ind):int(v.shape[1]/ind)*2], color = pal[1])
-        plt.plot(v[i,int(v.shape[1]/ind)*2: int(v.shape[1]/ind)*3], color = pal[2])
-        plt.plot(v[i,int(v.shape[1]/ind)*3: int(v.shape[1]/ind)*4], color = pal[3], label = 'A error 4')
+        plt.plot(v[i,:int(v.shape[1]/ind)], color = pal[0],label = 'error 1')
+        plt.plot(v[i,int(v.shape[1]/ind):int(v.shape[1]/ind)*2], color = pal[1],label = ' error 2')
+        plt.plot(v[i,int(v.shape[1]/ind)*2: int(v.shape[1]/ind)*3], color = pal[2],label = ' error 3')
+        plt.plot(v[i,int(v.shape[1]/ind)*3: int(v.shape[1]/ind)*4], color = pal[3], label = ' error 4')
         
-        plt.plot(v[i,int(v.shape[1]/ind)*4: int(v.shape[1]/ind)*5], color = pal_c[0])
-        plt.plot(v[i,int(v.shape[1]/ind)*5: int(v.shape[1]/ind)*6], color = pal_c[1])
-        plt.plot(v[i,int(v.shape[1]/ind)*6: int(v.shape[1]/ind)*7], color = pal_c[2])
-        plt.plot(v[i,int(v.shape[1]/ind)*7: int(v.shape[1]/ind)*8], color = pal_c[3], label = 'B error 4')
+        plt.plot(v[i,int(v.shape[1]/ind)*4: int(v.shape[1]/ind)*5], color = pal_c[0],label = ' reward 1')
+        plt.plot(v[i,int(v.shape[1]/ind)*5: int(v.shape[1]/ind)*6], color = pal_c[1],label = 'reward 2')
+        plt.plot(v[i,int(v.shape[1]/ind)*6: int(v.shape[1]/ind)*7], color = pal_c[2],label = 'reward 3')
+        plt.plot(v[i,int(v.shape[1]/ind)*7: int(v.shape[1]/ind)*8], color = pal_c[3], label = 'reward 4')
         
     sns.despine()
     plt.legend()
