@@ -333,7 +333,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_1_2 = s_task_1_2.diagonal()
     else:
-        s_1_2 = np.sum(s_task_1_2**2, axis = 1)
+        s_1_2 = np.sum(s_task_1_2**2, axis = 0)
      
     sum_c_task_1_2 = np.cumsum(abs(s_1_2))/n_neurons
     
@@ -343,7 +343,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_1_2 = s_task_2_1_from_t_1_2.diagonal()
     else:
-        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 1)
+        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 0)
     sum_c_task_2_1_from_t_1_2 = np.cumsum(abs(s_2_1_from_t_1_2))/n_neurons
 
 
@@ -353,7 +353,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
     else:
-        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 1)
+        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 0)
     sum_c_task_2_2_from_t_2_1 = np.cumsum(abs(s_2_2_from_t_2_1))/n_neurons
     
      #Compare task 2 Firs Half from second half
@@ -361,7 +361,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_2_2 = s_task_2_1_from_t_2_2.diagonal()
     else:
-        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 1)
+        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 0)
     sum_c_task_2_1_from_t_2_2 = np.cumsum(abs(s_2_1_from_t_2_2))/n_neurons
 
 
@@ -371,7 +371,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_2_2 = s_task_3_1_from_t_2_2.diagonal()
     else:
-        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 1)
+        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 0)
     sum_c_task_3_1_from_t_2_2 = np.cumsum(abs(s_3_1_from_t_2_2))/n_neurons
 
 
@@ -380,7 +380,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_1_2 = s_task_3_1_from_t_1_2.diagonal()
     else:
-        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = 1)
+        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = 0)
     sum_c_task_3_1_from_t_1_2 = np.cumsum(abs(s_3_1_from_t_1_2))/n_neurons
 
 
@@ -388,7 +388,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_3_2 = s_task_3_1_from_t_3_2.diagonal()
     else:
-        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 1)
+        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 0)
     sum_c_task_3_1_from_t_3_2 = np.cumsum(abs(s_3_1_from_t_3_2))/n_neurons
 
     if task == 0:
@@ -432,18 +432,18 @@ def real_diff(data,a= 'PFC', task = 0, diagonal = False):
 
 def animals_test():
     
-    u_v_area_shuffle, u_v_area_1_shuffle, u_v_area_2_shuffle, u_v_area_3_shuffle = permute(PFC, HP, diagonal = False)
+    u_v_area_shuffle, u_v_area_1_shuffle, u_v_area_2_shuffle, u_v_area_3_shuffle = permute(PFC, HP, diagonal = True)
     
     # Real DIfferences 
-    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = False)
-    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = False)
-    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = False)
-    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = False)
+    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = True)
+    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = True)
+    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = True)
+    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = True)
     
-    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0, diagonal = False)
-    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = False)
-    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = False)
-    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = False)
+    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0, diagonal = True)
+    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = True)
+    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = True)
+    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = True)
     
     
     diff_uv  = []
@@ -473,15 +473,19 @@ def animals_test():
     between_pfc = [average_between_all_pfc,average_between_all_pfc_1,average_between_all_pfc_2,average_between_all_pfc_3]
     between_hp = [average_between_all_hp,average_between_all_hp_1,average_between_all_hp_2,average_between_all_hp_3]
   
+    
+    plt.figure(figsize = (4,10))
+    l = 0
     for ii,i in enumerate(within_hp):
-        plt.figure()
+        l+=1
+        plt.subplot(4,1,l)
         plt.plot(i, label = 'Within HP', color='black')
         plt.plot(within_pfc[ii], label = 'Within PFC', color = 'green')
         
         plt.plot(between_hp[ii], label = 'Between HP', color='black',linestyle = '--')
         plt.plot(between_pfc[ii], label = 'Between PFC', color = 'green', linestyle = '--')
-
-
+        sns.despine()
+        #plt.xtitle(str(l))
 
     
 

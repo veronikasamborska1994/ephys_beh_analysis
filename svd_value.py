@@ -631,14 +631,18 @@ def real_vs_shuffle(PFC,HP, n = 11,  c = 'grey', area='HP'):
     within_hp = [within_uv_hp_3,within_uv_hp_2,within_uv_hp_1,within_uv_hp]
     between_pfc = [between_uv_pfc_3,between_uv_pfc_2,between_uv_pfc_1,between_uv_pfc]
     between_hp = [between_uv_hp_3,between_uv_hp_2,between_uv_hp_1,between_uv_hp]
-  
+    
+    plt.figure(figsize = (4,10))
+    l = 0
     for ii,i in enumerate(within_hp):
-        plt.figure()
+        l+=1
+        plt.subplot(4,1,l)
         plt.plot(i, label = 'Within HP', color='black')
         plt.plot(within_pfc[ii], label = 'Within PFC', color = 'green')
         
         plt.plot(between_hp[ii], label = 'Between HP', color='black',linestyle = '--')
         plt.plot(between_pfc[ii], label = 'Between PFC', color = 'green', linestyle = '--')
+        sns.despine()
 
     # cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
 
