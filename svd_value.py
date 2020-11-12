@@ -225,6 +225,7 @@ def value_reg_svd(data, n = 10, plot_a = False, plot_b = False,  first_half = 1,
                 ind_1 = np.concatenate((ind_1_b,ind_1_a))
                 ind_2 = np.concatenate((ind_2_b,ind_2_a))
                
+               
                 if first_half == 1:
                     
                     rewards_1 = rewards_1[ind_1] 
@@ -264,7 +265,7 @@ def value_reg_svd(data, n = 10, plot_a = False, plot_b = False,  first_half = 1,
 
                 ind_1 = np.concatenate((ind_1_b,ind_1_a))
                 ind_2 = np.concatenate((ind_2_b,ind_2_a))
-                
+              
                 if first_half == 1:
                     rewards_1 = rewards_1[ind_1] 
                     choices_1 = choices_1[ind_1]    
@@ -342,7 +343,7 @@ def value_reg_svd(data, n = 10, plot_a = False, plot_b = False,  first_half = 1,
 
                 ind_1 = np.concatenate((ind_1_b,ind_1_a))
                 ind_2 = np.concatenate((ind_2_b,ind_2_a))
-                
+             
                 if first_half == 1:
                     rewards_2 = rewards_2[ind_1] 
                     choices_2 = choices_2[ind_1]    
@@ -378,7 +379,7 @@ def value_reg_svd(data, n = 10, plot_a = False, plot_b = False,  first_half = 1,
               
                 ind_1 = np.concatenate((ind_1_b,ind_1_a))
                 ind_2 = np.concatenate((ind_2_b,ind_2_a))
-  
+               
                 if first_half == 1:
                     rewards_2 = rewards_2[ind_1] 
                     choices_2 = choices_2[ind_1]    
@@ -458,7 +459,8 @@ def value_reg_svd(data, n = 10, plot_a = False, plot_b = False,  first_half = 1,
                 
                 ind_1 = np.concatenate((ind_1_b,ind_1_a))
                 ind_2 = np.concatenate((ind_2_b,ind_2_a))
-               
+                
+            
                 if first_half == 1:
                     rewards_3 = rewards_3[ind_1] 
                     choices_3 = choices_3[ind_1]    
@@ -618,8 +620,8 @@ def real_vs_shuffle(PFC,HP, n = 11,  c = 'grey', area='HP'):
     v95_3 = np.percentile(diff_v_3,95)
     u95_3 = np.percentile(diff_u_3,95)
  
-    u_v_hp_3, u_hp_3, v_hp_3,  within_u_hp_3, between_u_hp_3, within_v_hp_3, between_v_hp_3, within_uv_hp_3, between_uv_hp_3 = real_diff(HP, n = 11, a = 'HP', task = 2)
-    u_v_pfc_3, u_pfc_3, v_pfc_3,  within_u_pfc_3, between_u_pfc_3, within_v_hp_3, between_v_pfc_3, within_uv_pfc_3, between_uv_pfc_3  = real_diff(PFC, n = 11, a = 'PFC', task = 2)
+    u_v_hp_3, u_hp_3, v_hp_3,  within_u_hp_3, between_u_hp_3, within_v_hp_3, between_v_hp_3, within_uv_hp_3, between_uv_hp_3 = real_diff(HP, n = 11, a = 'HP', task = 3)
+    u_v_pfc_3, u_pfc_3, v_pfc_3,  within_u_pfc_3, between_u_pfc_3, within_v_hp_3, between_v_pfc_3, within_uv_pfc_3, between_uv_pfc_3  = real_diff(PFC, n = 11, a = 'PFC', task = 3)
     
     real_uv_3 = u_v_hp_3-u_v_pfc_3
     real_u_3 = u_hp_3-u_pfc_3
@@ -705,38 +707,43 @@ def svd_on_coefs(PFC,HP, n = 11, task = 0):
             
             C_1_b_2_all, C_2_b_2_all, C_3_b_2_all = value_reg_svd(d, n = n, plot_a = False, plot_b = True,  first_half = 2, a = 'perm', perm = True)     
             C_1_a_2_all, C_2_a_2_all, C_3_a_2_all = value_reg_svd(d, n = n, plot_a = True, plot_b = False,  first_half = 2, a = 'perm', perm = True)    
-     
-        
-            # C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[1],0)
-            # C_1_a_1_all = scipy.stats.zscore(C_1_a_1_all[1],0)
-            # C_1_b_2_all = scipy.stats.zscore(C_1_b_2_all[1],0)
-            # C_1_a_2_all = scipy.stats.zscore(C_1_a_2_all[1],0)
-
-            # C_2_b_1_all = scipy.stats.zscore(C_2_b_1_all[1],0)
-            # C_2_a_1_all = scipy.stats.zscore(C_2_a_1_all[1],0)
-            # C_2_b_2_all = scipy.stats.zscore(C_2_b_2_all[1],0)
-            # C_2_a_2_all = scipy.stats.zscore(C_2_a_2_all[1],0)
-
-            # C_3_b_1_all = scipy.stats.zscore(C_3_b_1_all[1],0)
-            # C_3_a_1_all = scipy.stats.zscore(C_3_a_1_all[1],0)
-            # C_3_b_2_all = scipy.stats.zscore(C_3_b_2_all[1],0)
-            # C_3_a_2_all = scipy.stats.zscore(C_3_a_2_all[1],0)
-
-            # value_1_1 = (np.concatenate((C_1_b_1_all, C_1_a_1_all),1))
-            # value_1_2 = (np.concatenate((C_1_b_2_all, C_1_a_2_all),1))
-            # value_2_1 = (np.concatenate((C_2_b_1_all, C_2_a_1_all),1))
-            # value_2_2 = (np.concatenate((C_2_b_2_all, C_2_a_2_all),1))
-        
-            # value_3_1 = (np.concatenate((C_3_b_1_all, C_3_a_1_all),1))
-            # value_3_2 = (np.concatenate((C_3_b_2_all, C_3_a_2_all),1))
              
-            value_1_1 = (np.concatenate((C_1_b_1_all[1], C_1_a_1_all[1]),1))
-            value_1_2 = (np.concatenate((C_1_b_2_all[1], C_1_a_2_all[1]),1))
-            value_2_1 = (np.concatenate((C_2_b_1_all[1], C_2_a_1_all[1]),1))
-            value_2_2 = (np.concatenate((C_2_b_2_all[1], C_2_a_2_all[1]),1))
+            k = 1
+            
+            C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[k],0)
+            C_1_a_1_all = scipy.stats.zscore(C_1_a_1_all[k],0)
+         
+            C_1_b_2_all = scipy.stats.zscore(C_1_b_2_all[k],0)
+            C_1_a_2_all = scipy.stats.zscore(C_1_a_2_all[k],0)
+         
+            
+            C_2_b_1_all = scipy.stats.zscore(C_2_b_1_all[k],0)
+            C_2_a_1_all = scipy.stats.zscore(C_2_a_1_all[k],0)
+         
+            C_2_b_2_all = scipy.stats.zscore(C_2_b_2_all[k],0)
+            C_2_a_2_all = scipy.stats.zscore(C_2_a_2_all[k],0)
+         
+            C_3_b_1_all = scipy.stats.zscore(C_3_b_1_all[k],0)
+            C_3_a_1_all = scipy.stats.zscore(C_3_a_1_all[k],0)
+         
+            C_3_b_2_all = scipy.stats.zscore(C_3_b_2_all[k],0)
+            C_3_a_2_all = scipy.stats.zscore(C_3_a_2_all[k],0)
+         
+            value_1_1 = (np.concatenate((C_1_b_1_all, C_1_a_1_all),1))
+            value_1_2 = (np.concatenate((C_1_b_2_all, C_1_a_2_all),1))
+            value_2_1 = (np.concatenate((C_2_b_1_all, C_2_a_1_all),1))
+            value_2_2 = (np.concatenate((C_2_b_2_all, C_2_a_2_all),1))
         
-            value_3_1 = (np.concatenate((C_3_b_1_all[1], C_3_a_1_all[1]),1))
-            value_3_2 = (np.concatenate((C_3_b_2_all[1], C_3_a_2_all[1]),1))
+            value_3_1 = (np.concatenate((C_3_b_1_all, C_3_a_1_all),1))
+            value_3_2 = (np.concatenate((C_3_b_2_all, C_3_a_2_all),1))
+
+            # value_1_1 = (np.concatenate((C_1_b_1_all[k], C_1_a_1_all[k]),1))
+            # value_1_2 = (np.concatenate((C_1_b_2_all[k], C_1_a_2_all[k]),1))
+            # value_2_1 = (np.concatenate((C_2_b_1_all[k], C_2_a_1_all[k]),1))
+            # value_2_2 = (np.concatenate((C_2_b_2_all[k], C_2_a_2_all[k]),1))
+        
+            # value_3_1 = (np.concatenate((C_3_b_1_all[k], C_3_a_1_all[k]),1))
+            # value_3_2 = (np.concatenate((C_3_b_2_all[k], C_3_a_2_all[k]),1))
            
             # Task 1 2
           
@@ -936,36 +943,43 @@ def real_diff(d, n = 11, a = 'HP', task =0):
     
     C_1_b_2_all, C_2_b_2_all, C_3_b_2_all = value_reg_svd(d, n = n, plot_a = False, plot_b = True,  first_half = 2, a = a, perm = False)     
     C_1_a_2_all, C_2_a_2_all, C_3_a_2_all = value_reg_svd(d, n = n, plot_a = True, plot_b = False,  first_half = 2, a = a, perm = False)    
-    # C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[1],0)
-    # C_1_a_1_all = scipy.stats.zscore(C_1_a_1_all[1],0)
-    # C_1_b_2_all = scipy.stats.zscore(C_1_b_2_all[1],0)
-    # C_1_a_2_all = scipy.stats.zscore(C_1_a_2_all[1],0)
+    
+    k = 1
+    
+    C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[k],0)
+    C_1_a_1_all = scipy.stats.zscore(C_1_a_1_all[k],0)
+ 
+    C_1_b_2_all = scipy.stats.zscore(C_1_b_2_all[k],0)
+    C_1_a_2_all = scipy.stats.zscore(C_1_a_2_all[k],0)
+ 
+    
+    C_2_b_1_all = scipy.stats.zscore(C_2_b_1_all[k],0)
+    C_2_a_1_all = scipy.stats.zscore(C_2_a_1_all[k],0)
+ 
+    C_2_b_2_all = scipy.stats.zscore(C_2_b_2_all[k],0)
+    C_2_a_2_all = scipy.stats.zscore(C_2_a_2_all[k],0)
+ 
+    C_3_b_1_all = scipy.stats.zscore(C_3_b_1_all[k],0)
+    C_3_a_1_all = scipy.stats.zscore(C_3_a_1_all[k],0)
+ 
+    C_3_b_2_all = scipy.stats.zscore(C_3_b_2_all[k],0)
+    C_3_a_2_all = scipy.stats.zscore(C_3_a_2_all[k],0)
+ 
+    value_1_1 = (np.concatenate((C_1_b_1_all, C_1_a_1_all),1))
+    value_1_2 = (np.concatenate((C_1_b_2_all, C_1_a_2_all),1))
+    value_2_1 = (np.concatenate((C_2_b_1_all, C_2_a_1_all),1))
+    value_2_2 = (np.concatenate((C_2_b_2_all, C_2_a_2_all),1))
 
-    # C_2_b_1_all = scipy.stats.zscore(C_2_b_1_all[1],0)
-    # C_2_a_1_all = scipy.stats.zscore(C_2_a_1_all[1],0)
-    # C_2_b_2_all = scipy.stats.zscore(C_2_b_2_all[1],0)
-    # C_2_a_2_all = scipy.stats.zscore(C_2_a_2_all[1],0)
+    value_3_1 = (np.concatenate((C_3_b_1_all, C_3_a_1_all),1))
+    value_3_2 = (np.concatenate((C_3_b_2_all, C_3_a_2_all),1))
 
-    # C_3_b_1_all = scipy.stats.zscore(C_3_b_1_all[1],0)
-    # C_3_a_1_all = scipy.stats.zscore(C_3_a_1_all[1],0)
-    # C_3_b_2_all = scipy.stats.zscore(C_3_b_2_all[1],0)
-    # C_3_a_2_all = scipy.stats.zscore(C_3_a_2_all[1],0)
+    # value_1_1 = (np.concatenate((C_1_b_1_all[k], C_1_a_1_all[k]),1))
+    # value_1_2 = (np.concatenate((C_1_b_2_all[k], C_1_a_2_all[k]),1))
+    # value_2_1 = (np.concatenate((C_2_b_1_all[k], C_2_a_1_all[k]),1))
+    # value_2_2 = (np.concatenate((C_2_b_2_all[k], C_2_a_2_all[k]),1))
 
-    # value_1_1 = (np.concatenate((C_1_b_1_all, C_1_a_1_all),1))
-    # value_1_2 = (np.concatenate((C_1_b_2_all, C_1_a_2_all),1))
-    # value_2_1 = (np.concatenate((C_2_b_1_all, C_2_a_1_all),1))
-    # value_2_2 = (np.concatenate((C_2_b_2_all, C_2_a_2_all),1))
-
-    # value_3_1 = (np.concatenate((C_3_b_1_all, C_3_a_1_all),1))
-    # value_3_2 = (np.concatenate((C_3_b_2_all, C_3_a_2_all),1))
-
-    value_1_1 = (np.concatenate((C_1_b_1_all[1], C_1_a_1_all[1]),1))
-    value_1_2 = (np.concatenate((C_1_b_2_all[1], C_1_a_2_all[1]),1))
-    value_2_1 = (np.concatenate((C_2_b_1_all[1], C_2_a_1_all[1]),1))
-    value_2_2 = (np.concatenate((C_2_b_2_all[1], C_2_a_2_all[1]),1))
-
-    value_3_1 = (np.concatenate((C_3_b_1_all[1], C_3_a_1_all[1]),1))
-    value_3_2 = (np.concatenate((C_3_b_2_all[1], C_3_a_2_all[1]),1))
+    # value_3_1 = (np.concatenate((C_3_b_1_all[k], C_3_a_1_all[k]),1))
+    # value_3_2 = (np.concatenate((C_3_b_2_all[k], C_3_a_2_all[k]),1))
 
 
     
@@ -1136,7 +1150,7 @@ def real_diff(d, n = 11, a = 'HP', task =0):
         within_v = np.mean([v_only_2_within_sq_sum,v_only_1_within_sq_sum],0)
         between_v = np.mean([v_only_2_3_between_sq_sum,v_only_1_3_between_sq_sum,v_only_1_2_between_sq_sum],0)
     
-        within_uv =  np.mean([sum_c_task_1_2, sum_c_task_2_1_from_t_2_2, sum_c_task_3_1_from_t_3_2], axis = 0)
+        within_uv =  np.mean([sum_c_task_1_2, sum_c_task_2_2_from_t_2_1, sum_c_task_3_1_from_t_3_2], axis = 0)
         between_uv =np.mean([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2, sum_c_task_3_1_from_t_1_2], axis = 0)
    
     elif task == 1:
