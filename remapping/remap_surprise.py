@@ -782,7 +782,7 @@ def plot_through_time(HP,PFC):
 
     isl = wes.Royal2_5.mpl_colors
     It = 25
-    Ct = 36
+    Ct = 25
     Re = 42
 
     plt.figure(figsize = (15,3))

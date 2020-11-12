@@ -38,13 +38,13 @@ def stats_svd(data_loaded = True, d = True):
     
 
     
-    average_within_m484, average_between_m484 = sv.svd_plotting(experiment_aligned_m484, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m479, average_between_m479 = sv.svd_plotting(experiment_aligned_m479, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m483, average_between_m483 = sv.svd_plotting(experiment_aligned_m483, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m478, average_between_m478 = sv.svd_plotting(experiment_aligned_m478, tasks_unchanged = True, plot_a = False, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m481, average_between_m481 = sv.svd_plotting(experiment_aligned_m481, tasks_unchanged = True, plot_a = False, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m486, average_between_m486 = sv.svd_plotting(experiment_aligned_m486, tasks_unchanged = True, plot_a = False, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
-    average_within_m480, average_between_m480 = sv.svd_plotting(experiment_aligned_m480, tasks_unchanged = True, plot_a = False, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m484, average_between_m484 = sv.svd_plotting(experiment_aligned_m484, tasks_unchanged = False, plot_a = True, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m479, average_between_m479 = sv.svd_plotting(experiment_aligned_m479, tasks_unchanged = False, plot_a = True, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m483, average_between_m483 = sv.svd_plotting(experiment_aligned_m483, tasks_unchanged = False, plot_a = True, plot_b = False, HP = True, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m478, average_between_m478 = sv.svd_plotting(experiment_aligned_m478, tasks_unchanged = False, plot_a = True, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m481, average_between_m481 = sv.svd_plotting(experiment_aligned_m481, tasks_unchanged = False, plot_a = True, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m486, average_between_m486 = sv.svd_plotting(experiment_aligned_m486, tasks_unchanged = False, plot_a = True, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
+    average_within_m480, average_between_m480 = sv.svd_plotting(experiment_aligned_m480, tasks_unchanged = False, plot_a = True, plot_b = False, HP = False, average_reward = False, diagonal = d, demean_all_tasks = False)
     
     first, average_between_m484,average_between_y_m484,average_within_x_m484, average_within_m484 = svdu.svd_u_and_v_separately(experiment_aligned_m484, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = False, z_score = False)
     first, average_between_m479,average_between_y_m479,average_within_x_m479, average_within_m479 = svdu.svd_u_and_v_separately(experiment_aligned_m479, tasks_unchanged = True, plot_a = False, plot_b = False, HP = True, average_reward = False, demean_all_tasks = False, z_score = False)

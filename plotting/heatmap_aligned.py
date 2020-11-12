@@ -12,7 +12,10 @@ Created on Fri Oct  5 17:03:19 2018
 # =============================================================================
 
 import numpy as np
+import sys
+sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessing')
 import align_activity as aa
+
 from collections import OrderedDict
 from sklearn.linear_model import LinearRegression
 from scipy.stats import pearsonr
