@@ -12,6 +12,7 @@ import seaborn as sns
 from scipy import stats 
 from itertools import combinations 
 import scipy
+import palettable
 
 def task_ind(task, a_pokes, b_pokes):
     
@@ -333,7 +334,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_1_2 = s_task_1_2.diagonal()
     else:
-        s_1_2 = np.sum(s_task_1_2**2, axis = 0)
+        s_1_2 = np.sum(s_task_1_2**2, axis = 1)
      
     sum_c_task_1_2 = np.cumsum(abs(s_1_2))/n_neurons
     
@@ -343,7 +344,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_1_2 = s_task_2_1_from_t_1_2.diagonal()
     else:
-        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 0)
+        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 1)
     sum_c_task_2_1_from_t_1_2 = np.cumsum(abs(s_2_1_from_t_1_2))/n_neurons
 
 
@@ -353,7 +354,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
     else:
-        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 0)
+        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 1)
     sum_c_task_2_2_from_t_2_1 = np.cumsum(abs(s_2_2_from_t_2_1))/n_neurons
     
      #Compare task 2 Firs Half from second half
@@ -361,7 +362,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_2_2 = s_task_2_1_from_t_2_2.diagonal()
     else:
-        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 0)
+        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 1)
     sum_c_task_2_1_from_t_2_2 = np.cumsum(abs(s_2_1_from_t_2_2))/n_neurons
 
 
@@ -371,7 +372,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_2_2 = s_task_3_1_from_t_2_2.diagonal()
     else:
-        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 0)
+        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 1)
     sum_c_task_3_1_from_t_2_2 = np.cumsum(abs(s_3_1_from_t_2_2))/n_neurons
 
 
@@ -380,7 +381,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_1_2 = s_task_3_1_from_t_1_2.diagonal()
     else:
-        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = 0)
+        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = 1)
     sum_c_task_3_1_from_t_1_2 = np.cumsum(abs(s_3_1_from_t_1_2))/n_neurons
 
 
@@ -388,7 +389,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_3_2 = s_task_3_1_from_t_3_2.diagonal()
     else:
-        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 0)
+        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 1)
     sum_c_task_3_1_from_t_3_2 = np.cumsum(abs(s_3_1_from_t_3_2))/n_neurons
 
     if task == 0:
@@ -467,7 +468,29 @@ def animals_test():
     real_uv_2 = trp_hp_2-trp_pfc_2
     real_uv_3 = trp_hp_3-trp_pfc_3
     
-    
+    plt.figure(figsize = (4,5))
+    plt.subplot(4,1,1)
+    plt.hist(diff_uv, color = 'grey')
+    plt.vlines(real_uv,ymin = 0, ymax = max(np.histogram(diff_uv)[0]))
+    plt.vlines(uv_95,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+  
+    plt.subplot(4,1,2)
+    plt.hist(diff_uv_1, color = 'grey')
+    plt.vlines(real_uv_1,ymin = 0, ymax = max(np.histogram(diff_uv_1)[0]))
+    plt.vlines(uv_95_1,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+
+    plt.subplot(4,1,3)
+    plt.hist(diff_uv_2, color = 'grey')
+    plt.vlines(real_uv_2,ymin = 0, ymax = max(np.histogram(diff_uv_2)[0]))
+    plt.vlines(uv_95_2,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+
+    plt.subplot(4,1,4)
+    plt.hist(diff_uv_3, color = 'grey')
+    plt.vlines(real_uv_3,ymin = 0, ymax = max(np.histogram(diff_uv_3)[0]))
+    plt.vlines(uv_95_3,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+ 
+    sns.despine()
+  
     within_pfc = [average_within_all_pfc,average_within_all_pfc_1,average_within_all_pfc_2,average_within_all_pfc_3]
     within_hp = [average_within_all_hp,average_within_all_hp_1,average_within_all_hp_2,average_within_all_hp_3]
     between_pfc = [average_between_all_pfc,average_between_all_pfc_1,average_between_all_pfc_2,average_between_all_pfc_3]
@@ -486,8 +509,44 @@ def animals_test():
         plt.plot(between_pfc[ii], label = 'Between PFC', color = 'green', linestyle = '--')
         sns.despine()
         #plt.xtitle(str(l))
+    task_1_1, task_1_2,\
+    task_2_1, task_2_2,\
+    task_3_1, task_3_2, animal_neurons = extract_data(HP, a ='HP') 
+    
+   
+    cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
+
+    plt.figure()
+    plt.subplot(1,3,1)
+    plt.imshow(np.corrcoef(task_1_2.T,task_3_2.T), cmap =cmap)
 
     
+    diag_1_3 = np.diagonal(np.corrcoef(task_1_2.T,task_3_2.T),252)
+    plt.subplot(1,3,2)
+    plt.imshow(np.corrcoef(task_2_1.T,task_3_1.T), cmap =cmap)
+    
+    diag_2_3 = np.diagonal(np.corrcoef(task_2_1.T,task_3_1.T),252)
+
+    plt.subplot(1,3,3)
+    plt.imshow(np.corrcoef(task_1_2.T,task_2_2.T), cmap =cmap)
+    diag_1_2 = np.diagonal(np.corrcoef(task_1_1.T,task_2_1.T),252)
+
+    ymin = np.min([diag_1_3,diag_1_2,diag_2_3]) - 0.05
+    ymax = np.max([diag_1_3,diag_1_2,diag_2_3]) + 0.05
+
+    plt.subplot(2,3,4)
+    plt.plot(diag_1_3, color = 'pink')
+    plt.ylim(ymin,ymax)
+    plt.subplot(2,3,5)
+    plt.plot(diag_2_3, color = 'pink')
+    plt.ylim(ymin,ymax)
+    plt.subplot(2,3,6)
+    plt.plot(diag_1_2, color = 'pink')
+    plt.ylim(ymin,ymax)
+    sns.despine()
+   
+
+
 
     
 

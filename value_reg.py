@@ -151,9 +151,9 @@ def generalisation_plot(C_1,C_2,C_3, c_1, reward_times_to_choose = np.asarray([2
             C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i-20:i],1)
             C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i-20:i],1)
         if i ==reward_times_to_choose[1] or i == reward_times_to_choose[2]:
-            C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i-2:i+2],1)
-            C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i-2:i+2],1)
-            C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i-2:i+2],1)
+            C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i-2:i+7],1)
+            C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i-2:i+7],1)
+            C_3_rew_proj[:,j] = np.mean(C_3_rew[:,i-2:i+7],1)
         elif i == reward_times_to_choose[3]:
             C_1_rew_proj[:,j] = np.mean(C_1_rew[:,i:],1)
             C_2_rew_proj[:,j] = np.mean(C_2_rew[:,i:],1)
@@ -172,9 +172,9 @@ def generalisation_plot(C_1,C_2,C_3, c_1, reward_times_to_choose = np.asarray([2
             C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i-20:i],1)
             C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i-20:i],1)
         if i ==reward_times_to_choose[1] or i == reward_times_to_choose[2]:
-            C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i-2:i+2],1)
-            C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i-2:i+2],1)
-            C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i-2:i+2],1)
+            C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i-2:i+7],1)
+            C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i-2:i+7],1)
+            C_3_rew_count_proj[:,j] = np.mean(C_3_rew_count[:,i-2:i+7],1)
         elif i == reward_times_to_choose[3]:
             C_1_rew_count_proj[:,j] = np.mean(C_1_rew_count[:,i:],1)
             C_2_rew_count_proj[:,j] = np.mean(C_2_rew_count[:,i:],1)
@@ -215,7 +215,6 @@ def run():
      perms_b_all_0,perms_a_all_0 = plot(HP, PFC, c_1 = 1, n = 11, reward_times_to_choose = np.asarray([20,25,36,42]),task_check = 0)
 
      real_dif_PFC_0, real_dif_HP_0 = real_diff_a_b(HP, PFC, n = 11, task_check = 0, c_1 = 1, reward_times_to_choose= np.asarray([20,25,36,42]))
-   
      
      perm_HP_1, perm_PFC_all_1 = a_b_check(PFC, HP, n = 11, perm = 1000, task_check = 1, reward_times_to_choose = np.asarray([20,25,35,42]), c_1 = 1) 
      perm_HP_2, perm_PFC_all_2 = a_b_check(PFC, HP, n = 11, perm = 1000, task_check = 2, reward_times_to_choose = np.asarray([20,25,35,42]), c_1 = 1)
@@ -249,15 +248,6 @@ def run():
      a_b_pval_1_PFC = np.where(real_dif_PFC_1[:-1].T>perm_PFC_all_1[:-1])
      a_b_pval_2_PFC = np.where(real_dif_PFC_2[:-1].T>perm_PFC_all_2[:-1])
      a_b_pval_3_PFC = np.where(real_dif_PFC_3[:-1].T>perm_PFC_all_3[:-1])
-     
-     
-     # A vs B permute sessions
-     
-     perms_b_s_all,perms_as_all, perms_ab_all = perumute_sessions(HP, PFC, c_1 = 1, n = 11 , reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 0, perm_n = 500)
-     perms_b_s_1,perms_as_1, perms_ab_1 = perumute_sessions(HP, PFC, c_1 = 1, n = 11 , reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 1, perm_n = 500)
-     perms_b_s_2,perms_as_2, perms_ab_2 = perumute_sessions(HP, PFC, c_1 = 1, n = 11 , reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 2, perm_n = 500)
-     perms_b_s_3,perms_as_3, perms_ab_3 = perumute_sessions(HP, PFC, c_1 = 1, n = 11 , reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 3, perm_n = 500)
-
   
      
   
@@ -275,7 +265,6 @@ def run_figure():
         
     plot_figure(PFC, HP, reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 0, n = 11, c_1 = 1, perms_b_all_1 = perms_b_all_0, perms_a_all_1 = perms_a_all_0, a_b_pval_1_HP=  a_b_pval_0_HP,\
                 a_b_pval_1_PFC =  a_b_pval_0_PFC)
-        
     
 def plot_figure(PFC, HP, reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 0, n = 11, c_1 = 1, perms_b_all_1 = [1,2,3], perms_a_all_1 = [1,2,3], a_b_pval_1_HP=  [1,2,3],\
                 a_b_pval_1_PFC =  [1,2,3]):
@@ -534,93 +523,6 @@ def plot(HP, PFC, c_1 = 1, n = 6 , reward_times_to_choose = [1,2,3,4], task_chec
     perms_a = np.where(a.T > perm_a)
     
     return perms_b,perms_a
-
-def perumute_sessions(HP, PFC, c_1 = 1, n = 6 , reward_times_to_choose = [1,2,3,4], task_check = 0, perm_n = 500):
-    
- 
-    C_1_HP_b, C_2_HP_b, C_3_HP_b = time_in_block(HP, area = 'HP', n = n, plot_a = False, plot_b = True, perm = False)
-    C_1_PFC_b ,C_2_PFC_b, C_3_PFC_b = time_in_block(PFC, area = 'PFC', n = n, plot_a = False, plot_b = True, perm = False)
-    
-    C_1_HP_a, C_2_HP_a, C_3_HP_a = time_in_block(HP, area = 'HP', n = n, plot_a = True, plot_b = False, perm = False)
-    C_1_PFC_a ,C_2_PFC_a, C_3_PFC_a = time_in_block(PFC, area = 'PFC', n = n, plot_a = True, plot_b = False, perm = False)
-   
-   
-    value_to_value_PFC_a_val = generalisation_plot(C_1_PFC_a,C_2_PFC_a,C_3_PFC_a, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-    value_to_value_PFC_b_val = generalisation_plot(C_1_PFC_b,C_2_PFC_b,C_3_PFC_b, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-    value_to_value_PFC_a_val = value_to_value_PFC_a_val[:-1]
-    value_to_value_PFC_b_val = value_to_value_PFC_b_val[:-1]
-
-    value_to_value_HP_a_val = generalisation_plot(C_1_HP_a,C_2_HP_a,C_3_HP_a, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-    value_to_value_HP_b_val = generalisation_plot(C_1_HP_b,C_2_HP_b,C_3_HP_b, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-    value_to_value_HP_a_val = value_to_value_HP_a_val[:-1]
-    value_to_value_HP_b_val = value_to_value_HP_b_val[:-1]
-
-    difference_a = []
-    difference_b = []
-    difference_a_b = []
-
-    all_subjects = np.hstack([PFC['DM'][0], HP['DM'][0]])
-    all_subjects_firing = np.hstack([PFC['Data'][0], HP['Data'][0]])
-    
-    sessions_n = np.arange(len(all_subjects))
-  
-    for i in range(perm_n):
-        np.random.shuffle(sessions_n) # Shuffle PFC/HP sessions
-        indices_HP = sessions_n[46:]
-        indices_PFC = sessions_n[:46]
-
-        PFC_shuffle_dm = all_subjects[np.asarray(indices_PFC)]
-        HP_shuffle_dm = all_subjects[np.asarray(indices_HP)]
-        
-        PFC_shuffle_f = all_subjects_firing[np.asarray(indices_PFC)]
-        HP_shuffle_f = all_subjects_firing[np.asarray(indices_HP)]
-        HP_shuffle= [HP_shuffle_dm,HP_shuffle_f]
-        PFC_shuffle= [PFC_shuffle_dm,PFC_shuffle_f]
-
-        C_1_HP_b, C_2_HP_b, C_3_HP_b = time_in_block(HP_shuffle, area = 'HP', n = n, plot_a = False, plot_b = True,  perm = True)
-        C_1_PFC_b ,C_2_PFC_b, C_3_PFC_b = time_in_block(PFC_shuffle, area = 'PFC', n = n, plot_a = False, plot_b = True,  perm = True)
-        
-        C_1_HP_a, C_2_HP_a, C_3_HP_a = time_in_block(HP_shuffle, area = 'HP', n = n, plot_a = True, plot_b = False,  perm = True)
-        C_1_PFC_a ,C_2_PFC_a, C_3_PFC_a = time_in_block(PFC_shuffle, area = 'PFC', n = n, plot_a = True, plot_b = False ,  perm = True)
-        
-        value_to_value_PFC_a_perm = generalisation_plot(C_1_PFC_a,C_2_PFC_a,C_3_PFC_a, c_1,reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-        value_to_value_PFC_b_perm = generalisation_plot(C_1_PFC_b,C_2_PFC_b,C_3_PFC_b, c_1,reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-        value_to_value_PFC_a_perm = value_to_value_PFC_a_perm[:-1]
-        value_to_value_PFC_b_perm = value_to_value_PFC_b_perm[:-1]
-
-    
-        value_to_value_HP_a_perm =  generalisation_plot(C_1_HP_a,C_2_HP_a,C_3_HP_a, c_1,reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-        value_to_value_HP_b_perm = generalisation_plot(C_1_HP_b,C_2_HP_b,C_3_HP_b, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
-        value_to_value_HP_a_perm = value_to_value_HP_a_perm[:-1]
-        value_to_value_HP_b_perm = value_to_value_HP_b_perm[:-1]
-        
-      
-
-        difference_a.append((value_to_value_PFC_a_perm-value_to_value_HP_a_perm))
-        
-        difference_b.append((value_to_value_PFC_b_perm-value_to_value_HP_b_perm))
-        
-        difference_a_b.append((value_to_value_PFC_b_perm-value_to_value_PFC_a_perm)-(value_to_value_HP_b_perm-value_to_value_HP_a_perm))
-        
-        
-        
-         
-    perm_a = np.max(np.percentile(difference_a,95,0),1)
-    
-    perm_b = np.max(np.percentile(difference_b,95,0),1)
-    perm_a_b = np.max(np.percentile(difference_a_b,95,0),1)
-    
-
-    a = (value_to_value_PFC_a_val - value_to_value_HP_a_val)
-    b = (value_to_value_PFC_b_val - value_to_value_HP_b_val)
-    a_b = (value_to_value_PFC_b_val- value_to_value_PFC_a_val)- (value_to_value_HP_b_val- value_to_value_HP_a_val)
-   
-    perms_b = np.where(b.T > perm_b)
-    perms_a = np.where(a.T > perm_a)
-    perms_ab = np.where(a_b.T > perm_a_b)
-    
-    return perms_b,perms_a, perms_ab
-
 
     
 def time_in_block(data, area = 'PFC', n = 10, plot_a = False, plot_b = False, perm = True):

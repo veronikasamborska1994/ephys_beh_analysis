@@ -621,17 +621,28 @@ def real_vs_shuffle(PFC,HP, n = 11,  c = 'grey', area='HP'):
     u95_3 = np.percentile(diff_u_3,95)
  
     u_v_hp_3, u_hp_3, v_hp_3,  within_u_hp_3, between_u_hp_3, within_v_hp_3, between_v_hp_3, within_uv_hp_3, between_uv_hp_3 = real_diff(HP, n = 11, a = 'HP', task = 3)
-    u_v_pfc_3, u_pfc_3, v_pfc_3,  within_u_pfc_3, between_u_pfc_3, within_v_hp_3, between_v_pfc_3, within_uv_pfc_3, between_uv_pfc_3  = real_diff(PFC, n = 11, a = 'PFC', task = 3)
+    u_v_pfc_3, u_pfc_3, v_pfc_3,  within_u_pfc_3, between_u_pfc_3, within_v_pfc_3, between_v_pfc_3, within_uv_pfc_3, between_uv_pfc_3  = real_diff(PFC, n = 11, a = 'PFC', task = 3)
     
     real_uv_3 = u_v_hp_3-u_v_pfc_3
     real_u_3 = u_hp_3-u_pfc_3
     real_v_3 = v_hp_3-v_pfc_3
     
-    within_pfc = [within_uv_pfc_3,within_uv_pfc_2,within_uv_pfc_1,within_uv_pfc]
-    within_hp = [within_uv_hp_3,within_uv_hp_2,within_uv_hp_1,within_uv_hp]
-    between_pfc = [between_uv_pfc_3,between_uv_pfc_2,between_uv_pfc_1,between_uv_pfc]
-    between_hp = [between_uv_hp_3,between_uv_hp_2,between_uv_hp_1,between_uv_hp]
+    within_pfc = [within_v_pfc_3,within_v_pfc_2,within_v_pfc_1,within_v_pfc]
+    within_hp = [within_v_hp_3,within_v_hp_2,within_v_hp_1,within_v_hp]
+    between_pfc = [between_v_pfc_3,between_v_pfc_2,between_v_pfc_1,between_v_pfc]
+    between_hp = [between_v_hp_3,between_v_hp_2,between_v_hp_1,between_v_hp]
     
+    # within_pfc = [within_u_pfc_3,within_u_pfc_2,within_u_pfc_1,within_u_pfc]
+    # within_hp = [within_u_hp_3,within_u_hp_2,within_u_hp_1,within_u_hp]
+    # between_pfc = [between_u_pfc_3,between_u_pfc_2,between_u_pfc_1,between_u_pfc]
+    # between_hp = [between_u_hp_3,between_u_hp_2,between_u_hp_1,between_u_hp]
+   
+    
+    # within_pfc = [within_uv_pfc_3,within_uv_pfc_2,within_uv_pfc_1,within_uv_pfc]
+    # within_hp = [within_uv_hp_3,within_uv_hp_2,within_uv_hp_1,within_uv_hp]
+    # between_pfc = [between_uv_pfc_3,between_uv_pfc_2,between_uv_pfc_1,between_uv_pfc]
+    # between_hp = [between_uv_hp_3,between_uv_hp_2,between_uv_hp_1,between_uv_hp]
+   
     plt.figure(figsize = (4,10))
     l = 0
     for ii,i in enumerate(within_hp):
@@ -643,40 +654,80 @@ def real_vs_shuffle(PFC,HP, n = 11,  c = 'grey', area='HP'):
         plt.plot(between_hp[ii], label = 'Between HP', color='black',linestyle = '--')
         plt.plot(between_pfc[ii], label = 'Between PFC', color = 'green', linestyle = '--')
         sns.despine()
+        
+        
+    plt.figure(figsize = (4,5))
+    plt.subplot(4,1,1)
+    plt.hist(diff_uv, color = 'grey')
+    plt.vlines(real_uv,ymin = 0, ymax = max(np.histogram(diff_uv)[0]))
+    plt.vlines(uv_95,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+  
+    plt.subplot(4,1,2)
+    plt.hist(diff_uv_1, color = 'grey')
+    plt.vlines(real_uv_1,ymin = 0, ymax = max(np.histogram(diff_uv_1)[0]))
+    plt.vlines(uv_95_1,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
 
-    # cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
+    plt.subplot(4,1,3)
+    plt.hist(diff_uv_2, color = 'grey')
+    plt.vlines(real_uv_2,ymin = 0, ymax = max(np.histogram(diff_uv_2)[0]))
+    plt.vlines(uv_95_2,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
 
-    # plt.figure()
-    # plt.subplot(2,3,1)
-    # plt.imshow(np.corrcoef(value_1_2.T,value_3_2.T), cmap =cmap)
-
+    plt.subplot(4,1,4)
+    plt.hist(diff_uv_3, color = 'grey')
+    plt.vlines(real_uv_3,ymin = 0, ymax = max(np.histogram(diff_uv_3)[0]))
+    plt.vlines(uv_95_3,ymin = 0, ymax = max(np.histogram(diff_uv)[0]), color = 'red')
+ 
+    sns.despine()
+  
     
-    # diag_1_3 = np.diagonal(np.corrcoef(value_1_2.T,value_3_2.T),126)
-    # plt.subplot(2,3,2)
-    # plt.imshow(np.corrcoef(value_2_1.T,value_3_1.T), cmap =cmap)
+    plt.figure(figsize = (4,5))
+    plt.subplot(4,1,1)
+    plt.hist(diff_v, color = 'grey')
+    plt.vlines(real_v,ymin = 0, ymax = max(np.histogram(diff_v)[0]))
+    plt.vlines(v95,ymin = 0, ymax = max(np.histogram(diff_v)[0]), color = 'red')
+  
+    plt.subplot(4,1,2)
+    plt.hist(diff_v_1, color = 'grey')
+    plt.vlines(real_v_1,ymin = 0, ymax = max(np.histogram(diff_v_1)[0]))
+    plt.vlines(v95_1,ymin = 0, ymax = max(np.histogram(diff_v)[0]), color = 'red')
+
+    plt.subplot(4,1,3)
+    plt.hist(diff_v_2, color = 'grey')
+    plt.vlines(real_v_2,ymin = 0, ymax = max(np.histogram(diff_v_2)[0]))
+    plt.vlines(v95_2,ymin = 0, ymax = max(np.histogram(diff_v)[0]), color = 'red')
+
+    plt.subplot(4,1,4)
+    plt.hist(diff_v_3, color = 'grey')
+    plt.vlines(real_v_3,ymin = 0, ymax = max(np.histogram(diff_v_3)[0]))
+    plt.vlines(v95_3,ymin = 0, ymax = max(np.histogram(diff_v)[0]), color = 'red')
+ 
+    sns.despine()
+  
+  
     
-    # diag_2_3 = np.diagonal(np.corrcoef(value_2_1.T,value_3_1.T),126)
+    plt.figure(figsize = (4,5))
+    plt.subplot(4,1,1)
+    plt.hist(diff_u, color = 'grey')
+    plt.vlines(real_u,ymin = 0, ymax = max(np.histogram(diff_u)[0]))
+    plt.vlines(u95,ymin = 0, ymax = max(np.histogram(diff_u)[0]), color = 'red')
+  
+    plt.subplot(4,1,2)
+    plt.hist(diff_u_1, color = 'grey')
+    plt.vlines(real_u_1,ymin = 0, ymax = max(np.histogram(diff_u_1)[0]))
+    plt.vlines(u95_1,ymin = 0, ymax = max(np.histogram(diff_u)[0]), color = 'red')
 
-    # plt.subplot(2,3,3)
-    # plt.imshow(np.corrcoef(value_1_2.T,value_2_2.T), cmap =cmap)
-    # diag_1_2 = np.diagonal(np.corrcoef(value_1_1.T,value_2_1.T),126)
+    plt.subplot(4,1,3)
+    plt.hist(diff_u_2, color = 'grey')
+    plt.vlines(real_u_2,ymin = 0, ymax = max(np.histogram(diff_u_2)[0]))
+    plt.vlines(u95_2,ymin = 0, ymax = max(np.histogram(diff_u)[0]), color = 'red')
 
-    # ymin = np.min([diag_1_3,diag_1_2,diag_2_3]) - 0.05
-    # ymax = np.max([diag_1_3,diag_1_2,diag_2_3]) + 0.05
-
-    # plt.subplot(2,3,4)
-    # plt.plot(diag_1_3, color = 'pink')
-    # plt.ylim(ymin,ymax)
-    # plt.subplot(2,3,5)
-    # plt.plot(diag_2_3, color = 'pink')
-    # plt.ylim(ymin,ymax)
-    # plt.subplot(2,3,6)
-    # plt.plot(diag_1_2, color = 'pink')
-    # plt.ylim(ymin,ymax)
-    # sns.despine()
-   
-
-
+    plt.subplot(4,1,4)
+    plt.hist(diff_u_3, color = 'grey')
+    plt.vlines(real_u_3,ymin = 0, ymax = max(np.histogram(diff_u_3)[0]))
+    plt.vlines(u95_3,ymin = 0, ymax = max(np.histogram(diff_u)[0]), color = 'red')
+ 
+    sns.despine()
+  
 def svd_on_coefs(PFC,HP, n = 11, task = 0):
    
       
@@ -939,6 +990,182 @@ def svd_on_coefs(PFC,HP, n = 11, task = 0):
   
     return  u_v_area_shuffle, u_area_shuffle, v_area_shuffle
   
+def correlations(d, n = 11, a = 'HP', perm = False):
+    C_1_b_1_all, C_2_b_1_all, C_3_b_1_all = value_reg_svd(d, n = n, plot_a = False, plot_b = True,  first_half = 1, a = a, perm = perm)    
+    C_1_a_1_all, C_2_a_1_all, C_3_a_1_all = value_reg_svd(d, n = n, plot_a = True, plot_b = False,  first_half = 1, a = a, perm = perm)    
+    
+    C_1_b_2_all, C_2_b_2_all, C_3_b_2_all = value_reg_svd(d, n = n, plot_a = False, plot_b = True,  first_half = 2, a = a, perm = perm)     
+    C_1_a_2_all, C_2_a_2_all, C_3_a_2_all = value_reg_svd(d, n = n, plot_a = True, plot_b = False,  first_half = 2, a = a, perm = perm)    
+    
+  
+
+    k = 1
+    
+    C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[k],0)
+    C_1_a_1_all = scipy.stats.zscore(C_1_a_1_all[k],0)
+ 
+    C_1_b_2_all = scipy.stats.zscore(C_1_b_2_all[k],0)
+    C_1_a_2_all = scipy.stats.zscore(C_1_a_2_all[k],0)
+ 
+    
+    C_2_b_1_all = scipy.stats.zscore(C_2_b_1_all[k],0)
+    C_2_a_1_all = scipy.stats.zscore(C_2_a_1_all[k],0)
+ 
+    C_2_b_2_all = scipy.stats.zscore(C_2_b_2_all[k],0)
+    C_2_a_2_all = scipy.stats.zscore(C_2_a_2_all[k],0)
+ 
+    C_3_b_1_all = scipy.stats.zscore(C_3_b_1_all[k],0)
+    C_3_a_1_all = scipy.stats.zscore(C_3_a_1_all[k],0)
+ 
+    C_3_b_2_all = scipy.stats.zscore(C_3_b_2_all[k],0)
+    C_3_a_2_all = scipy.stats.zscore(C_3_a_2_all[k],0)
+ 
+    value_1_1 = (np.concatenate((C_1_b_1_all, C_1_a_1_all),1))
+    value_1_2 = (np.concatenate((C_1_b_2_all, C_1_a_2_all),1))
+    value_2_1 = (np.concatenate((C_2_b_1_all, C_2_a_1_all),1))
+    value_2_2 = (np.concatenate((C_2_b_2_all, C_2_a_2_all),1))
+
+    value_3_1 = (np.concatenate((C_3_b_1_all, C_3_a_1_all),1))
+    value_3_2 = (np.concatenate((C_3_b_2_all, C_3_a_2_all),1))
+
+    mean_value = np.mean([np.corrcoef(value_1_2.T,value_3_2.T),np.corrcoef(value_1_2.T,value_2_2.T), np.corrcoef(value_2_2.T,value_3_2.T)],0)
+
+    vmin = np.min([np.corrcoef(value_1_2.T,value_3_2.T),np.corrcoef(value_1_2.T,value_2_2.T),np.corrcoef(value_2_2.T,value_3_2.T)])
+    vmax = np.max([np.corrcoef(value_1_2.T,value_3_2.T),np.corrcoef(value_1_2.T,value_2_2.T),np.corrcoef(value_2_2.T,value_3_2.T)])
+
+    # cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
+    # plt.imshow(mean_value, cmap =cmap)
+    plt.colorbar()
+
+    # plt.figure()
+    # plt.subplot(2,3,1)
+    # plt.imshow(np.corrcoef(value_1_2.T,value_3_2.T), cmap =cmap, vmax = vmax,vmin =vmin )
+    plt.colorbar()
+
+    
+    diag_1_3 = np.diagonal(np.corrcoef(value_1_2.T,value_3_2.T),126)
+    # plt.subplot(2,3,2)
+    # plt.imshow(np.corrcoef(value_2_1.T,value_3_1.T), cmap =cmap, vmax = vmax,vmin =vmin )
+    
+    diag_2_3 = np.diagonal(np.corrcoef(value_2_1.T,value_3_1.T),126)
+
+    # plt.subplot(2,3,3)
+    # plt.imshow(np.corrcoef(value_1_2.T,value_2_2.T), cmap =cmap, vmax = vmax,vmin =vmin )
+    diag_1_2 = np.diagonal(np.corrcoef(value_1_1.T,value_2_1.T),126)
+    
+
+    # ymin = np.min([diag_1_3,diag_1_2,diag_2_3]) - 0.05
+    # ymax = np.max([diag_1_3,diag_1_2,diag_2_3]) + 0.05
+
+    # plt.subplot(2,3,4)
+    # plt.plot(diag_1_3, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # plt.subplot(2,3,5)
+    # plt.plot(diag_2_3, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # plt.subplot(2,3,6)
+    # plt.plot(diag_1_2, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # sns.despine()
+    
+    all_taks = np.mean([np.sum(diag_1_2), np.sum(diag_2_3), np.sum(diag_1_3)])
+    _1_2 = np.sum(diag_1_2)
+    _1_3 = np.sum(diag_1_3)
+    _2_3 = np.sum(diag_2_3)
+    
+    return all_taks,_1_2,_1_3,_2_3
+
+def plot_diagonal_sums(HP,PFC, perm =  False):
+    all_taks_HP,_1_2_HP,_1_3_HP,_2_3_HP  = correlations(HP, n = 11, a = 'HP', perm = False)
+    all_taks_PFC,_1_2_PFC,_1_3_PFC,_2_3_PFC  = correlations(PFC, n = 11, a = 'PFC',perm = False)
+    
+    all_diff_real = all_taks_PFC-all_taks_HP
+    _1_2_diff_real = _1_2_PFC-_1_2_HP
+    _1_3_diff_real = _1_3_PFC-_1_3_HP
+    _2_3_diff_real = _2_3_PFC-_2_3_HP
+ 
+    all_subjects = [PFC['DM'][0][:9], PFC['DM'][0][9:26],PFC['DM'][0][26:40],PFC['DM'][0][40:],HP['DM'][0][:16], HP['DM'][0][16:24],HP['DM'][0][24:]]
+    all_subjects_firing = [PFC['Data'][0][:9], PFC['Data'][0][9:26],PFC['Data'][0][26:40],PFC['Data'][0][40:],HP['Data'][0][:16], HP['Data'][0][16:24],HP['Data'][0][24:]]
+
+    animals_PFC = [0,1,2,3]
+    animals_HP = [4,5,6]
+    m, n = len(animals_PFC), len(animals_HP)
+    all_shuffle = []
+    _1_2_shuffle = []
+    _1_3_shuffle = []
+    _2_3_shuffle = []
+   
+    for indices_PFC in combinations(range(m + n), m):
+        indices_HP = [i for i in range(m + n) if i not in indices_PFC]
+       
+        PFC_shuffle_dm = np.concatenate(np.asarray(all_subjects)[np.asarray(indices_PFC)])
+        HP_shuffle_dm = np.concatenate(np.asarray(all_subjects)[np.asarray(indices_HP)])
+        
+        PFC_shuffle_f = np.concatenate(np.asarray(all_subjects_firing)[np.asarray(indices_PFC)])
+        HP_shuffle_f = np.concatenate(np.asarray(all_subjects_firing)[np.asarray(indices_HP)])
+        HP_shuffle= [HP_shuffle_dm,HP_shuffle_f]
+        PFC_shuffle= [PFC_shuffle_dm,PFC_shuffle_f]
+        _all_diff = []
+        _1_2_diff = []
+        _1_3_diff = []
+        _2_3_diff = []
+            
+        for d in [HP_shuffle,PFC_shuffle]:
+            
+            all_taks,_1_2,_1_3,_2_3  = correlations(d, n = 11, a = 'perm', perm = True)
+            _all_diff.append(all_taks)
+            _1_2_diff.append(_1_2)
+            _1_3_diff.append(_1_3)
+            _2_3_diff.append(_2_3)
+        all_shuffle.append(_all_diff)
+        _1_2_shuffle.append(_1_2_diff)
+        _1_3_shuffle.append(_1_3_diff)
+        _2_3_shuffle.append(_2_3_diff)
+    diff_all  = []
+    diff_1_2 = []
+    diff_1_3 = []
+    diff_2_3 = []
+    
+    for i,ii in enumerate(all_shuffle):
+        diff_all.append(all_shuffle[i][0]- all_shuffle[i][1])
+        diff_1_2.append(_1_2_shuffle[i][0]- _1_2_shuffle[i][1])
+        diff_1_3.append(_1_3_shuffle[i][0]- _1_3_shuffle[i][1])
+        diff_2_3.append(_2_3_shuffle[i][0]- _2_3_shuffle[i][1])
+
+    _all_95 = np.percentile(diff_all,95)
+    _1_2_95 = np.percentile(diff_1_2,95)
+    _1_3_95 = np.percentile(diff_1_3,95)
+    _2_3_95 = np.percentile(diff_2_3,95)
+    
+    
+    plt.figure(figsize = (4,5))
+    plt.subplot(4,1,1)
+    plt.hist(diff_all, color = 'grey')
+    plt.vlines(all_diff_real,ymin = 0, ymax = max(np.histogram(diff_all)[0]))
+    plt.vlines(_all_95,ymin = 0, ymax = max(np.histogram(diff_all)[0]), color = 'red')
+  
+    plt.subplot(4,1,2)
+    plt.hist(diff_1_2, color = 'grey')
+    plt.vlines(_1_2_diff_real,ymin = 0, ymax = max(np.histogram(diff_1_2)[0]))
+    plt.vlines(_1_2_95,ymin = 0, ymax = max(np.histogram(diff_1_2)[0]), color = 'red')
+
+    plt.subplot(4,1,3)
+    plt.hist(diff_1_3, color = 'grey')
+    plt.vlines(_1_3_diff_real,ymin = 0, ymax = max(np.histogram(diff_1_3)[0]))
+    plt.vlines(_1_3_95,ymin = 0, ymax = max(np.histogram(diff_1_3)[0]), color = 'red')
+
+    plt.subplot(4,1,4)
+    plt.hist(diff_2_3, color = 'grey')
+    plt.vlines(_2_3_diff_real,ymin = 0, ymax = max(np.histogram(diff_2_3)[0]))
+    plt.vlines(_2_3_95,ymin = 0, ymax = max(np.histogram(diff_2_3)[0]), color = 'red')
+ 
+    sns.despine()
+
+
+     
+
+   
+
     
 def real_diff(d, n = 11, a = 'HP', task =0):
 
@@ -948,6 +1175,8 @@ def real_diff(d, n = 11, a = 'HP', task =0):
     C_1_b_2_all, C_2_b_2_all, C_3_b_2_all = value_reg_svd(d, n = n, plot_a = False, plot_b = True,  first_half = 2, a = a, perm = False)     
     C_1_a_2_all, C_2_a_2_all, C_3_a_2_all = value_reg_svd(d, n = n, plot_a = True, plot_b = False,  first_half = 2, a = a, perm = False)    
     
+  
+
     k = 1
     
     C_1_b_1_all = scipy.stats.zscore(C_1_b_1_all[k],0)
@@ -985,9 +1214,7 @@ def real_diff(d, n = 11, a = 'HP', task =0):
     # value_3_1 = (np.concatenate((C_3_b_1_all[k], C_3_a_1_all[k]),1))
     # value_3_2 = (np.concatenate((C_3_b_2_all[k], C_3_a_2_all[k]),1))
 
-
-    
-          
+  
     n_neurons = value_1_1.shape[0]
     
     u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(value_1_1, full_matrices = False)
