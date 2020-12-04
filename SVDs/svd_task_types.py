@@ -13,6 +13,11 @@ from scipy import stats
 from itertools import combinations 
 import scipy
 import palettable
+from scipy import io
+
+def run():
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
 
 def task_ind(task, a_pokes, b_pokes):
     
@@ -311,6 +316,8 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     #SVDsu.shape, s.shape, vh.shape for task 3 first half
     u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
     
+    
+    
     #Finding variance explained in second half of task 1 using the Us and Vs from the first half
     t_u = np.transpose(u_t1_1)  
     t_v = np.transpose(vh_t1_1)  
@@ -420,9 +427,36 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
 
 def real_diff(data,a= 'PFC', task = 0, diagonal = False):
     
+    data = PFC
+    a = 'PFC'
     flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
         flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, a =a) 
+
+    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
+    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
+    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
+    i = 0
+    plt.figure(figsize = (10,3))
+    plt.subplot(1,3,1)
+    plt.plot(vh_t1_1[i,:63], label = 'A Reward', color = 'pink')
+    plt.plot(vh_t1_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    plt.plot(vh_t1_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    plt.plot(vh_t1_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+
+    plt.subplot(1,3,2)
+    plt.plot(vh_t2_1[i,:63],  label = 'A Reward', color = 'pink')
+    plt.plot(vh_t2_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    plt.plot(vh_t2_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    plt.plot(vh_t2_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+
+    plt.subplot(1,3,3)
+    plt.plot(vh_t3_1[i,:63], label = 'A Reward', color = 'pink')
+    plt.plot(vh_t3_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    plt.plot(vh_t3_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    plt.plot(vh_t3_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    sns.despine()
+    plt.tight_layout()
 
     trp, average_between_all,average_within_all = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
     flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\

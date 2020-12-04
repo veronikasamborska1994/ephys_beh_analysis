@@ -325,6 +325,9 @@ def perm_animals_chosen_value(HP, PFC, c_1 = 1, n = 6 , reward_times_to_choose =
     
     return perms_pval
 
+
+
+
 def perumute_sessions_ch_value(HP, PFC, c_1 = 1, n = 6 , reward_times_to_choose = [1,2,3,4], task_check = 0, perm_n = 500):
     
  
@@ -400,5 +403,60 @@ def find_pvals():
      perms_1_2_s = perumute_sessions_ch_value(HP, PFC, c_1 = 3, n = 11, reward_times_to_choose = np.asarray([20,25,36,42]),task_check = 1, perm_n = 1000)
      perms_1_3_s = perumute_sessions_ch_value(HP, PFC, c_1 = 3, n = 11, reward_times_to_choose = np.asarray([20,25,36,42]),task_check = 2, perm_n = 1000)
      perms_2_3_s = perumute_sessions_ch_value(HP, PFC, c_1 = 3, n = 11, reward_times_to_choose = np.asarray([20,25,36,42]),task_check = 3, perm_n = 1000)
+     
+     plot(PFC, HP, reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 0, n = 11, c_1 = 3,pvals  = perms_all_s)
+    
+    
+def plot(PFC, HP, reward_times_to_choose = np.asarray([20,25,35,42]), task_check = 0, n = 11, c_1 = 1,pvals  = [1,2,3]):
+    
+     C_1_HP, C_2_HP, C_3_HP = chosen_value_reg(HP, area = 'HP', n = n, perm = False)
+     C_1_PFC ,C_2_PFC, C_3_PFC = chosen_value_reg(PFC, area = 'PFC', perm = False)
+    
+     
+     value_to_value_PFC = vg.generalisation_plot(C_1_PFC,C_2_PFC,C_3_PFC, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
+     value_to_value_PFC = value_to_value_PFC[:-1]
 
+     value_to_value_HP = vg.generalisation_plot(C_1_HP,C_2_HP,C_3_HP, c_1, reward_times_to_choose = reward_times_to_choose, task_check = task_check)
+     value_to_value_HP = value_to_value_HP[:-1]
 
+     isl = wes.Royal2_5.mpl_colors
+    
+     plt.figure(figsize = (6,4))
+    
+     max_ind = np.max([np.max(value_to_value_PFC), np.max(value_to_value_HP)])+1.5
+     min_ind = np.min([np.min(value_to_value_PFC), np.min(value_to_value_HP)])-0.5
+             
+     plt.subplot(1,3,1)
+     plt.plot(value_to_value_PFC[1],color = isl[0],  label = 'PFC')
+     plt.plot(value_to_value_HP[1],color = isl[3],  label = 'CA1')
+     plt.ylim(min_ind,max_ind)   
+     p = pvals[0][np.where(pvals[1] ==1)[0]]
+     plt.plot(p, np.ones(len(p))+max_ind-2, '.', markersize=3, color= 'grey')
+
+     plt.ylabel(str(task_check))
+     plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])
+     plt.legend()
+     
+     plt.subplot(1,3,2)
+     plt.plot(value_to_value_PFC[2],color = isl[0], label = 'PFC')
+     plt.plot(value_to_value_HP[2],color = isl[3], label = 'CA1')
+     plt.ylim(min_ind,max_ind)
+     p = pvals[0][np.where(pvals[1] ==2)[0]]
+     plt.plot(p, np.ones(len(p))+max_ind-2, '.', markersize=3, color= 'grey')
+     plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])
+
+     plt.legend()
+
+     plt.subplot(1,3,3)
+     plt.plot(value_to_value_PFC[3],color = isl[0],  label = 'PFC')
+     plt.plot(value_to_value_HP[3],color = isl[3],  label = 'CA1')
+     plt.ylim(min_ind,max_ind)     
+     p = pvals[0][np.where(pvals[1] == 3)[0]]
+     plt.plot(p, np.ones(len(p))+max_ind-1.5, '.', markersize=3, color= 'grey')
+
+     plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])
+ 
+     plt.legend()
+     sns.despine()
+
+    
