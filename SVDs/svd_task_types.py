@@ -32,23 +32,17 @@ def task_ind(task, a_pokes, b_pokes):
   
     return taskid
 
-def extract_data(data, a ='PFC'):
+def extract_data(data, t = 0):
 
-    if a == 'PFC':
-        all_subjects = [data['DM'][0][:9], data['DM'][0][9:26],data['DM'][0][25:40],data['DM'][0][40:]]
-        all_firing = [data['Data'][0][:9], data['Data'][0][9:26],data['Data'][0][25:40],data['Data'][0][40:]]
-    else:   
-        all_subjects = [data['DM'][0][:16], data['DM'][0][16:24],data['DM'][0][24:]]
-        all_firing = [data['Data'][0][:16], data['Data'][0][16:24],data['Data'][0][24:]]
+    
+    all_subjects = data['DM'][0]
+    all_firing = data['Data'][0]
         
     neurons = 0
     animal_neurons = []
     for s in all_firing:
-        animal_n = 0
-        for ss in s:
-            neurons += ss.shape[1]
-            animal_n +=ss.shape[1]
-        animal_neurons.append(animal_n)
+        
+        neurons += s.shape[1]
 
     n_neurons_cum = 0
 
@@ -58,16 +52,13 @@ def extract_data(data, a ='PFC'):
     flattened_all_clusters_task_2_second_half =np.zeros((neurons,63*4))
     flattened_all_clusters_task_3_first_half = np.zeros((neurons,63*4))
     flattened_all_clusters_task_3_second_half = np.zeros((neurons,63*4))
-    for d,dd in enumerate(all_subjects):
-        dm = all_subjects[d]
-        firing = all_firing[d]
-
     
-        for  s, sess in enumerate(dm):
+    
+    for  s, sess in enumerate(all_firing):
             
            
-            DM = dm[s]
-            firing_rates = firing[s]
+            DM = all_subjects[s]
+            firing_rates = all_firing[s]
 
             n_trials, n_neurons, n_timepoints = firing_rates.shape
             n_neurons_cum += n_neurons
@@ -81,12 +72,16 @@ def extract_data(data, a ='PFC'):
             b_pokes = DM[:,7] #[:ind_block[11]]
             
             taskid = task_ind(task, a_pokes, b_pokes)
-          
+            if t ==0:
             
-            task_1 = np.where(taskid == 1)[0]
-            task_2 = np.where(taskid == 2)[0]
-            task_3 = np.where(taskid == 3)[0]
-            
+                task_1 = np.where(task == 1)[0]
+                task_2 = np.where(task == 2)[0]
+                task_3 = np.where(task == 3)[0]
+            else:
+                task_1 = np.where(taskid == 1)[0]
+                task_2 = np.where(taskid == 2)[0]
+                task_3 = np.where(taskid == 3)[0]
+                
             task_1_1 = task_1[:int(len(task_1)/2)]
             task_1_2 = task_1[int(len(task_1)/2):]
             
@@ -136,30 +131,33 @@ def extract_data(data, a ='PFC'):
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
         flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons
   
-def permute(PFC, HP, diagonal = False):
+def permute(PFC, HP, diagonal = False, perm = 2, axis = 0):
     
   
-    all_subjects = [PFC['DM'][0][:9], PFC['DM'][0][9:26],PFC['DM'][0][26:40],PFC['DM'][0][40:],HP['DM'][0][:16], HP['DM'][0][16:24],HP['DM'][0][24:]]
-    all_subjects_firing = [PFC['Data'][0][:9], PFC['Data'][0][9:26],PFC['Data'][0][26:40],PFC['Data'][0][40:],HP['Data'][0][:16], HP['Data'][0][16:24],HP['Data'][0][24:]]
-
-    animals_PFC = [0,1,2,3]
-    animals_HP = [4,5,6]
-    m, n = len(animals_PFC), len(animals_HP)
-     
+   
+    all_subjects = np.concatenate((HP['DM'][0],PFC['DM'][0]),0)     
+    all_subjects_firing = np.concatenate((HP['Data'][0],PFC['Data'][0]),0)     
+        
+    n_sessions = np.arange(len(HP['DM'][0])+len(PFC['DM'][0]))
+   
+  
     u_v_area_shuffle = []
     u_v_area_1_shuffle  = []
     u_v_area_2_shuffle  = []
     u_v_area_3_shuffle  = []
         
      
-    for indices_PFC in combinations(range(m + n), m):
-        indices_HP = [i for i in range(m + n) if i not in indices_PFC]
-       
-        PFC_shuffle_dm = np.concatenate(np.asarray(all_subjects)[np.asarray(indices_PFC)])
-        HP_shuffle_dm = np.concatenate(np.asarray(all_subjects)[np.asarray(indices_HP)])
+    for i in range(perm):
+        np.random.shuffle(n_sessions) # Shuffle PFC/HP sessions
+        indices_HP = n_sessions[:len(HP['DM'][0])]
+        indices_PFC = n_sessions[len(HP['DM'][0]):]
         
-        PFC_shuffle_f = np.concatenate(np.asarray(all_subjects_firing)[np.asarray(indices_PFC)])
-        HP_shuffle_f = np.concatenate(np.asarray(all_subjects_firing)[np.asarray(indices_HP)])
+        PFC_shuffle_dm = all_subjects[np.asarray(indices_PFC)]
+        HP_shuffle_dm = all_subjects[np.asarray(indices_HP)]
+        
+        PFC_shuffle_f = all_subjects_firing[np.asarray(indices_PFC)]
+        HP_shuffle_f = all_subjects_firing[np.asarray(indices_HP)]
+        
         HP_shuffle= [HP_shuffle_dm,HP_shuffle_f]
         PFC_shuffle= [PFC_shuffle_dm,PFC_shuffle_f]
        
@@ -187,7 +185,6 @@ def permute(PFC, HP, diagonal = False):
           
             
             for  s, sess in enumerate(dm):
-                print(s)
                 
                
                 DM = dm[s]
@@ -255,22 +252,101 @@ def permute(PFC, HP, diagonal = False):
                 flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3]= np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_3_2))],0)
                 flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_3_2))],0)
        
-            trp, average_between_all,average_within_all = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
-            flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half,task = 0, diagonal= diagonal)
                 
             trp_1, average_between_all_1,average_within_all_1 = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
             flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 1, diagonal= diagonal)
+            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 1, diagonal= diagonal, axis = axis)
             
             trp_2,average_between_all_2,average_within_all_2 = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
             flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 2, diagonal= diagonal)
+            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 2, diagonal= diagonal, axis = axis)
             
             trp_3,average_between_all_3,average_within_all_3 = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
             flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half,  task = 3, diagonal= diagonal)
-           
+            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half,  task = 3, diagonal= diagonal, axis = axis)
+            
+            dm = d[0]
+            firing_all = d[1]
+            neurons = 0
+            for s in firing_all:
+              
+                neurons += s.shape[1]
+        
+            n_neurons_cum = 0
+            flattened_all_clusters_task_1_first_half =  np.zeros((neurons,63*4))
+            flattened_all_clusters_task_1_second_half = np.zeros((neurons,63*4))
+            flattened_all_clusters_task_2_first_half = np.zeros((neurons,63*4))
+            flattened_all_clusters_task_2_second_half =np.zeros((neurons,63*4))
+            flattened_all_clusters_task_3_first_half = np.zeros((neurons,63*4))
+            flattened_all_clusters_task_3_second_half = np.zeros((neurons,63*4))
+          
+            
+            for  s, sess in enumerate(dm):
+                
+               
+                DM = dm[s]
+                firing_rates = firing_all[s]
+    
+                n_trials, n_neurons, n_timepoints = firing_rates.shape
+                n_neurons_cum += n_neurons
+            
+                  
+                choices = DM[:,1]
+                reward = DM[:,2] #[:ind_block[11]]  
+                task =  DM[:,5] #[:ind_block[11]]
+                
+                task_1 = np.where(task == 1)[0]
+                task_2 = np.where(task == 2)[0]
+                task_3 = np.where(task == 3)[0]
+                
+                task_1_1 = task_1[:int(len(task_1)/2)]
+                task_1_2 = task_1[int(len(task_1)/2):]
+                
+                task_2_1 = task_2[:int(len(task_2)/2)]
+                task_2_2 = task_2[int(len(task_2)/2):]
+                
+                task_3_1 = task_3[:int(len(task_3)/2)]
+                task_3_2 = task_3[int(len(task_3)/2):]
+    
+                flattened_all_clusters_task_1_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_1_1))],0)
+                flattened_all_clusters_task_1_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_1_1))],0)
+                flattened_all_clusters_task_1_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_1_1))],0)
+                flattened_all_clusters_task_1_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_1_1))],0)
+    
+    
+                flattened_all_clusters_task_1_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63]  = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_1_2))],0)
+                flattened_all_clusters_task_1_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_1_2))],0)
+                flattened_all_clusters_task_1_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_1_2))],0)
+                flattened_all_clusters_task_1_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_1_2))],0)
+                
+                
+                flattened_all_clusters_task_2_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_2_1))],0)
+                flattened_all_clusters_task_2_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_2_1))],0)
+                flattened_all_clusters_task_2_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_2_1))],0)
+                flattened_all_clusters_task_2_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_2_1))],0)
+    
+    
+                flattened_all_clusters_task_2_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63]  = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_2_2))],0)
+                flattened_all_clusters_task_2_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_2_2))],0)
+                flattened_all_clusters_task_2_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_2_2))],0)
+                flattened_all_clusters_task_2_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4]= np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_2_2))],0)
+               
+                
+                flattened_all_clusters_task_3_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63]  = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_3_1))],0)
+                flattened_all_clusters_task_3_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2]= np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_3_1))],0)
+                flattened_all_clusters_task_3_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_3_1))],0)
+                flattened_all_clusters_task_3_first_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4]= np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_3_1))],0)
+    
+    
+                flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,:63] = np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 1))[0],(task_3_2))],0)
+                flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63:63*2] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 1))[0],(task_3_2))],0)
+                flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3]= np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_3_2))],0)
+                flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_3_2))],0)
+   
+            trp, average_between_all,average_within_all = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+            flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+            flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half,task = 0, diagonal = diagonal, axis = axis)
+          
              
             u_v_area.append(trp)
             u_v_area_1.append(trp_1)
@@ -288,17 +364,9 @@ def permute(PFC, HP, diagonal = False):
 
 def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
     flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 1, diagonal = False):
+    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 1, diagonal = False, axis = 0):
     
-    # flattened_all_clusters_task_1_first_half = scipy.stats.zscore(flattened_all_clusters_task_1_first_half,0)
-    # flattened_all_clusters_task_1_second_half = scipy.stats.zscore(flattened_all_clusters_task_1_second_half,0)
- 
-    # flattened_all_clusters_task_2_first_half = scipy.stats.zscore(flattened_all_clusters_task_2_first_half,0)
-    # flattened_all_clusters_task_2_second_half = scipy.stats.zscore(flattened_all_clusters_task_2_second_half,0)
-     
-    # flattened_all_clusters_task_3_first_half = scipy.stats.zscore(flattened_all_clusters_task_3_first_half,0)
-    # flattened_all_clusters_task_3_second_half = scipy.stats.zscore(flattened_all_clusters_task_3_second_half,0)
-     
+      
     u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = False)
         
     #SVDsu.shape, s.shape, vh.shape for task 1 second half
@@ -341,7 +409,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_1_2 = s_task_1_2.diagonal()
     else:
-        s_1_2 = np.sum(s_task_1_2**2, axis = 1)
+        s_1_2 = np.sum(s_task_1_2**2, axis = axis)
      
     sum_c_task_1_2 = np.cumsum(abs(s_1_2))/n_neurons
     
@@ -351,7 +419,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_1_2 = s_task_2_1_from_t_1_2.diagonal()
     else:
-        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = 1)
+        s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = axis)
     sum_c_task_2_1_from_t_1_2 = np.cumsum(abs(s_2_1_from_t_1_2))/n_neurons
 
 
@@ -361,7 +429,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
     else:
-        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = 1)
+        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = axis)
     sum_c_task_2_2_from_t_2_1 = np.cumsum(abs(s_2_2_from_t_2_1))/n_neurons
     
      #Compare task 2 Firs Half from second half
@@ -369,7 +437,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_2_1_from_t_2_2 = s_task_2_1_from_t_2_2.diagonal()
     else:
-        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = 1)
+        s_2_1_from_t_2_2 = np.sum(s_task_2_1_from_t_2_2**2, axis = axis)
     sum_c_task_2_1_from_t_2_2 = np.cumsum(abs(s_2_1_from_t_2_2))/n_neurons
 
 
@@ -379,7 +447,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_2_2 = s_task_3_1_from_t_2_2.diagonal()
     else:
-        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = 1)
+        s_3_1_from_t_2_2 = np.sum(s_task_3_1_from_t_2_2**2, axis = axis)
     sum_c_task_3_1_from_t_2_2 = np.cumsum(abs(s_3_1_from_t_2_2))/n_neurons
 
 
@@ -388,7 +456,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_1_2 = s_task_3_1_from_t_1_2.diagonal()
     else:
-        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = 1)
+        s_3_1_from_t_1_2 = np.sum(s_task_3_1_from_t_1_2**2, axis = axis)
     sum_c_task_3_1_from_t_1_2 = np.cumsum(abs(s_3_1_from_t_1_2))/n_neurons
 
 
@@ -396,7 +464,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     if diagonal == False:
         s_3_1_from_t_3_2 = s_task_3_1_from_t_3_2.diagonal()
     else:
-        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = 1)
+        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = axis)
     sum_c_task_3_1_from_t_3_2 = np.cumsum(abs(s_3_1_from_t_3_2))/n_neurons
 
     if task == 0:
@@ -425,60 +493,77 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     
     return trp,average_between_all,average_within_all
 
-def real_diff(data,a= 'PFC', task = 0, diagonal = False):
-    
-    data = PFC
-    a = 'PFC'
+def real_diff(data,a= 'PFC', task = 0, diagonal = False, axis = 0):
+   # data = HP
     flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, a =a) 
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, t = task)
 
-    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
-    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
-    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
-    i = 0
-    plt.figure(figsize = (10,3))
-    plt.subplot(1,3,1)
-    plt.plot(vh_t1_1[i,:63], label = 'A Reward', color = 'pink')
-    plt.plot(vh_t1_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
-    plt.plot(vh_t1_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
-    plt.plot(vh_t1_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    # u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
+    # u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
+    # u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
+    # i = 0
+    # plt.figure(figsize = (10,3))
+    # plt.subplot(1,3,1)
+    # plt.plot(vh_t1_1[i,:63], label = 'A Reward', color = 'pink')
+    # plt.plot(vh_t1_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    # plt.plot(vh_t1_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    # plt.plot(vh_t1_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    # plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])    
 
-    plt.subplot(1,3,2)
-    plt.plot(vh_t2_1[i,:63],  label = 'A Reward', color = 'pink')
-    plt.plot(vh_t2_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
-    plt.plot(vh_t2_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
-    plt.plot(vh_t2_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    # plt.subplot(1,3,2)
+    # plt.plot(vh_t2_1[i,:63],  label = 'A Reward', color = 'pink')
+    # plt.plot(vh_t2_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    # plt.plot(vh_t2_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    # plt.plot(vh_t2_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    # plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])    
 
-    plt.subplot(1,3,3)
-    plt.plot(vh_t3_1[i,:63], label = 'A Reward', color = 'pink')
-    plt.plot(vh_t3_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
-    plt.plot(vh_t3_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
-    plt.plot(vh_t3_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
-    sns.despine()
-    plt.tight_layout()
+    # plt.subplot(1,3,3)
+    # plt.plot(vh_t3_1[i,:63], label = 'A Reward', color = 'pink')
+    # plt.plot(vh_t3_1[i,63:63*2], label = 'A No Reward',color = 'pink', linestyle = '--')
+    # plt.plot(vh_t3_1[i,63*2:63*3], label = 'B Reward',color = 'grey')
+    # plt.plot(vh_t3_1[i,63*3:63*4], label = 'B No Reward',color = 'grey', linestyle = '--')
+    # plt.xticks([0,10,25,35,42,50,60], ['-1','-0.6','Init', 'Ch','R', '+0.32', '+0.72'])    
+    # sns.despine()
+    # plt.tight_layout()
 
+    # plt.figure(figsize = (10,3))
+    # plt.subplot(1,3,1)
+    # plt.plot(u_t1_1[:,i], color = 'pink')
+    # plt.subplot(1,3,2)
+    # plt.plot(u_t2_1[:,i], color = 'pink')
+    # plt.subplot(1,3,3)
+    # plt.plot(u_t3_1[:,i], color = 'pink')
+    # sns.despine()
+    # plt.tight_layout()
+
+  
     trp, average_between_all,average_within_all = svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
     flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = task, diagonal = diagonal)
+    flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = task, diagonal = diagonal, axis = axis)
    
     return trp, average_between_all,average_within_all
 
 
-def animals_test():
+def run_svd():
     
-    u_v_area_shuffle, u_v_area_1_shuffle, u_v_area_2_shuffle, u_v_area_3_shuffle = permute(PFC, HP, diagonal = True)
+    run(HP, PFC, d = True, p = 5000, axis = 0)
+    run(HP, PFC, d = True, p = 5000, axis = 1)
+    run(HP, PFC, d = False, p = 5000)
+
+def run(HP, PFC, d = True, p = 1000, axis = 0):
     
+    u_v_area_shuffle, u_v_area_1_shuffle, u_v_area_2_shuffle, u_v_area_3_shuffle = permute(PFC, HP, diagonal = d, perm = p, axis = axis)
     # Real DIfferences 
-    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = True)
-    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = True)
-    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = True)
-    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = True)
+    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = d,axis = axis)
+    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = d,axis = axis)
+    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = d,axis = axis)
+    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = d,axis = axis)
     
-    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0, diagonal = True)
-    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = True)
-    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = True)
-    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = True)
+    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0,  diagonal = d,axis = axis)
+    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = d, axis = axis)
+    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = d, axis = axis)
+    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = d,axis = axis)
     
     
     diff_uv  = []
@@ -543,41 +628,49 @@ def animals_test():
         plt.plot(between_pfc[ii], label = 'Between PFC', color = 'green', linestyle = '--')
         sns.despine()
         #plt.xtitle(str(l))
-    task_1_1, task_1_2,\
-    task_2_1, task_2_2,\
-    task_3_1, task_3_2, animal_neurons = extract_data(HP, a ='HP') 
+        
+    
+        
+        
+        
+        
+  # Plot diagonals and corelation matrices
+  
+    # task_1_1, task_1_2,\
+    # task_2_1, task_2_2,\
+    # task_3_1, task_3_2, animal_neurons = extract_data(HP)
     
    
-    cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
+    # cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
 
-    plt.figure()
-    plt.subplot(1,3,1)
-    plt.imshow(np.corrcoef(task_1_2.T,task_3_2.T), cmap =cmap)
+    # plt.figure()
+    # plt.subplot(2,3,1)
+    # plt.imshow(np.corrcoef(task_1_2.T,task_3_2.T), cmap =cmap, aspect = 'auto')
 
     
-    diag_1_3 = np.diagonal(np.corrcoef(task_1_2.T,task_3_2.T),252)
-    plt.subplot(1,3,2)
-    plt.imshow(np.corrcoef(task_2_1.T,task_3_1.T), cmap =cmap)
+    # diag_1_3 = np.diagonal(np.corrcoef(task_1_2.T,task_3_2.T),252)
+    # plt.subplot(2,3,2)
+    # plt.imshow(np.corrcoef(task_2_1.T,task_3_1.T), cmap =cmap, aspect = 'auto')
     
-    diag_2_3 = np.diagonal(np.corrcoef(task_2_1.T,task_3_1.T),252)
+    # diag_2_3 = np.diagonal(np.corrcoef(task_2_1.T,task_3_1.T),252)
 
-    plt.subplot(1,3,3)
-    plt.imshow(np.corrcoef(task_1_2.T,task_2_2.T), cmap =cmap)
-    diag_1_2 = np.diagonal(np.corrcoef(task_1_1.T,task_2_1.T),252)
+    # plt.subplot(2,3,3)
+    # plt.imshow(np.corrcoef(task_1_2.T,task_2_2.T), cmap =cmap, aspect = 'auto')
+    # diag_1_2 = np.diagonal(np.corrcoef(task_1_1.T,task_2_1.T),252)
 
-    ymin = np.min([diag_1_3,diag_1_2,diag_2_3]) - 0.05
-    ymax = np.max([diag_1_3,diag_1_2,diag_2_3]) + 0.05
+    # ymin = np.min([diag_1_3,diag_1_2,diag_2_3]) - 0.05
+    # ymax = np.max([diag_1_3,diag_1_2,diag_2_3]) + 0.05
 
-    plt.subplot(2,3,4)
-    plt.plot(diag_1_3, color = 'pink')
-    plt.ylim(ymin,ymax)
-    plt.subplot(2,3,5)
-    plt.plot(diag_2_3, color = 'pink')
-    plt.ylim(ymin,ymax)
-    plt.subplot(2,3,6)
-    plt.plot(diag_1_2, color = 'pink')
-    plt.ylim(ymin,ymax)
-    sns.despine()
+    # plt.subplot(2,3,4)
+    # plt.plot(diag_1_3, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # plt.subplot(2,3,5)
+    # plt.plot(diag_2_3, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # plt.subplot(2,3,6)
+    # plt.plot(diag_1_2, color = 'pink')
+    # plt.ylim(ymin,ymax)
+    # sns.despine()
    
 
 

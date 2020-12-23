@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug  1 13:52:02 2019
-
 @author: veronikasamborska
 """
 # =============================================================================
@@ -26,8 +25,9 @@ import regressions as re
 import scipy
 import neuron_firing_all_pokes as nef 
 
+#def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
 
-def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_sim_Q1_value_a, experiment_sim_Q1_value_b, experiment_sim_Q4_values, title):
+def tim_create_mat(experiment, title):
     
     all_sessions_list = []
     firing_rates = []
@@ -187,11 +187,11 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
         i_pokes[task_1[-1]+1:task_2[-1]+1] = i_poke_task_2
         i_pokes[task_2[-1]+1:] = i_poke_task_3
         
-        chosen_Q1 = experiment_sim_Q1[s][:len(choices)]
-        chosen_Q4 = experiment_sim_Q4[s][:len(choices)]
-        Q1_value_a = experiment_sim_Q1_value_a[s][:len(choices)]
-        Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
-        Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
+        # chosen_Q1 = experiment_sim_Q1[s][:len(choices)]
+        # chosen_Q4 = experiment_sim_Q4[s][:len(choices)]
+        # Q1_value_a = experiment_sim_Q1_value_a[s][:len(choices)]
+        # Q1_value_b = experiment_sim_Q1_value_b[s][:len(choices)]
+        # Q4_value_a = experiment_sim_Q4_values[s][:len(choices)]
         
        # Q1_prediction_error_chosen = experiment_sim_Q1_prediction_error_chosen[s][:len(choices)]
         predictors_all = OrderedDict([
@@ -204,11 +204,11 @@ def tim_create_mat(experiment, experiment_sim_Q1, experiment_sim_Q4, experiment_
                           ('A', a_pokes),
                           ('B', b_pokes),
                           ('Initiation', i_pokes),
-                          ('Chosen_Simple_RW',chosen_Q1),
-                          ('Chosen_Cross_learning_RW', chosen_Q4),
-                          ('Value_A_RW', Q1_value_a),
-                          ('Value_B_RW', Q1_value_b),
-                          ('Value_A_Cross_learning', Q4_value_a),
+                          # ('Chosen_Simple_RW',chosen_Q1),
+                          # ('Chosen_Cross_learning_RW', chosen_Q4),
+                          # ('Value_A_RW', Q1_value_a),
+                          # ('Value_B_RW', Q1_value_b),
+                          # ('Value_A_Cross_learning', Q4_value_a),
                         #  ('Prediction_Error_Q',Q1_prediction_error_chosen),
                           ('ones', ones)])
             

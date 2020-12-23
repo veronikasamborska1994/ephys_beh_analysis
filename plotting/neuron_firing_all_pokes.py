@@ -768,7 +768,6 @@ def session_spikes_vs_trials_plot(raw_spikes,pyControl_choice):
         spikes_list.append(spikes)
     return spikes_list, session_duration_ms
        
-
 #plotting_no_hist(PFC,experiment_aligned_PFC, area = 'PFC')
 #plotting_no_hist(HP,experiment_aligned_HP, area = 'HP')
 

@@ -16,9 +16,10 @@ sys.path.append('/Users/veronikasamborska/Desktop/ephys_beh_analysis/preprocessi
 import remapping_count as rc 
 import ephys_beh_import as ep
 from scipy import io
-      
+import pingouin as pg      
 # Script for plotting behavior during recordings
 
+from statsmodels.stats.anova import AnovaRM
 
 
 def import_data():
@@ -92,19 +93,56 @@ def reversals_during_recordings(m484, m479, m483, m478, m486, m480, m481):
         
     all_subjects = np.asarray(all_subjects)
     tasks = all_subjects.shape[1]
-    for task in range(tasks):
-        pd.DataFrame(data=all_subjects[:,task,:]).to_csv('task{}_reversals_recording.csv'.format(task))
+    data = np.concatenate(all_subjects,0)
+    data = np.concatenate(data,0)
+    rev = np.tile(np.arange(4),126)
+    task_n = np.tile(np.repeat(np.arange(18),4),7)
+    n_subj =np.repeat(np.arange(7),72)
+    
 
+    # for task in range(tasks):
+    #     pd.DataFrame(data=all_subjects[:,task,:]).to_csv('task{}_reversals_recording.csv'.format(task))
+
+    anova = {'Data':data,'Sub_id': n_subj,'cond1': task_n, 'cond2':rev}
+    
+    anova_pd = pd.DataFrame.from_dict(data = anova)
+                                      
+    aovrm_es = pg.rm_anova(anova_pd, dv = 'Data', within=['cond1','cond2'],subject = 'Sub_id' )
+    posthoc = pg.pairwise_ttests(data=anova_pd, dv='Data',within=['cond2'],subject = 'Sub_id',\
+                             parametric=True, padjust='fdr_bh', effsize='hedges')
+ 
+    
     all_rev = np.mean(all_subjects,axis = 0)
     std_err = (np.std(all_subjects, axis = 0))/7
     reversals = 4
     x=np.arange(reversals)
     plt.figure(figsize=(10,5))
 
+  
     for i in range(tasks): 
          plt.plot(i * reversals + x, all_rev[i])
          plt.fill_between(i * reversals + x, all_rev[i]-std_err[i], all_rev[i]+std_err[i], alpha=0.2)
-    plt.ylim(5,70)
+    
+    rev_1 = np.nanmean(all_rev[:,0])
+    rev_2 = np.nanmean(all_rev[:,1])
+    rev_3 = np.nanmean(all_rev[:,2])
+    rev_4 = np.nanmean(all_rev[:,3])
+    
+    st_1 = np.nanmean(std_err[:,0])
+    st_2 = np.nanmean(std_err[:,1])
+    st_3 = np.nanmean(std_err[:,2])
+    st_4 = np.nanmean(std_err[:,3])
+    
+    xs = [1,2,3,4]
+    rev = [rev_1,rev_2,rev_3,rev_4]
+    st = [st_1,st_2,st_3,st_4]
+    z = np.polyfit(xs, rev,1)
+    p = np.poly1d(z)
+    plt.figure()
+    plt.plot(xs,p(xs),"--", color = 'grey', label = 'Trend Line')
+  
+    plt.errorbar(x = xs, y = rev, yerr = st, alpha=0.8,  linestyle='None', marker='*', color = 'Black')    
+
 
     plt.ylabel('Number of Trials Till Threshold')
     plt.xlabel('Reversal Number')
@@ -131,10 +169,11 @@ def reversals_during_recordings(m484, m479, m483, m478, m486, m480, m481):
 def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
     #HP = m484 + m479 + m483
     #PFC = m478 + m486 + m480 + m481
-    all_subjects = [data_HP['DM'][0][:16], data_HP['DM'][0][16:24],data_HP['DM'][0][24:],data_PFC['DM'][0][:9], data_PFC['DM'][0][9:26],data_PFC['DM'][0][26:40],data_PFC['DM'][0][40:]]
+    all_subjects = [data_HP['DM'][0][:16], data_HP['DM'][0][16:24],data_HP['DM'][0][24:],data_PFC['DM'][0][:9], data_PFC['DM'][0][9:25],data_PFC['DM'][0][25:39],data_PFC['DM'][0][39:]]
     subj = [m484, m479, m483, m478, m486, m480, m481[:-1]]
     all_subj_mean = []
     all_subj_std = []
+    
 
     for s,subject in zip(subj, all_subjects):
         reversal_number = 0
@@ -244,21 +283,21 @@ def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
                                     wrong_count += 1 
                                     wrong_count_state.append(poke_B_1)
 #    
-                        elif event == poke_I_2: 
-                            if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
-                                wrong_count += 1 
-                                wrong_count_state.append(poke_I_2)
+                        # elif event == poke_I_2: 
+                        #     if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
+                        #         wrong_count += 1 
+                        #         wrong_count_state.append(poke_I_2)
     
                                 
-                        elif event == poke_B_2: 
-                            if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
-                                wrong_count += 1 
-                                wrong_count_state.append(poke_B_2)
+                        # elif event == poke_B_2: 
+                        #     if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
+                        #         wrong_count += 1 
+                        #         wrong_count_state.append(poke_B_2)
     
-                        elif event == poke_B_3: 
-                            if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
-                                wrong_count += 1 
-                                wrong_count_state.append(poke_B_3)
+                        # elif event == poke_B_3: 
+                        #     if choice_state == False and  prev_choice == 'Poke_B_1' or prev_choice == 'Poke_A_1' :
+                        #         wrong_count += 1 
+                        #         wrong_count_state.append(poke_B_3)
     
                     
                     # In task 2 B is different to every other B, init in 2 becomes B in 3 --> so exclude B 3 but include other Inits
@@ -283,15 +322,15 @@ def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
                                 wrong_count += 1 
                                 wrong_count_state.append(poke_A_2)
                                     
-                         elif event == poke_I_1: 
-                            if choice_state == False and  prev_choice == 'Poke_B_2' or prev_choice == 'Poke_A_2' :
-                                wrong_count += 1 
-                                wrong_count_state.append(poke_I_1)
+                         # elif event == poke_I_1: 
+                         #    if choice_state == False and  prev_choice == 'Poke_B_2' or prev_choice == 'Poke_A_2' :
+                         #        wrong_count += 1 
+                         #        wrong_count_state.append(poke_I_1)
                                 
-                         elif event == poke_B_1: 
-                            if choice_state == False and  prev_choice == 'Poke_B_2' or prev_choice == 'Poke_A_2' :
-                                wrong_count += 1 
-                                wrong_count_state.append(poke_B_1)
+                         # elif event == poke_B_1: 
+                         #    if choice_state == False and  prev_choice == 'Poke_B_2' or prev_choice == 'Poke_A_2' :
+                         #        wrong_count += 1 
+                         #        wrong_count_state.append(poke_B_1)
                          
                     # In task 3 B is the same as Init in task 2, init in 2 becomes B in 3 --> so exclude I2 but include other Bs
     
@@ -314,17 +353,17 @@ def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
                             elif choice_state == False and prev_choice == 'Poke_A_3':
                                 wrong_count += 1 
 #                                    
-                         elif event == poke_I_2: 
-                            if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
-                                wrong_count += 1 
+                         # elif event == poke_I_2: 
+                         #    if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
+                         #        wrong_count += 1 
                                 
-                         elif event == poke_B_1: 
-                            if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
-                                wrong_count += 1 
+                         # elif event == poke_B_1: 
+                         #    if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
+                         #        wrong_count += 1 
                          
-                         elif event == poke_B_2: 
-                            if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
-                                wrong_count += 1 
+                         # elif event == poke_B_2: 
+                         #    if choice_state == False and  prev_choice == 'Poke_B_3' or prev_choice == 'Poke_A_3' :
+                         #        wrong_count += 1 
                         
                 if sess_count == 1: 
                     all_sessions_wrong_ch = session_wrong_choice[:len(task)]
@@ -378,7 +417,29 @@ def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
     tasks = all_subj_mean_np.shape[1]
     for task in range(tasks):
         pd.DataFrame(data=all_subj_mean_np[:,task,:]).to_csv('task{}_rab_recording.csv'.format(task))
+  
     
+    tasks = all_subj_mean_np.shape[1]
+    data = np.concatenate(all_subj_mean_np,0)
+    data = np.concatenate(data,0)
+    rev = np.tile(np.arange(4),126)
+    task_n = np.tile(np.repeat(np.arange(18),4),7)
+    n_subj =np.repeat(np.arange(7),72)
+    
+
+    # for task in range(tasks):
+    #     pd.DataFrame(data=all_subjects[:,task,:]).to_csv('task{}_reversals_recording.csv'.format(task))
+
+    anova = {'Data':data,'Sub_id': n_subj,'cond1': task_n, 'cond2':rev}
+    
+    anova_pd = pd.DataFrame.from_dict(data = anova)
+                                      
+    aovrm_es = pg.rm_anova(anova_pd, dv = 'Data', within=['cond1','cond2'],subject = 'Sub_id' )
+    posthoc = pg.pairwise_ttests(data=anova_pd, dv='Data',within=['cond2'],subject = 'Sub_id',\
+                             parametric=True, padjust='fdr_bh', effsize='hedges')
+ 
+    
+
     all_rev = np.mean(all_subj_mean,axis = 0)
     std_err = (np.std(all_subj_mean, axis = 0))/7
     reversals = 4
@@ -429,3 +490,5 @@ def out_of_sequence(m484, m479, m483, m478, m486, m480, m481,data_HP, data_PFC):
     plt.plot(x_pos,p(x_pos),"--", color = 'grey', label = 'Trend Line')
     #plt.ylim(0,0.9)
     
+    return aovrm_es, posthoc
+

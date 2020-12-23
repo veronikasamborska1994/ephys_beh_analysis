@@ -345,17 +345,16 @@ def plot_heat_surprise(data_HP, data_PFC):
     all_inds.append(np.where(b_init_space_PFC_diff_ch > (b_init_space_PFC_perm_ch))) #5
     
     cmap =  palettable.scientific.sequential.Acton_3.mpl_colormap
-    fig1, axes1 = plt.subplots(nrows=2, ncols=3, figsize=(10,5))
+    fig1, axes1 = plt.subplots(nrows=4, ncols=3, figsize=(10,5))
 
     im = axes1[0,0].imshow(mean_b_b_t1_2_HP.T,cmap = cmap, aspect = 'auto')
     axes1[0,0].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
     axes1[0,0].set_xticks( np.arange(0,mean_b_b_t1_2_HP.shape[0],2))
     axes1[0,0].set_xticklabels( np.arange(0,mean_b_b_t1_2_HP.shape[0],2)+1)
-
     axes1[0,0].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
 
     clim=im.properties()['clim']
-    axes1[0,1].imshow(mean_a_a_t1_3_HP.T ,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[0,1].imshow(mean_b_b_t1_3_HP.T ,cmap = cmap,clim=clim, aspect = 'auto')
     axes1[0,1].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
     axes1[0,1].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
     axes1[0,1].set_xticks( np.arange(0,mean_b_b_t1_2_HP.shape[0],2))
@@ -373,7 +372,7 @@ def plot_heat_surprise(data_HP, data_PFC):
     axes1[0,0].set_xticks( np.arange(0,mean_b_b_t1_2_HP.shape[0],2))
     axes1[0,0].set_xticklabels( np.arange(0,mean_b_b_t1_2_HP.shape[0],2)+1)
 
-    axes1[1,1].imshow(mean_a_a_t1_3_PFC.T,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[1,1].imshow(mean_b_b_t1_3_PFC.T,cmap = cmap,clim=clim, aspect = 'auto')
     axes1[1,1].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
     axes1[1,1].set_xticks( np.arange(0,mean_b_b_t1_2_HP.shape[0],2))
     axes1[1,1].set_xticklabels( np.arange(0,mean_b_b_t1_2_HP.shape[0],2)+1)
@@ -385,6 +384,44 @@ def plot_heat_surprise(data_HP, data_PFC):
     axes1[1,2].set_xticks( np.arange(0,mean_b_b_t1_2_HP.shape[0],2))
     axes1[1,2].set_xticklabels( np.arange(0,mean_b_b_t1_2_HP.shape[0],2)+1)
 
+
+
+    axes1[2,0].imshow(mean_a_a_t1_t2_HP.T ,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[2,0].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[2,0].set_xticks( np.arange(0,mean_a_a_t1_t2_HP.shape[0],2))
+    axes1[2,0].set_xticklabels( np.arange(0,mean_a_a_t1_t2_HP.shape[0],2)+1)
+    axes1[2,0].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+
+    clim=im.properties()['clim']
+    axes1[2,1].imshow(mean_a_a_t1_3_HP.T ,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[2,1].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[2,1].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+    axes1[2,1].set_xticks( np.arange(0,mean_a_a_t1_3_HP.shape[0],2))
+    axes1[2,1].set_xticklabels( np.arange(0,mean_a_a_t1_3_HP.shape[0],2)+1)
+
+    axes1[2,2].imshow(mean_a_a_t2_t3_HP.T,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[2,2].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[2,2].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+    axes1[2,2].set_xticks( np.arange(0,mean_a_a_t2_t3_HP.shape[0],2))
+    axes1[2,2].set_xticklabels( np.arange(0,mean_a_a_t2_t3_HP.shape[0],2)+1)
+
+    axes1[3,0].imshow(mean_a_a_t1_t2_PFC.T,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[3,0].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[3,0].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+    axes1[3,0].set_xticks( np.arange(0,mean_a_a_t1_t2_PFC.shape[0],2))
+    axes1[3,0].set_xticklabels( np.arange(0,mean_a_a_t1_t2_PFC.shape[0],2)+1)
+
+    axes1[3,1].imshow(mean_a_a_t1_3_PFC.T,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[3,1].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[3,1].set_xticks( np.arange(0,mean_a_a_t1_3_PFC.shape[0],2))
+    axes1[3,1].set_xticklabels( np.arange(0,mean_a_a_t1_3_PFC.shape[0],2)+1)
+    axes1[3,1].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+ 
+    axes1[3,2].imshow(mean_a_a_t2_t3_PFC.T,cmap = cmap,clim=clim, aspect = 'auto')
+    axes1[3,2].set_yticks([5,10,15,20,25,36,42,47, 52,57,62])
+    axes1[3,2].set_yticklabels(['-800','-600','-400','-200','I','Ch','O','+200', '+400', '+600', '+800'])
+    axes1[3,2].set_xticks( np.arange(0,mean_a_a_t2_t3_PFC.shape[0],2))
+    axes1[3,2].set_xticklabels( np.arange(0,mean_a_a_t2_t3_PFC.shape[0],2)+1)
 
     fig1.colorbar(im, ax=axes1.ravel().tolist(), shrink=0.5)
 

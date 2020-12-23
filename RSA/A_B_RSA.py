@@ -351,6 +351,19 @@ def regression_RSA_perm(all_sessions_HP,all_sessions_PFC, experiment_aligned_HP,
     ols.fit(X,y_PFC)
     cpd_PFC = _cpd(X,y_PFC)
     C_PFC = ols.coef_
+    
+    
+    
+    matrix_for_correlations_PFC = extract_trials(experiment_aligned_PFC, all_sessions_PFC, t_start, t_end)
+    correlation_m_PFC = np.corrcoef(matrix_for_correlations_PFC)
+    correlation_m_f_PFC = correlation_m_PFC.flatten()
+    y_PFC = correlation_m_f_PFC
+    ols = LinearRegression(copy_X = True,fit_intercept= False)
+
+    ols.fit(X,y_PFC)
+    cpd_PFC = _cpd(X,y_PFC)
+    C_PFC = ols.coef_
+
 
     #diff_real = abs(cpd_PFC - cpd_HP)
 
@@ -712,7 +725,7 @@ def run_RSA():
             
     plot(correlation_m_HP_list,correlation_m_PFC_list,cpd_HP_list,cpd_PFC_list,C_HP_list,C_PFC_list,p_C_list,p_value_list,\
            space_HP_flip, space_PFC_flip, a_b_HP_flip, a_b_PFC_flip, rew_HP_flip, rew_PFC_flip, rew_a_HP_flip, rew_a_PFC_flip,rew_b_HP_flip, rew_b_PFC_flip,\
-            ch_init_HP_flip, ch_init_PFC_flip, a_spec_HP_flip, a_spec_PFC_flip, cpd = False,plot_corr = False)
+            ch_init_HP_flip, ch_init_PFC_flip, a_spec_HP_flip, a_spec_PFC_flip, cpd = True,plot_corr = False)
         
     
     # Session
@@ -825,7 +838,7 @@ def plot(correlation_m_HP_list,correlation_m_PFC_list,cpd_HP_list,cpd_PFC_list,C
         for s in space_sig:
             plt.annotate('*',xy = [s, (np.max([space_HP,space_PFC])+0.01)*100])  
         plt.ylim((np.min([space_HP,space_PFC])-0.03)*100,(np.max([space_HP,space_PFC])+0.03)*100)
-        plt.ylabel('CPD %')
+        plt.ylabel('CPD')
         
         plt.subplot(1,7,2)
 
@@ -920,7 +933,7 @@ def plot(correlation_m_HP_list,correlation_m_PFC_list,cpd_HP_list,cpd_PFC_list,C
             plt.annotate('*',xy = [s, (np.max([space_HP,space_PFC])+0.03)], color = isl[3])
         plt.ylim((np.min([space_HP,space_PFC])-0.03),(np.max([space_HP,space_PFC])+0.03))
        
-        plt.ylabel('CPD %')
+        plt.ylabel('Coefficient')
         
    
         plt.subplot(1,7,2)

@@ -180,8 +180,8 @@ def through_time_plot(data, task_1_2 = False, task_2_3 = False, task_1_3 = False
             
             if task_2_3 == True:
 
-                surprise_array_a = np.concatenate([a_within_1, a_between], axis = 0)                   
-                surprise_array_b = np.concatenate([b_within_1,b_between], axis = 0)         
+                surprise_array_a = np.concatenate([a_within_1_rev, a_between_rev], axis = 0)                   
+                surprise_array_b = np.concatenate([b_within_1_rev,b_between_rev], axis = 0)         
             else:
                 surprise_array_a = np.concatenate([within_a, between_a], axis = 0)                   
                 surprise_array_b = np.concatenate([within_b,between_b], axis = 0)         
@@ -281,13 +281,13 @@ def plot_through_time(HP,PFC):
  
     
  ## B to Init
-    p_1_2_b_i_hp = abs(_1_2_init_b_HP_within-_1_2_init_b_HP_between)[26]> _s_mean_b_i_HP_1_2[26]
-    p_1_3_b_i_hp = abs(_1_3_init_b_HP_within-_1_3_init_b_HP_between)[26]> _s_mean_b_i_HP_1_3[26]
-    p_2_3_b_i_hp = abs(_2_3_init_b_HP_within-_2_3_init_b_HP_between)[26]> _s_mean_b_i_HP_2_3[26]
+    p_1_2_b_i_hp = np.where(abs(_1_2_init_b_HP_within-_1_2_init_b_HP_between)> np.max(_s_mean_b_i_HP_1_2))
+    p_1_3_b_i_hp =  np.where(abs(_1_3_init_b_HP_within-_1_3_init_b_HP_between)> np.max(_s_mean_b_i_HP_1_3))
+    p_2_3_b_i_hp =  np.where(abs(_2_3_init_b_HP_within-_2_3_init_b_HP_between)> (_s_mean_b_i_HP_2_3))
    
-    p_1_2_b_i_pfc = abs(_1_2_init_b_PFC_within-_1_2_init_b_PFC_between)[26]> _s_mean_b_i_PFC_1_2[26]
-    p_1_3_b_i_pfc = abs(_1_3_init_b_PFC_within-_1_3_init_b_PFC_between)[26]> _s_mean_b_i_PFC_1_3[26]
-    p_2_3_b_i_pfc = abs(_2_3_init_b_PFC_within-_2_3_init_b_PFC_between)[26]> _s_mean_b_i_PFC_2_3[26]
+    p_1_2_b_i_pfc =  np.where(abs(_1_2_init_b_PFC_within-_1_2_init_b_PFC_between) > np.max(_s_mean_b_i_PFC_1_2))
+    p_1_3_b_i_pfc = np.where( abs(_1_3_init_b_PFC_within-_1_3_init_b_PFC_between) >np.max( _s_mean_b_i_PFC_1_3))
+    p_2_3_b_i_pfc = np.where( abs(_2_3_init_b_PFC_within-_2_3_init_b_PFC_between) > np.max(_s_mean_b_i_PFC_2_3))
     
   
         
@@ -312,7 +312,7 @@ def plot_through_time(HP,PFC):
 
     plt.plot(_1_2_init_b_PFC_between, color = isl[3], linestyle = '--', label = 'PFC Between Task')
 
-
+   
     plt.subplot(1,3,2)
 
     plt.plot(_1_3_init_b_HP_within, color = isl[2], label = 'HP Within Task')
@@ -337,6 +337,9 @@ def plot_through_time(HP,PFC):
     plt.plot(_2_3_init_b_PFC_within, color = isl[3], label = 'PFC Within Task')
 
     plt.plot(_2_3_init_b_PFC_between, color = isl[3], linestyle = '--', label = 'PFC Between Task')
+    y = mmax + 0.02
+
+    #plt.plot(26, 1*y, '.', markersize=3, color= isl[2])
 
            
     plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
@@ -351,20 +354,20 @@ def plot_through_time(HP,PFC):
 
     isl = wes.Royal2_5.mpl_colors
     It = 25
-    Ct = 25
+    Ct = 36
     Re = 42
 
     plt.figure(figsize = (15,3))
     
       
-    mmin  =np.min([mean_a_a_HP_1_2, mean_a_a_HP_1_3,mean_a_a_HP_2_3,\
-                   mean_b_b_HP_1_2, mean_b_b_HP_1_3,mean_b_b_HP_2_3,\
-                   mean_a_a_PFC_1_2, mean_a_a_PFC_1_3,mean_a_a_PFC_2_3,\
-                   mean_b_b_PFC_1_2, mean_b_b_PFC_1_3,mean_b_b_PFC_2_3])
-    mmax  =np.max([mean_a_a_HP_1_2, mean_a_a_HP_1_3,mean_a_a_HP_2_3,\
-                   mean_b_b_HP_1_2, mean_b_b_HP_1_3,mean_b_b_HP_2_3,\
-                   mean_a_a_PFC_1_2, mean_a_a_PFC_1_3,mean_a_a_PFC_2_3,\
-                   mean_b_b_PFC_1_2, mean_b_b_PFC_1_3,mean_b_b_PFC_2_3 ])+0.04
+    mmin  =np.min([np.diag(mean_a_a_HP_1_2[63:]), np.diag(mean_a_a_HP_1_3[63:]),np.diag(mean_a_a_HP_2_3[63:]),\
+                   np.diag(mean_b_b_HP_1_2[63:]),np.diag( mean_b_b_HP_1_3[63:]),np.diag(mean_b_b_HP_2_3[63:]),\
+                   np.diag(mean_a_a_PFC_1_2[63:]), np.diag(mean_a_a_PFC_1_3[63:]),np.diag(mean_a_a_PFC_2_3[63:]),\
+                  np.diag(mean_b_b_PFC_1_2[63:]), np.diag(mean_b_b_PFC_1_3[63:]),np.diag(mean_b_b_PFC_2_3[63:])])
+    mmax  =np.max([np.diag(mean_a_a_HP_1_2[63:]), np.diag(mean_a_a_HP_1_3[63:]),np.diag(mean_a_a_HP_2_3[63:]),\
+                   np.diag(mean_b_b_HP_1_2[63:]),np.diag( mean_b_b_HP_1_3[63:]),np.diag(mean_b_b_HP_2_3[63:]),\
+                   np.diag(mean_a_a_PFC_1_2[63:]), np.diag(mean_a_a_PFC_1_3[63:]),np.diag(mean_a_a_PFC_2_3[63:]),\
+                  np.diag(mean_b_b_PFC_1_2[63:]), np.diag(mean_b_b_PFC_1_3[63:]),np.diag(mean_b_b_PFC_2_3[63:])])+0.04
     
    
     plt.subplot(2,3,1)
@@ -376,13 +379,19 @@ def plot_through_time(HP,PFC):
     plt.plot(np.diag(mean_a_a_PFC_1_2[:63]), color = isl[3], label = 'PFC Within Task')
 
     plt.plot(np.diag(mean_a_a_PFC_1_2[63:]), color = isl[3], linestyle = '--', label = 'PFC Between Task')
+    y = mmax + 0.02
 
-           
+    plt.plot(p_1_2_a_hp[0], np.ones(p_1_2_a_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_1_2_a_pfc[0], np.ones(p_1_2_a_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])
+
+   
+        
     plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
     plt.vlines(Ct,mmin,mmax, color = 'grey', alpha = 0.5)
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
 
-    y = mmax + 0.02
+   # y = mmax + 0.02
    
     
     plt.legend()
@@ -407,6 +416,10 @@ def plot_through_time(HP,PFC):
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
 
     y = mmax + 0.02
+    plt.plot(p_1_3_a_hp[0], np.ones(p_1_3_a_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_1_3_a_pfc[0], np.ones(p_1_3_a_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])    
+ 
     plt.title('1 3')
 
     
@@ -428,6 +441,10 @@ def plot_through_time(HP,PFC):
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
 
     y = mmax + 0.02
+    plt.plot(p_2_3_a_hp[0], np.ones(p_2_3_a_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_2_3_a_pfc[0], np.ones(p_2_3_a_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])
+
     plt.title('2 3')
 
 
@@ -447,6 +464,12 @@ def plot_through_time(HP,PFC):
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
 
     y = mmax + 0.02
+    plt.plot(p_1_2_b_hp[0], np.ones(p_1_2_b_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_1_2_b_pfc[0], np.ones(p_1_2_b_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])
+
+   
+  
     plt.legend()
 
 
@@ -466,7 +489,11 @@ def plot_through_time(HP,PFC):
     plt.vlines(It,mmin,mmax, color = 'grey', alpha = 0.5)
     plt.vlines(Ct,mmin,mmax, color = 'grey', alpha = 0.5)
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
+    plt.plot(p_1_3_b_hp[0], np.ones(p_1_3_b_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_1_3_b_pfc[0], np.ones(p_1_3_b_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])
 
+      
     y = mmax + 0.02
     #  2 3 A
     
@@ -486,6 +513,10 @@ def plot_through_time(HP,PFC):
     plt.vlines(Re,mmin,mmax, color = 'grey', alpha = 0.5)
 
     y = mmax + 0.02
+    plt.plot(p_2_3_b_hp[0], np.ones(p_2_3_b_hp[0].shape)*y, '.', markersize=3, color= isl[2])
+    
+    plt.plot(p_2_3_b_pfc[0], np.ones(p_2_3_b_pfc[0].shape)*(y + 0.02), '.', markersize=3, color= isl[3])
+
     sns.despine()
 
   
@@ -521,16 +552,33 @@ def remap_surprise_time(data, task_1_2 = False, task_2_3 = False, task_1_3 = Fal
             taskid_1 = 1
             taskid_2 = 3
         
-        task_1 = np.where(taskid == taskid_1)[0][-1]
-        task_2 = np.where(taskid == taskid_2)[0][0]
-        if task_1+1 == task_2: #or task_1+1== task_2:
+        # task_1 = np.where(taskid == taskid_1)[0][-1]
+        # task_2 = np.where(taskid == taskid_2)[0][0]
+        # if task_1+1 == task_2: #or task_1+1== task_2:
+        #     task_time_confound_data.append(sess)
+        #     task_time_confound_dm.append(y[s])
+        # if task_2_3 == False:
+        #     task_1_rev = np.where(taskid == taskid_1)[0][0]
+        #     task_2_rev = np.where(taskid == taskid_2)[0][-1]
+            
+        #     if task_2_rev+1 == task_1_rev:
+    
+        #         task_time_confound_data.append(sess)
+        #         task_time_confound_dm.append(y[s])
+        task_1_rev = np.where(taskid == taskid_1)[0][0]
+        task_2_rev = np.where(taskid == taskid_2)[0][-1]
+            
+        if task_2_rev+1 == task_1_rev:
+    
             task_time_confound_data.append(sess)
             task_time_confound_dm.append(y[s])
-        if task_2_3 == False:
-            task_1_rev = np.where(taskid == taskid_1)[0][0]
-            task_2_rev = np.where(taskid == taskid_2)[0][-1]
             
-            if task_2_rev+1 == task_1_rev:
+        if task_2_3 == False:
+            
+            task_1 = np.where(taskid == taskid_1)[0][-1]
+            task_2 = np.where(taskid == taskid_2)[0][0]
+            
+            if task_1+1 == task_2: #or task_1+1== task_2:
     
                 task_time_confound_data.append(sess)
                 task_time_confound_dm.append(y[s])
@@ -573,6 +621,7 @@ def plot_surprise(HP, PFC):
                 10+63,25+63,35+63,42+63,50+63,60+63,\
                 10+63*2,25+63*2,35+63*2,42+63*2,50+63*2,60+63*2,\
                 10+63*3,25+63*3,35+63*3,42+63*3,50+63*3,60+63*3]
+        
     xl = ['-0.6','Init', 'Ch','R', '+0.32', '+0.72', '-0.6','Init', 'Ch','R', '+0.32', '+0.72',\
           '-0.6','Init', 'Ch','R', '+0.32', '+0.72',\
               '-0.6','Init', 'Ch','R', '+0.32', '+0.72']
