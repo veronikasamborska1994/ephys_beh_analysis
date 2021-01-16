@@ -195,14 +195,18 @@ def place_grid_cells_SVDs(file, dictionary, c = 'green'):
     
     plt.figure(1)
 
-    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between Left', color = c, linestyle = '--', alpha = 0.7)
-    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within Left', color = c,alpha = 0.7)
-     
+    plt.plot(cum_var_x_task_2_from_task_1, label = 'Between Left Singular Vectors', color = c, linestyle = '--', alpha = 0.7)
+    plt.plot(cum_var_x_task_1_from_task_1, label = 'Within Left Singular Vectors', color = c,alpha = 0.7)
+    sns.despine()
+    plt.xlabel('# of Singular Vectors')
+    plt.ylabel('% Variance Explained')
+
     plt.legend()
     
     plt.figure(2)
     plt.plot(cum_sum_within, label = 'Full Within', color = c)
     plt.plot(cum_sum, label = 'Full Between ', color = c,linestyle = '--')
+    sns.despine()
     
     
     plt.legend()
@@ -319,6 +323,9 @@ def area_under_curve():
     between_HP,within_HP = place_grid_cells_SVDs(file_HP, dict_HP, c = 'black')
     
     between_EC,within_EC = place_grid_cells_SVDs(file_EC, dict_EC, c = 'green')
+    
+    scipy.io.savemat('/Users/veronikasamborska/Desktop/'+ 'Shirley' + '.mat',{'EC_within': within_EC, 'EC_between': between_EC,'HP_within': within_HP, 'HP_between': between_HP})
+
     HP_area = (np.trapz(within_HP) - np.trapz(between_HP))#/within_HP.shape[0]
     EC_area = (np.trapz(within_EC) - np.trapz(between_EC))#/within_EC.shape[0]
     sns.barplot(data=[HP_area,EC_area], capsize=.1, ci="sd",  palette="Blues_d")

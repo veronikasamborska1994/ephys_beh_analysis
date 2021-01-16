@@ -14,10 +14,14 @@ from itertools import combinations
 import scipy
 import palettable
 from scipy import io
-
+from sklearn.decomposition import FastICA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.covariance import EmpiricalCovariance, MinCovDet
 def run():
     HP = io.loadmat('/Users/veronikasamborska/Desktop/HP.mat')
     PFC = io.loadmat('/Users/veronikasamborska/Desktop/PFC.mat')
+    HP = io.loadmat('/Users/veronikasamborska/Desktop/data/HP.mat')
+    PFC = io.loadmat('/Users/veronikasamborska/Desktop/data/PFC.mat')
 
 def task_ind(task, a_pokes, b_pokes):
     
@@ -32,7 +36,7 @@ def task_ind(task, a_pokes, b_pokes):
   
     return taskid
 
-def extract_data(data, t = 0):
+def extract_data(data, t = 0, ab = 0):
 
     
     all_subjects = data['DM'][0]
@@ -71,6 +75,7 @@ def extract_data(data, t = 0):
             a_pokes = DM[:,6] #[:ind_block[11]]
             b_pokes = DM[:,7] #[:ind_block[11]]
             
+        
             taskid = task_ind(task, a_pokes, b_pokes)
             if t ==0:
             
@@ -82,7 +87,18 @@ def extract_data(data, t = 0):
                 task_2 = np.where(taskid == 2)[0]
                 task_3 = np.where(taskid == 3)[0]
                 
+            # task_1_1 = task_1[::2]
+
+            # task_1_2 = task_1[1::2]
+            
+            # task_2_1 = task_2[::2]
+            # task_2_2 = task_2[1::2]
+            
+            # task_3_1 = task_3[::2]
+            # task_3_2 = task_3[1::2]
+
             task_1_1 = task_1[:int(len(task_1)/2)]
+
             task_1_2 = task_1[int(len(task_1)/2):]
             
             task_2_1 = task_2[:int(len(task_2)/2)]
@@ -126,10 +142,19 @@ def extract_data(data, t = 0):
             flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*2:63*3]= np.mean(firing_rates[np.intersect1d(np.where((reward==1) & (choices == 0))[0],(task_3_2))],0)
             flattened_all_clusters_task_3_second_half[n_neurons_cum-n_neurons:n_neurons_cum ,63*3:63*4] = np.mean(firing_rates[np.intersect1d(np.where((reward==0) & (choices == 0))[0],(task_3_2))],0)
            
-            
-    return flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+    if ab ==0:       
+        return flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
         flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons
+    elif ab ==1:
+        return flattened_all_clusters_task_1_first_half[:,:63*2], flattened_all_clusters_task_1_second_half[:,:63*2],\
+        flattened_all_clusters_task_2_first_half[:,:63*2], flattened_all_clusters_task_2_second_half[:,:63*2],\
+        flattened_all_clusters_task_3_first_half[:,:63*2],flattened_all_clusters_task_3_second_half[:,:63*2], animal_neurons
+        
+    elif ab ==2:
+        return flattened_all_clusters_task_1_first_half[:,63*2:], flattened_all_clusters_task_1_second_half[:,63*2:],\
+        flattened_all_clusters_task_2_first_half[:,63*2:], flattened_all_clusters_task_2_second_half[:,63*2:],\
+        flattened_all_clusters_task_3_first_half[:,63*2:],flattened_all_clusters_task_3_second_half[:,63*2:], animal_neurons
   
 def permute(PFC, HP, diagonal = False, perm = 2, axis = 0):
     
@@ -366,41 +391,53 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
     flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, task = 1, diagonal = False, axis = 0):
     
-      
-    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = False)
+    # demean = np.mean([np.mean(flattened_all_clusters_task_1_first_half,1), np.mean(flattened_all_clusters_task_2_first_half,1),np.mean(flattened_all_clusters_task_3_first_half,1),\
+    #     np.mean(flattened_all_clusters_task_1_second_half,1),np.mean(flattened_all_clusters_task_2_second_half,1),np.mean(flattened_all_clusters_task_3_second_half,1)],0)
+     
+    # flattened_all_clusters_task_1_first_half = (flattened_all_clusters_task_1_first_half.T- demean).T
+    # flattened_all_clusters_task_2_first_half = (flattened_all_clusters_task_2_first_half.T- demean).T
+    # flattened_all_clusters_task_3_first_half = (flattened_all_clusters_task_3_first_half.T- demean).T
+
+    # flattened_all_clusters_task_1_second_half = (flattened_all_clusters_task_1_second_half.T - demean).T
+    # flattened_all_clusters_task_2_second_half = (flattened_all_clusters_task_2_second_half.T - demean).T
+    # flattened_all_clusters_task_3_second_half = (flattened_all_clusters_task_3_second_half.T - demean).T 
+    
+    neurons = 345
+    flattened_all_clusters_task_1_first_half = flattened_all_clusters_task_1_first_half[:neurons]
+    flattened_all_clusters_task_2_first_half = flattened_all_clusters_task_2_first_half[:neurons]
+    flattened_all_clusters_task_3_first_half = flattened_all_clusters_task_3_first_half[:neurons]
+
+    flattened_all_clusters_task_1_second_half = flattened_all_clusters_task_1_second_half[:neurons]
+    flattened_all_clusters_task_2_second_half = flattened_all_clusters_task_2_second_half[:neurons]
+    flattened_all_clusters_task_3_second_half = flattened_all_clusters_task_3_second_half[:neurons]
+
+    u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_first_half, full_matrices = True)
         
     #SVDsu.shape, s.shape, vh.shape for task 1 second half
-    u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
+    u_t1_2, s_t1_2, vh_t1_2 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = True)
     
     #SVDsu.shape, s.shape, vh.shape for task 2 first half
-    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_first_half, full_matrices = False)
+    u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_first_half, full_matrices = True)
     
     #SVDsu.shape, s.shape, vh.shape for task 2 second half
-    u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
+    u_t2_2, s_t2_2, vh_t2_2 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = True)
     
     #SVDsu.shape, s.shape, vh.shape for task 3 first half
-    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_first_half, full_matrices = False)
+    u_t3_1, s_t3_1, vh_t3_1 = np.linalg.svd(flattened_all_clusters_task_3_first_half, full_matrices = True)
 
     #SVDsu.shape, s.shape, vh.shape for task 3 first half
-    u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = False)
+    u_t3_2, s_t3_2, vh_t3_2 = np.linalg.svd(flattened_all_clusters_task_3_second_half, full_matrices = True)
     
     
     
     #Finding variance explained in second half of task 1 using the Us and Vs from the first half
-    t_u = np.transpose(u_t1_1)  
-    t_v = np.transpose(vh_t1_1)  
-
+  
     t_u_t_1_2 = np.transpose(u_t1_2)   
     t_v_t_1_2 = np.transpose(vh_t1_2)  
-
-    t_u_t_2_1 = np.transpose(u_t2_1)   
-    t_v_t_2_1 = np.transpose(vh_t2_1)  
 
     t_u_t_2_2 = np.transpose(u_t2_2)  
     t_v_t_2_2 = np.transpose(vh_t2_2)  
 
-    t_u_t_3_2 = np.transpose(u_t3_2)
-    t_v_t_3_2 = np.transpose(vh_t3_2)  
     
     n_neurons = flattened_all_clusters_task_1_first_half.shape[0]
     #Compare task 1 Second Half 
@@ -422,16 +459,7 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
         s_2_1_from_t_1_2 = np.sum(s_task_2_1_from_t_1_2**2, axis = axis)
     sum_c_task_2_1_from_t_1_2 = np.cumsum(abs(s_2_1_from_t_1_2))/n_neurons
 
-
-    
-    #Compare task 2 Second Half from first half
-    s_task_2_2_from_t_2_1 = np.linalg.multi_dot([t_u_t_2_1, flattened_all_clusters_task_2_second_half, t_v_t_2_1])    
-    if diagonal == False:
-        s_2_2_from_t_2_1 = s_task_2_2_from_t_2_1.diagonal()
-    else:
-        s_2_2_from_t_2_1 = np.sum(s_task_2_2_from_t_2_1**2, axis = axis)
-    sum_c_task_2_2_from_t_2_1 = np.cumsum(abs(s_2_2_from_t_2_1))/n_neurons
-    
+   
      #Compare task 2 Firs Half from second half
     s_task_2_1_from_t_2_2 = np.linalg.multi_dot([t_u_t_2_2, flattened_all_clusters_task_2_first_half, t_v_t_2_2])    
     if diagonal == False:
@@ -460,16 +488,10 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     sum_c_task_3_1_from_t_1_2 = np.cumsum(abs(s_3_1_from_t_1_2))/n_neurons
 
 
-    s_task_3_1_from_t_3_2 = np.linalg.multi_dot([t_u_t_3_2, flattened_all_clusters_task_3_first_half, t_v_t_3_2])
-    if diagonal == False:
-        s_3_1_from_t_3_2 = s_task_3_1_from_t_3_2.diagonal()
-    else:
-        s_3_1_from_t_3_2 = np.sum(s_task_3_1_from_t_3_2**2, axis = axis)
-    sum_c_task_3_1_from_t_3_2 = np.cumsum(abs(s_3_1_from_t_3_2))/n_neurons
-
+    
     if task == 0:
-        average_within_all = np.mean([sum_c_task_1_2, sum_c_task_3_1_from_t_3_2, sum_c_task_2_1_from_t_2_2], axis = 0)
-        average_between_all = np.mean([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_2_2, sum_c_task_3_1_from_t_1_2], axis = 0)
+        average_within_all = np.mean([sum_c_task_1_2, sum_c_task_2_1_from_t_2_2], axis = 0)
+        average_between_all = np.mean([sum_c_task_2_1_from_t_1_2, sum_c_task_3_1_from_t_1_2], axis = 0)
 
     elif task == 1:
         average_within_all = sum_c_task_1_2
@@ -493,11 +515,10 @@ def svd(flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_
     
     return trp,average_between_all,average_within_all
 
-def real_diff(data,a= 'PFC', task = 0, diagonal = False, axis = 0):
-   # data = HP
+def real_diff(data,a= 'PFC', task = 0, diagonal = False, axis = 0, ab = 0):
     flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
         flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
-        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, t = task)
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, t = task, ab = ab)
 
     # u_t1_1, s_t1_1, vh_t1_1 = np.linalg.svd(flattened_all_clusters_task_1_second_half, full_matrices = False)
     # u_t2_1, s_t2_1, vh_t2_1 = np.linalg.svd(flattened_all_clusters_task_2_second_half, full_matrices = False)
@@ -545,25 +566,115 @@ def real_diff(data,a= 'PFC', task = 0, diagonal = False, axis = 0):
     return trp, average_between_all,average_within_all
 
 
+def replicate_shoenbaum():
+    
+    data = PFC
+    a = 'PFC'
+    task = 0
+    diagonal = False
+    axis = 0
+    ab = 0
+    n_comp  = 100
+    # M is trials x neuron
+    flattened_all_clusters_task_1_first_half, flattened_all_clusters_task_1_second_half,\
+        flattened_all_clusters_task_2_first_half, flattened_all_clusters_task_2_second_half,\
+        flattened_all_clusters_task_3_first_half,flattened_all_clusters_task_3_second_half, animal_neurons = extract_data(data, t = task, ab = ab)
+        
+     
+    X = np.concatenate((flattened_all_clusters_task_1_first_half,flattened_all_clusters_task_2_first_half,flattened_all_clusters_task_3_first_half),1)
+    
+    X = X - np.mean(X,0)
+    u, s, v = np.linalg.svd(X, full_matrices = True)
+    
+    #components by x neurons - first 100 neural components 
+    Y = np.dot(X,v[:n_comp,:].T).T # lower dimensional representation of Y (reduce neuronal space in V)
+    #Y_rec =  u_t1_1[:,:100] *s_t1_1[:100]
+    
+    ica = FastICA()
+    # A is neural component x component demixing matrix 
+    A = ica.fit_transform(Y) # A is a demixing matrix of component x component from the lower dimensional representation of Y (reduce neuronal space in V) 
+    # n samples x n independent neural components
+    
+    B = np.dot(np.linalg.pinv(v[:,:n_comp]).T,A.T) # projecting the demixing component x component matrix onto the trial singular vectors with reduced number of neurons
+    # B matrix tells you on which trials the neuronal 
+    
+    # Select 100 first neural and make them independent from each other, then project back onto trials 
+    
+
+    classes = np.concatenate((np.zeros(63)+1,np.ones(63)+1,np.ones(63)+2,(np.ones(63)+3),\
+                             np.ones(63)+4,np.ones(63)+5,np.ones(63)+6, np.ones(63)+7,\
+                            np.ones(63)+8,np.ones(63)+9,np.ones(63)+10,(np.ones(63)+11)))
+        
+    lda = LinearDiscriminantAnalysis()
+    lda.fit(B,classes)
+    x_new = lda.transform(B)
+    plt.figure(1)
+    var =lda.explained_variance_ratio_
+    plt.plot(var)
+    
+    pre_inits = np.vstack(((np.mean(x_new[:25],0),np.mean(x_new[63:63+25],0),np.mean(x_new[63*2:(63*2+25)],0),\
+            np.mean(x_new[63*3:63*3+25],0), np.mean(x_new[63*4:63*4+25],0),\
+            np.mean(x_new[63*5:63*5+25],0), np.mean(x_new[63*6:63*6+25],0),\
+           np.mean( x_new[63*7:63*7+25],0), np.mean(x_new[63*8:63*8+25],0),\
+           np.mean( x_new[63*9:63*9+25],0), np.mean(x_new[63*10:63*10+25],0), np.mean(x_new[63*11:63*11+25],0))))
+        
+    inits = np.vstack(((np.mean(x_new[20:25],0),np.mean(x_new[63+20:63+25],0),np.mean(x_new[63+20*2:(63+20*2+25)],0),\
+            np.mean(x_new[63+20*3:63*3+25],0), np.mean(x_new[63+20*4:63*4+25],0),\
+            np.mean(x_new[63+20*5:63*5+25],0), np.mean(x_new[63+20*6:63*6+25],0),\
+           np.mean( x_new[63+20*7:63*7+25],0), np.mean(x_new[63+20*8:63*8+25],0),\
+           np.mean( x_new[63+20*9:63*9+25],0), np.mean(x_new[63+20*10:63*10+25],0), np.mean(x_new[63+20*11:63*11+25],0))))
+
+    
+    choices = np.vstack(((np.mean(x_new[36:42],0),np.mean(x_new[63+36:63+42],0),np.mean(x_new[63+36*2:(63+36*2+42)],0),\
+            np.mean(x_new[63+36*3:63*3+42],0), np.mean(x_new[63+36*4:63*4+42],0),\
+            np.mean(x_new[63+36*5:63*5+42],0), np.mean(x_new[63+36*6:63*6+42],0),\
+           np.mean( x_new[63+36*7:63*7+42],0), np.mean(x_new[63+36*8:63*8+42],0),\
+           np.mean( x_new[63+36*9:63*9+42],0), np.mean(x_new[63+36*10:63*10+42],0), np.mean(x_new[63+36*11:63*11+42],0))))
+
+    rewards = np.vstack(((np.mean(x_new[42:50],0),np.mean(x_new[63+42:63+50],0),np.mean(x_new[63+42*2:(63+42*2+50)],0),\
+            np.mean(x_new[63+42*3:63*3+50],0), np.mean(x_new[63+42*4:63*4+50],0),\
+            np.mean(x_new[63+42*5:63*5+50],0), np.mean(x_new[63+42*6:63*6+50],0),\
+           np.mean( x_new[63+42*7:63*7+50],0), np.mean(x_new[63+42*8:63*8+50],0),\
+           np.mean( x_new[63+42*9:63*9+50],0), np.mean(x_new[63+42*10:63*10+50],0), np.mean(x_new[63+42*11:63*11+50],0))))
+    plt.figure()
+     
+    trial_stages = np.concatenate((pre_inits,inits,choices,rewards),0)
+
+    plt.imshow(np.corrcoef(trial_stages,trial_stages)[48:,48:])
+                                          
+    #plt.imshow(np.corrcoef(x_new,x_new)[:756,:756])
+    
+plt.subplot(3,1,1)   
+plt.plot(a)
+plt.xticks([0,1,2,3,4,5], [1,2,3,4,5,6])
+
+plt.subplot(3,1,2)   
+plt.plot(b)
+plt.xticks([0,1,2,3,4,5], [1,2,3,4,5,6])
+
+plt.subplot(3,1,3)   
+plt.plot(a-b)
+plt.xticks([0,1,2,3,4,5], [1,2,3,4,5,6])
+
 def run_svd():
     
-    run(HP, PFC, d = True, p = 5000, axis = 0)
-    run(HP, PFC, d = True, p = 5000, axis = 1)
-    run(HP, PFC, d = False, p = 5000)
+    run(HP, PFC, d = True, p = 2, axis = 0, ab = 2)
+    run(HP, PFC, d = True, p = 2, axis = 1,ab = 1)
+    run(HP, PFC, d = False, p = 2, ab = 2)
 
-def run(HP, PFC, d = True, p = 1000, axis = 0):
+def run(HP, PFC, d = True, p = 1000, axis = 0, ab=0):
     
     u_v_area_shuffle, u_v_area_1_shuffle, u_v_area_2_shuffle, u_v_area_3_shuffle = permute(PFC, HP, diagonal = d, perm = p, axis = axis)
     # Real DIfferences 
-    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = d,axis = axis)
-    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = d,axis = axis)
-    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = d,axis = axis)
-    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = d,axis = axis)
+    trp_pfc,  average_between_all_pfc,average_within_all_pfc =  real_diff(PFC,a= 'PFC', task = 0,  diagonal = d,axis = axis, ab = ab)
+    trp_pfc_1, average_between_all_pfc_1,average_within_all_pfc_1 = real_diff(PFC,a= 'PFC', task = 1, diagonal = d,axis = axis, ab = ab)
+    trp_pfc_2,average_between_all_pfc_2,average_within_all_pfc_2 = real_diff(PFC,a= 'PFC', task = 2,  diagonal = d,axis = axis, ab = ab)
+    trp_pfc_3, average_between_all_pfc_3,average_within_all_pfc_3 = real_diff(PFC,a= 'PFC', task = 3,  diagonal = d,axis = axis, ab = ab)
     
-    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0,  diagonal = d,axis = axis)
-    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = d, axis = axis)
-    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = d, axis = axis)
-    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = d,axis = axis)
+    trp_hp, average_between_all_hp,average_within_all_hp =  real_diff(HP,a= 'HP', task = 0,  diagonal = d,axis = axis, ab = ab)
+    trp_hp_1, average_between_all_hp_1,average_within_all_hp_1 =  real_diff(HP,a= 'HP', task = 1, diagonal = d, axis = axis, ab = ab)
+    trp_hp_2, average_between_all_hp_2,average_within_all_hp_2 =  real_diff(HP,a= 'HP', task = 2, diagonal = d, axis = axis, ab = ab)
+    trp_hp_3, average_between_all_hp_3,average_within_all_hp_3 =  real_diff(HP,a= 'HP', task = 3, diagonal = d,axis = axis, ab = ab)
     
     
     diff_uv  = []
